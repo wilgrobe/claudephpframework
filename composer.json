@@ -1,6 +1,8 @@
 {
-    "name": "claudephpframework/v2",
-    "description": "Claude PHP MVC Framework v2 — Multi-group, OAuth, Superadmin emulation, Menus, FAQ, Pages, Integrations",
+    "name": "wilgrobe/claudephpframework",
+    "description": "Modular PHP MVC framework with built-in compliance, security, and a module system designed for a core/premium split.",
+    "license": "MIT",
+    "homepage": "https://github.com/wilgrobe/claudephpframework",
     "type": "project",
     "require": {
         "php": ">=8.1",
