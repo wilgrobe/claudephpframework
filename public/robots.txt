@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /profile/
+Disallow: /dashboard
+Disallow: /groups/*/invite
+Disallow: /groups/*/roles
+Disallow: /content/*/edit
+Disallow: /notifications
+
+Allow: /page/
+Allow: /faq
+Allow: /
+
+Sitemap: http://claudephpframework/sitemap.xml

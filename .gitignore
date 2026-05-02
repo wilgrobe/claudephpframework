@@ -1,0 +1,17 @@
+.env
+/vendor/
+/bin/phproot/
+/storage/logs/*.log
+/storage/cache/*
+/storage/uploads/avatars/*
+/storage/uploads/group_images/*
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/uploads/.gitkeep
+!/storage/uploads/avatars/.gitkeep
+!/storage/uploads/group_images/.gitkeep
+!/storage/.htaccess
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

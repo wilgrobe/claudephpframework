@@ -1,0 +1,203 @@
+/* phpframework-v2 — public/assets/css/app.css
+   A single, cacheable stylesheet. Supplement to the critical CSS
+   inlined in layout/header.php. Add custom overrides here.    */
+
+/* ── Custom Properties ─────────────────────────────────────── */
+:root {
+    --color-primary:      #4f46e5;
+    --color-primary-dark: #3730a3;
+    --color-secondary:    #0ea5e9;
+    --color-success:      #10b981;
+    --color-danger:       #ef4444;
+    --color-warning:      #f59e0b;
+    --color-info:         #3b82f6;
+    --color-gray-50:      #f9fafb;
+    --color-gray-100:     #f3f4f6;
+    --color-gray-200:     #e5e7eb;
+    --color-gray-300:     #d1d5db;
+    --color-gray-500:     #6b7280;
+    --color-gray-700:     #374151;
+    --color-gray-900:     #111827;
+    --font:               'Inter', system-ui, -apple-system, sans-serif;
+    --radius:             8px;
+    --radius-lg:          12px;
+    --shadow:             0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:          0 4px 6px -1px rgba(0,0,0,.08);
+    --sidebar-width:      240px;
+    --transition:         .15s ease;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: var(--font);
+    background: var(--color-gray-50);
+    color: var(--color-gray-900);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; height: auto; }
+
+/* ── Password Strength Meter ────────────────────────────────── */
+.password-strength-wrap {
+    margin-top: .4rem;
+}
+.password-strength-bar {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-gray-200);
+    overflow: hidden;
+    margin-bottom: .3rem;
+}
+.password-strength-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .3s ease, background-color .3s ease;
+    width: 0%;
+    background: var(--color-gray-300);
+}
+.password-strength-fill[data-score="1"] { width: 25%; background: var(--color-danger); }
+.password-strength-fill[data-score="2"] { width: 50%; background: var(--color-warning); }
+.password-strength-fill[data-score="3"] { width: 75%; background: var(--color-info); }
+.password-strength-fill[data-score="4"] { width: 100%; background: var(--color-success); }
+.password-strength-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-gray-500);
+}
+.password-strength-label[data-score="1"] { color: var(--color-danger); }
+.password-strength-label[data-score="2"] { color: var(--color-warning); }
+.password-strength-label[data-score="3"] { color: var(--color-info); }
+.password-strength-label[data-score="4"] { color: var(--color-success); }
+.password-requirements {
+    list-style: none;
+    padding: 0;
+    margin: .5rem 0 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .15rem .75rem;
+}
+.password-requirements li {
+    font-size: 11.5px;
+    color: var(--color-gray-500);
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.password-requirements li::before {
+    content: '○';
+    font-size: 9px;
+    flex-shrink: 0;
+}
+.password-requirements li.met { color: var(--color-success); }
+.password-requirements li.met::before { content: '●'; }
+
+/* ── Flash message animations ────────────────────────────────── */
+.alert {
+    animation: slideDown .2s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Focus-visible rings ─────────────────────────────────────── */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ── Skip link for accessibility ────────────────────────────── */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-primary);
+    color: #fff;
+    padding: .5rem 1rem;
+    z-index: 9999;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 0 0 6px 0;
+    transition: top .15s;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Print styles ────────────────────────────────────────────── */
+@media print {
+    .sidebar, .topbar, .btn, form[data-confirm] { display: none !important; }
+    .content { padding: 0; }
+    body { background: #fff; font-size: 12pt; }
+}
+
+/* ── Responsive breakpoints ─────────────────────────────────── */
+@media (max-width: 1024px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+    .sidebar { display: none; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .topbar { padding: .6rem 1rem; }
+    .content { padding: 1rem; }
+    table { font-size: 12px; }
+    .table th, .table td { padding: .5rem .65rem; }
+}
+@media (max-width: 480px) {
+    .btn { font-size: 13px; }
+    .card-header { flex-wrap: wrap; gap: .5rem; }
+}
+
+/* ── Utility classes ─────────────────────────────────────────── */
+.sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.text-muted   { color: var(--color-gray-500); }
+.text-danger  { color: var(--color-danger); }
+.text-success { color: var(--color-success); }
+.text-center  { text-align: center; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.d-flex { display: flex; }
+.gap-1 { gap: .5rem; }
+.gap-2 { gap: 1rem; }
+.flex-1 { flex: 1; }
+.w-100 { width: 100%; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * menus.embed block (modules/menus/module.php)
+ *
+ * Migrated out of the inline <style> the block used to emit per-instance
+ * (Perf H, 2026-04-30). Same selectors, same rules; lives in app.css so
+ * multiple menu blocks on one page don't duplicate the CSS payload.
+ * ─────────────────────────────────────────────────────────────────────── */
+.menu-block { margin: 0; padding: 0; list-style: none; }
+.menu-block .menu-block-item { position: relative; }
+.menu-block .menu-block-link { color: var(--color-primary); text-decoration: none; padding: .35rem .65rem; border-radius: 4px; display: inline-block; }
+.menu-block .menu-block-link:hover { background: var(--accent-subtle); }
+.menu-block .menu-block-holder-label { font-weight: 600; color: var(--text-muted); padding: .35rem .65rem; text-transform: uppercase; letter-spacing: .04em; font-size: 11.5px; }
+.menu-block .menu-block-sublist { list-style: none; padding-left: 1rem; margin: 0; }
+.menu-block--horizontal { display: flex; flex-wrap: wrap; gap: .25rem .5rem; align-items: center; }
+.menu-block--horizontal > .menu-block-item { display: inline-flex; align-items: center; }
+.menu-block--horizontal .menu-block-sublist { position: absolute; top: 100%; left: 0; background: var(--bg-panel); border: 1px solid var(--border-default); border-radius: 6px; padding: .35rem; min-width: 180px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); display: none; z-index: 30; }
+.menu-block--horizontal > .menu-block-item:hover > .menu-block-sublist { display: block; }
+.menu-block--vertical { display: flex; flex-direction: column; gap: .15rem; }
+.menu-block--dropdown { position: relative; display: inline-block; }
+.menu-block--dropdown > .menu-block-trigger { background: var(--color-primary); color: var(--accent-contrast); border: none; padding: .5rem 1rem; border-radius: 6px; cursor: pointer; }
+.menu-block--dropdown > ul { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-panel); border: 1px solid var(--border-default); border-radius: 6px; padding: .35rem; min-width: 200px; box-shadow: 0 4px 6px -1px rgba(0,0,0,.1); z-index: 30; margin: .35rem 0 0; list-style: none; }
+.menu-block--dropdown.is-open > ul { display: block; }
