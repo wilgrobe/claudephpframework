@@ -14,6 +14,16 @@
 //   $composerContext = array passed to each block's render closure
 //                      (page row, viewer, etc). Defaults to []
 //
+//   $composerSlots   = ['primary' => '...html...', 'sidebar' => '...']
+//                      Maps slot_name → pre-rendered HTML. Used when a
+//                      placement's placement_type === 'content_slot'.
+//                      Slots referenced by the layout but missing from
+//                      this map render as empty (admins removed it from
+//                      the layout — that's their choice). Slots passed
+//                      in but not referenced by the layout are silently
+//                      dropped. Defaults to []. See page-chrome plan
+//                      §"Rendering changes".
+//
 // The page's parent template owns <html>, <head>, <body>; this partial
 // emits a single <div class="page-composer-root"> with all the grid
 // CSS scoped via custom properties.
@@ -40,6 +50,7 @@
     $__layout      = $__cmp['layout'];
     $__placements  = $__cmp['placements'] ?? [];
     $__ctx         = $composerContext ?? [];
+    $__slots       = isset($composerSlots) && is_array($composerSlots) ? $composerSlots : [];
 
     $__rows        = (int) ($__layout['rows']  ?? 1);
     $__cols        = (int) ($__layout['cols']  ?? 1);
@@ -177,22 +188,35 @@
             ?>
                 <div class="page-composer-cell"<?= $__cellAttr ?> data-cell="<?= $r ?>-<?= $c ?>">
                 <?php foreach (($__cells[$r][$c] ?? []) as $__p):
-                    if ($__p['visible_to'] === 'auth'  && !$__viewerIsAuth) continue;
-                    if ($__p['visible_to'] === 'guest' &&  $__viewerIsAuth) continue;
+                    $__type = (string) ($__p['placement_type'] ?? 'block');
 
-                    $key = (string) $__p['block_key'];
-                    if ($__registry === null) {
-                        echo '<div class="page-composer-missing">Block registry unavailable.</div>';
-                        continue;
-                    }
-                    $html = $__registry->render($key, $__ctx, $__p['settings'] ?? []);
-                    if ($html === null) {
-                        if ($__viewerIsAuth) {
-                            echo '<div class="page-composer-missing">Block <code>' . htmlspecialchars($key, ENT_QUOTES | ENT_HTML5) . '</code> is unavailable. Edit this page to remove or replace.</div>';
+                    if ($__type === 'content_slot') {
+                        // Content-slot placement: emit the controller-rendered
+                        // HTML for the named slot. visible_to is intentionally
+                        // ignored — the controller owns auth gating and we
+                        // must never silently hide the page's main content.
+                        $__slotKey = (string) ($__p['slot_name'] ?? '');
+                        if ($__slotKey === '') $__slotKey = 'primary';
+                        $html = $__slots[$__slotKey] ?? '';
+                        if ($html === '') continue;
+                    } else {
+                        if ($__p['visible_to'] === 'auth'  && !$__viewerIsAuth) continue;
+                        if ($__p['visible_to'] === 'guest' &&  $__viewerIsAuth) continue;
+
+                        $key = (string) $__p['block_key'];
+                        if ($__registry === null) {
+                            echo '<div class="page-composer-missing">Block registry unavailable.</div>';
+                            continue;
                         }
-                        continue;
+                        $html = $__registry->render($key, $__ctx, $__p['settings'] ?? []);
+                        if ($html === null) {
+                            if ($__viewerIsAuth) {
+                                echo '<div class="page-composer-missing">Block <code>' . htmlspecialchars($key, ENT_QUOTES | ENT_HTML5) . '</code> is unavailable. Edit this page to remove or replace.</div>';
+                            }
+                            continue;
+                        }
+                        if ($html === '') continue;
                     }
-                    if ($html === '') continue;
 
                     // Per-placement wrapper styling — only emitted when
                     // the placement carries a non-empty `style` array.

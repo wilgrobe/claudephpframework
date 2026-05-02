@@ -149,10 +149,12 @@ class PolicyController
         // Also surface what's still pending so the user can re-review
         $pending = $this->svc->unacceptedFor($userId);
 
+        // Page-chrome Batch C: fragment + chrome wrap. Slug
+        // `account.policies` mirrors the URL.
         return Response::view('policies::account.index', [
             'history' => $history,
             'pending' => $pending,
             'user'    => $this->auth->user(),
-        ]);
+        ])->withLayout('account.policies');
     }
 }

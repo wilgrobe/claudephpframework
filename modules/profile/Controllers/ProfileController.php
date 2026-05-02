@@ -49,11 +49,14 @@ class ProfileController
 
         $twofa = $this->twoFactor->getUserTwoFactorInfo($userId);
 
+        // Page-chrome Batch C: fragment + chrome wrap. Slug `profile`
+        // mirrors the URL it chromes. Admins customise via
+        // /admin/system-layouts/profile.
         return Response::view('profile::show', [
             'user'           => $user,
             'oauthProviders' => $oauthProviders,
             'twofa'          => $twofa,
-        ]);
+        ])->withLayout('profile');
     }
 
     public function editForm(Request $request): Response
@@ -64,7 +67,10 @@ class ProfileController
                FROM users WHERE id = ?",
             [$this->auth->id()]
         );
-        return Response::view('profile::edit', ['user' => $user]);
+        // Page-chrome Batch C: separate layout from /profile so admins
+        // can decorate the edit form independently.
+        return Response::view('profile::edit', ['user' => $user])
+            ->withLayout('profile.edit');
     }
 
     public function update(Request $request): Response

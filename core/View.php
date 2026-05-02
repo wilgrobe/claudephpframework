@@ -220,6 +220,93 @@ class View
         return self::render($view, $data);
     }
 
+    /**
+     * Render a "fragment" view — one that's expected to participate in
+     * page-chrome wrapping (Response::withLayout / Response::chrome) and
+     * therefore does NOT include layout/header.php + layout/footer.php
+     * itself. The chrome wrapper provides those.
+     *
+     * Returns:
+     *   [
+     *     'body'     => '...captured HTML...',
+     *     'captured' => [
+     *       'pageTitle'      => string|null,
+     *       'pageStyles'     => array|null,
+     *       'pageScripts'    => array|null,
+     *       'pageMeta'       => array|null,
+     *       'seoTitle'       => string|null,
+     *       'seoDescription' => string|null,
+     *       'seoKeywords'    => string|null,
+     *       'seoOgImage'     => string|null,
+     *       'canonical'      => string|null,
+     *       'bodyClass'      => string|null,
+     *     ],
+     *   ]
+     *
+     * The capture-and-emit pattern (page-chrome plan §"Inner view → outer
+     * template variable hand-off"): the fragment view sets these globals
+     * during execution; we snapshot them here and the chrome wrapper
+     * exposes them as locals when rendering the outer header.
+     *
+     * Pre-existing extend()/section() state is preserved across the call
+     * the same way render() handles it. A fragment view that calls
+     * extend() throws — wrapping a chromed view in another layout would
+     * double-wrap the response and is a configuration error.
+     */
+    public static function renderFragment(string $view, array $data = []): array
+    {
+        $path = self::resolvePath($view);
+        if (!file_exists($path)) {
+            throw new \RuntimeException("View not found: [$view] at [$path]");
+        }
+
+        // Save outer layout state — same dance render() does so a parent
+        // render call's section captures don't get clobbered.
+        $outerExtending    = self::$extending;
+        $outerSections     = self::$sections;
+        $outerSectionStack = self::$sectionStack;
+
+        self::$extending    = null;
+        self::$sections     = [];
+        self::$sectionStack = [];
+
+        try {
+            extract($data, EXTR_SKIP);
+            ob_start();
+            include $path;
+            $body = ob_get_clean();
+
+            if (self::$extending !== null) {
+                throw new \LogicException(
+                    "View [$view] called View::extend() but is being rendered as a chrome fragment. "
+                    . "Chromed views must NOT extend a layout — the chrome wrapper provides the outer template."
+                );
+            }
+
+            // Snapshot the well-known globals the inner view may have set.
+            // Using `?? null` keeps the captured array shape stable so the
+            // chrome wrapper can rely on the keys existing.
+            $captured = [
+                'pageTitle'      => isset($pageTitle)      ? (string) $pageTitle      : null,
+                'pageStyles'     => isset($pageStyles)     && is_array($pageStyles)  ? $pageStyles  : null,
+                'pageScripts'    => isset($pageScripts)    && is_array($pageScripts) ? $pageScripts : null,
+                'pageMeta'       => isset($pageMeta)       && is_array($pageMeta)    ? $pageMeta    : null,
+                'seoTitle'       => isset($seoTitle)       ? (string) $seoTitle       : null,
+                'seoDescription' => isset($seoDescription) ? (string) $seoDescription : null,
+                'seoKeywords'    => isset($seoKeywords)    ? (string) $seoKeywords    : null,
+                'seoOgImage'     => isset($seoOgImage)     ? (string) $seoOgImage     : null,
+                'canonical'      => isset($canonical)      ? (string) $canonical      : null,
+                'bodyClass'      => isset($bodyClass)      ? (string) $bodyClass      : null,
+            ];
+
+            return ['body' => $body, 'captured' => $captured];
+        } finally {
+            self::$extending    = $outerExtending;
+            self::$sections     = $outerSections;
+            self::$sectionStack = $outerSectionStack;
+        }
+    }
+
     // ── Path resolution (unchanged from prior) ───────────────────────────────
 
     /**
@@ -271,6 +358,7 @@ class View
         return $resolved;
     }
 
+    /** Set the base directory views are resolved against. */
     public static function setViewsPath(string $path): void
     {
         self::$viewsPath = $path;

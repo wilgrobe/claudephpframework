@@ -491,6 +491,36 @@ Implement `blocks(): array` in your provider. Each block gets a unique key, a la
 and a render closure. Admins can drop your block onto any page layout from
 `/admin/pages` — no extra wiring needed.
 
+### Module page wants admin-editable chrome around it
+
+Customer-facing module pages can opt into the **page-chrome** system: a controller
+declares "this view should render inside the layout named `your.slug`" and the
+framework wraps it in admin-editable chrome at request time. Admins drop a
+hero strip above, a help sidebar beside, a CTA below — no extra controller
+logic, no view fork.
+
+Three steps per page:
+
+1. **Migration** in your module's `migrations/` dir that calls
+   `SystemLayoutService::seedLayout($slug, [...metadata...])` then
+   `seedSlot($slug, 'primary', 0, 0)`. Slug mirrors the URL with `/` →
+   `.` (e.g. `/account/data` → `account.data`).
+2. **Controller** chains `->withLayout('your.slug')` after `Response::view(...)`.
+3. **View** drops the `include header.php` / `include footer.php` lines —
+   it's now a fragment. `$pageTitle` and other head globals propagate
+   automatically via capture-and-emit.
+
+If the layout is missing (fresh install before migrations have run, or
+admin-deleted), the response sends unwrapped — broken chrome must never
+break the page.
+
+The full developer guide — when to chrome and when not to, the multi-slot
+`Response::chrome()` API, the slug naming convention, the migration
+template, and troubleshooting — lives at [`docs/page-chrome.md`](page-chrome.md).
+Existing conversions to copy from: `modules/profile/migrations/*_seed_profile_chrome.php`,
+`modules/faq/Controllers/FaqController.php` (the `publicIndex` action),
+`modules/policies/Views/account/index.php` (the fragment view).
+
 ## Where to look for examples
 
 The 47 existing modules are the best reference. A few starting points by complexity:

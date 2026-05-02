@@ -153,14 +153,29 @@ Before running through any module section:
 
 ### System layout admin (`/admin/system-layouts`)
 
-- [ ] **SA** `/admin/system-layouts` lists rows for `dashboard_stats` and `dashboard_main` with rows/cols/gap/max-width/placement-count + an Edit button.
-- [ ] **SA** `/admin/system-layouts/dashboard_main` opens the same editor shape the per-page composer uses. Block dropdown shows every active module's blocks grouped by category.
+- [ ] **SA** `/admin/system-layouts` groups layouts by owning module, with friendly name + slug + category + rows/cols + blocks-count + slots-count + Updated + Edit/View ↗ buttons.
+- [ ] **SA** Filter bar at the top: typing into the search box hides rows that don't match friendly name / slug / category / description / chromed_url. The "Show only layouts with content slots" toggle hides pure-block layouts (dashboards). The "X of Y shown" counter updates as filters change. Group cards collapse to hidden when every row inside is filtered out.
+- [ ] **SA** Each row's Edit button opens `/admin/system-layouts/{slug}` (the composer editor). Each row that has a `chromed_url` set ALSO shows a "View ↗" button that opens that URL in a new tab.
+- [ ] **SA** `dashboard_main` and `dashboard_stats` rows have NO View ↗ button (they're partials inside `/dashboard`, not standalone URLs). Every chromed module page (account.data, profile, faq, account.email-preferences, account.policies, search, plus messages/feed/events/kb/support/groups/polls/shop/orders/billing if premium is mounted) DOES have one.
+- [ ] **SA** `/admin/system-layouts/dashboard_main` opens the editor. Block dropdown shows every active module's blocks grouped by category. The placement-type column shows "Block" or "Page content" with a badge.
+- [ ] **SA** Add a placement of kind "Page content", set slot_name to `primary`, save → `system_block_placements` has a row with `placement_type='content_slot'` and `block_key='__slot__'`.
 - [ ] **SA** Reorder a placement (swap content area and sidebar columns) → save → `/dashboard` reflects the new order.
 - [ ] **SA** Add a placement → it appears on the dashboard at the configured position.
 - [ ] **SA** Mark a placement's Remove checkbox + save → row deleted from `system_block_placements`; dashboard reflects the removal.
 - [ ] **SA** Save the layout with malformed settings JSON → settings stored as NULL; the block falls back to its default settings.
 - [ ] **A** (non-SA admin) hits `/admin/system-layouts` → bounced via RequireSuperadmin.
-- [ ] **SA** Visit `/admin/system-layouts/some_invalid_name!!` → redirected with "Invalid system layout name" error flash. Names are restricted to `[a-zA-Z0-9_]+`.
+- [ ] **SA** Visit `/admin/system-layouts/some_invalid_name!!` → redirected with "Invalid system layout name" error flash. Names are restricted to `[a-zA-Z0-9_.-]+` with no leading/trailing dot/hyphen and no consecutive separators.
+
+### Page chrome — controller-driven module pages
+
+- [ ] **U** `/account/data` renders identically to before chrome was added. Page title in browser tab is "Your Data". `<title>` includes the value from `$pageTitle` (capture-and-emit propagation working).
+- [ ] **U** `/profile`, `/profile/edit`, `/faq` (guest), `/account/email-preferences`, `/account/policies`, `/search` all render identically to before. Each has the right `<title>`. Page widths match their pre-chrome containers (760px on /profile, 560px on /profile/edit, 800px on /faq, 720px on /account/email-preferences, 760px on /account/policies, 1024px on /search).
+- [ ] **SA** Drop a `siteblocks.markdown` block above the slot in `/admin/system-layouts/account.data` (set row_index=0, col_index=0, sort_order=-1 — but since both default to 0, easier to put the slot in row 1 and a block in row 0). Save. Visit `/account/data` → block renders above the page content, page content still renders intact below.
+- [ ] **SA** Remove every placement from `/admin/system-layouts/profile` and save → `/profile` renders empty (no slot to fill, no blocks, but the document is still valid HTML). DELETE the layout via SQL: `DELETE FROM system_layouts WHERE name = 'profile';` → `/profile` falls back to unwrapped rendering — graceful degradation.
+- [ ] **U** Hit `/account/data` with `Accept: application/json` (no — actually with `X-Requested-With: XMLHttpRequest`) → the chrome wrapper skips wrapping; you get the raw fragment back. (curl test: `curl -H 'X-Requested-With: XMLHttpRequest' -b 'phpfw_session=...' /account/data`.)
+- [ ] **U** Visit `/admin/system-layouts/account.data` → click View ↗ → opens `/account/data` in a new tab. Same for `/admin/system-layouts/profile.edit` → `/profile/edit`, etc.
+- [ ] **Premium** (when premium is mounted) `/messages`, `/feed`, `/events`, `/kb`, `/support`, `/groups`, `/polls`, `/shop`, `/orders`, `/billing` all render identically to before. Each shows up at `/admin/system-layouts/{slug}` with a View ↗ button.
+- [ ] **Premium** `/forms/{slug}` is intentionally NOT chromed (the forms module has its own per-form `layout_style` mechanism). No `forms.show` row in `system_layouts`. Visiting an existing form renders with whichever layout_style the form has configured.
 
 ### Disabled-by-admin lifecycle (`/admin/modules`)
 
