@@ -1,0 +1,68 @@
+Options -MultiViews -Indexes
+RewriteEngine On
+
+# Redirect HTTP to HTTPS in production (uncomment)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Forward the Authorization header into PHP's $_SERVER['HTTP_AUTHORIZATION'].
+# Apache strips it by default for security (it can leak via CGI env vars on
+# misconfigured shared hosts); without this, every Bearer-token API call
+# silently fails with "missing_bearer_token" because PHP can't see the header.
+# Method: capture the value via a no-op rewrite + set it as an env var that
+# CGI/FastCGI/mod_php all surface as HTTP_AUTHORIZATION on the next pass.
+RewriteCond %{HTTP:Authorization} ^(.+)$
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%1]
+
+# Serve real files and directories directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# Route everything else to index.php
+RewriteRule ^ index.php [L]
+
+# ── Security Headers ──────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options   "nosniff"
+    Header always set X-Frame-Options          "SAMEORIGIN"
+    Header always set Referrer-Policy          "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy       "geolocation=(), microphone=(), camera=()"
+    # Enable HSTS in production — uncomment once HTTPS is confirmed working
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # Remove X-XSS-Protection (deprecated in modern browsers)
+    Header always unset X-XSS-Protection
+    # Hide PHP version
+    Header always unset X-Powered-By
+</IfModule>
+
+# ── Block Sensitive Files ─────────────────────────────────────────────────────
+<FilesMatch "\.(env|log|sql|md|lock|yaml|yml|gitignore|bak|swp|swo)$">
+    Require all denied
+</FilesMatch>
+
+# Block composer files
+<FilesMatch "^composer\.(json|lock)$">
+    Require all denied
+</FilesMatch>
+
+# ── Static Asset Caching ──────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg   "access plus 30 days"
+    ExpiresByType image/png    "access plus 30 days"
+    ExpiresByType image/gif    "access plus 30 days"
+    ExpiresByType image/webp   "access plus 30 days"
+    ExpiresByType text/css     "access plus 30 days"
+    ExpiresByType text/javascript "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType font/woff2   "access plus 1 year"
+    ExpiresByType font/woff    "access plus 1 year"
+</IfModule>
+
+# ── Compression ───────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml text/plain
+</IfModule>
+
+# ── Hide server signature ─────────────────────────────────────────────────────
+ServerSignature Off

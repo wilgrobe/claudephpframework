@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         cacheDirectory=".phpunit.cache">
+
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">core</directory>
+            <directory suffix=".php">app</directory>
+            <directory suffix=".php">modules</directory>
+        </include>
+        <exclude>
+            <directory>core/Services</directory>
+        </exclude>
+    </source>
+
+    <php>
+        <env name="APP_ENV"   value="testing" force="true"/>
+        <env name="APP_DEBUG" value="true"    force="true"/>
+        <!--
+            log_errors=0 silences PHP's own warning/notice logging during
+            tests. error_log() function calls are NOT covered by this knob —
+            those are silenced separately in tests/bootstrap.php by pointing
+            ini error_log at a per-process tempfile (cross-platform safe;
+            /dev/null isn't writable on Windows, NUL isn't on Linux).
+        -->
+        <ini name="log_errors" value="0"/>
+    </php>
+</phpunit>

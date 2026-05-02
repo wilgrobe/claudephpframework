@@ -1,0 +1,41 @@
+#!/bin/bash
+# bin/php — wrapper around the extracted Ubuntu php8.1-cli binary
+#
+# The sandbox doesn't let us `apt install` PHP (no sudo, no_new_privileges),
+# so phproot/ is a self-contained extract of the php8.1-cli .deb packages.
+# This wrapper sets extension_dir + loads the extensions the framework needs
+# in the right order (mysqlnd before pdo_mysql).
+#
+# Usage:
+#   ./bin/php -v
+#   ./bin/php -l core/Container/Container.php
+#   ./bin/php artisan migrate
+#   ./bin/php -r 'echo PHP_VERSION;'
+
+set -e
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PHPROOT="$SELF_DIR/phproot"
+EXT_DIR="$PHPROOT/usr/lib/php/20210902"
+
+exec "$PHPROOT/usr/bin/php8.1" \
+  -d extension_dir="$EXT_DIR" \
+  -d extension=mysqlnd.so \
+  -d extension=pdo.so \
+  -d extension=pdo_mysql.so \
+  -d extension=mbstring.so \
+  -d extension=dom.so \
+  -d extension=xml.so \
+  -d extension=simplexml.so \
+  -d extension=gd.so \
+  -d extension=curl.so \
+  -d extension=fileinfo.so \
+  -d extension=exif.so \
+  -d extension=ftp.so \
+  -d extension=iconv.so \
+  -d extension=phar.so \
+  -d extension=posix.so \
+  -d extension=tokenizer.so \
+  -d zend_extension=opcache.so \
+  -d memory_limit=512M \
+  -d date.timezone=UTC \
+  "$@"

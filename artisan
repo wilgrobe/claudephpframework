@@ -1,0 +1,113 @@
+#!/usr/bin/env php
+<?php
+/**
+ * artisan — CLI entrypoint.
+ *
+ * Dispatches to a Command class via Core\Console\CommandRegistry. Built-in
+ * commands live under core/Console/Commands/; modules can ship their own
+ * by returning Command class names from ModuleProvider::commands().
+ *
+ * Usage:
+ *   php artisan                         List commands (same as `help`)
+ *   php artisan help                    Same
+ *   php artisan help <name>             Detail page for one command
+ *   php artisan <name> [args]           Run the command
+ */
+
+define('BASE_PATH', __DIR__);
+
+if (PHP_SAPI !== 'cli') {
+    exit("This script must be run from the command line.\n");
+}
+
+// Load .env
+if (file_exists(BASE_PATH . '/.env')) {
+    foreach (file(BASE_PATH . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue;
+        [$k, $v] = explode('=', $line, 2);
+        $_ENV[trim($k)] = trim($v, " \t\n\r\"'");
+        putenv(trim($k) . '=' . trim($v, " \t\n\r\"'"));
+    }
+}
+
+require BASE_PATH . '/vendor/autoload.php';
+
+// Container: same bootstrap as web entry so CLI commands get identical bindings.
+$container = require BASE_PATH . '/core/bootstrap.php';
+
+date_default_timezone_set(config('app.timezone', 'UTC'));
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+use Core\Console\CommandRegistry;
+use Core\Console\Commands\{
+    HelpCommand,
+    CleanupCommand,
+    RetryMessagesCommand,
+    StorageCheckCommand,
+    MigrateCommand,
+    MigrateRollbackCommand,
+    MigrateStatusCommand,
+    MakeMigrationCommand,
+    MakeControllerCommand,
+    MakeModuleCommand,
+    MakeMiddlewareCommand,
+    ScheduleRunCommand,
+    QueueWorkCommand,
+    QueueListCommand,
+    QueueRetryCommand,
+    SearchReindexCommand,
+    ModuleCacheCommand,
+    ModuleClearCommand,
+    QaAdminSmokeCommand
+};
+
+$registry = new CommandRegistry($container);
+// Make the registry resolvable from the container so jobs like CallCommandJob
+// can dispatch artisan commands in-process via app(CommandRegistry::class).
+$container->instance(CommandRegistry::class, $registry);
+
+// Built-in commands. Register order doesn't matter for dispatch (name-keyed)
+// but does determine the sort fallback in `help` when two commands share a
+// prefix — alphabetical today.
+$registry->register(CleanupCommand::class);
+$registry->register(RetryMessagesCommand::class);
+$registry->register(StorageCheckCommand::class);
+
+$registry->register(MigrateCommand::class);
+$registry->register(MigrateRollbackCommand::class);
+$registry->register(MigrateStatusCommand::class);
+
+$registry->register(MakeMigrationCommand::class);
+$registry->register(MakeControllerCommand::class);
+$registry->register(MakeModuleCommand::class);
+$registry->register(MakeMiddlewareCommand::class);
+
+$registry->register(ScheduleRunCommand::class);
+$registry->register(QueueWorkCommand::class);
+$registry->register(QueueListCommand::class);
+$registry->register(QueueRetryCommand::class);
+
+$registry->register(SearchReindexCommand::class);
+
+$registry->register(ModuleCacheCommand::class);
+$registry->register(ModuleClearCommand::class);
+
+$registry->register(QaAdminSmokeCommand::class);
+
+// Help comes last so it sees everything else that was registered first.
+// (The registry itself is stable — we just want `help` to exist after
+// dependencies rather than being a forward reference.)
+$registry->register(new HelpCommand($registry));
+
+// Let modules contribute their own commands.
+if ($container->has(\Core\Module\ModuleRegistry::class)) {
+    $modules = $container->get(\Core\Module\ModuleRegistry::class);
+    foreach ($modules->all() as $provider) {
+        foreach ($provider->commands() as $cmd) {
+            $registry->register($cmd);
+        }
+    }
+}
+
+exit($registry->dispatch($argv));
