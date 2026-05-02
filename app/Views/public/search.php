@@ -1,5 +1,10 @@
+<?php
+// app/Views/public/search.php
+//
+// Page-chrome Batch C: fragment view. The `search` system layout
+// (1×1, max-width 1024px) provides the surrounding chrome.
+?>
 <?php $pageTitle = $q ? 'Search: ' . e($q) : 'Search'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:720px;margin:0 auto">
 
@@ -67,5 +72,3 @@
 
     <?php endif; ?>
 </div>
-
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

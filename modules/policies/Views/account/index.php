@@ -1,5 +1,10 @@
+<?php
+// modules/policies/Views/account/index.php
+//
+// Page-chrome Batch C: fragment view. The `account.policies` system
+// layout (1×1, max-width 760px) provides the surrounding chrome.
+?>
 <?php $pageTitle = 'My policy acceptances'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:760px;margin:0 auto;padding:0 1rem">
 
@@ -53,5 +58,3 @@
 </div>
 
 </div>
-
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

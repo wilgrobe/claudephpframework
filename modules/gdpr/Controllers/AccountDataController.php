@@ -60,11 +60,21 @@ class AccountDataController
             [$userId]
         );
 
+        // Page-chrome Batch B (renamed in Batch C): this view is a
+        // fragment (no layout/header.php / layout/footer.php include)
+        // wrapped at send-time by the `account.data` system layout
+        // (slug mirrors the /account/data URL). Admins can drop blocks
+        // around it from /admin/system-layouts/account.data — e.g. a
+        // "We respect your privacy" hero strip above the primary slot.
+        // If the layout is missing (fresh install before migrations
+        // have run, or admin-deleted), the response sends unwrapped
+        // — same graceful fallback as every other chromed surface.
+        // See docs/plans/page-chrome.md.
         return Response::view('gdpr::account.index', [
             'user'    => $user,
             'exports' => $exports,
             'dsar'    => $myDsar,
-        ]);
+        ])->withLayout('account.data');
     }
 
     public function exportStart(Request $request): Response

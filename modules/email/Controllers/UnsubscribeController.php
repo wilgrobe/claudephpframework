@@ -111,12 +111,14 @@ class UnsubscribeController
         $categories  = $this->svc->listCategories();
         $suppressed  = $this->svc->listForEmail($email);
 
+        // Page-chrome Batch C: fragment + chrome wrap. Slug
+        // `account.email-preferences` mirrors the URL.
         return Response::view('email::account.preferences', [
             'user'        => $user,
             'email'       => $email,
             'categories'  => $categories,
             'suppressed'  => $suppressed,
-        ]);
+        ])->withLayout('account.email-preferences');
     }
 
     /** POST /account/email-preferences */

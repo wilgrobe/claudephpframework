@@ -194,11 +194,13 @@ class FaqController
             "SELECT * FROM faqs WHERE category_id IS NULL AND is_public = 1 AND is_active = 1 ORDER BY sort_order"
         );
 
+        // Page-chrome Batch C: fragment + chrome wrap. Slug `faq`
+        // mirrors the URL. Admin layout at /admin/system-layouts/faq.
         return Response::view('faq::public', [
             'categories'    => $cats,
             'uncategorized' => $uncategorized,
             'user'          => $this->auth->user(),
-        ]);
+        ])->withLayout('faq');
     }
 
     private function denied(): Response

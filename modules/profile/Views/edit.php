@@ -1,5 +1,11 @@
+<?php
+// modules/profile/Views/edit.php
+//
+// Page-chrome Batch C: fragment view. The `profile.edit` system layout
+// (1×1, max-width 560px) provides the surrounding header/footer at
+// chrome-wrap time.
+?>
 <?php $pageTitle = 'Edit Profile'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:560px;margin:0 auto">
 <div class="card">
@@ -107,4 +113,3 @@ function previewAvatar(input) {
 }
 </script>
 
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

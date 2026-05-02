@@ -1,5 +1,10 @@
+<?php
+// modules/faq/Views/public.php
+//
+// Page-chrome Batch C: fragment view. The `faq` system layout
+// (1×1, max-width 800px) provides the surrounding header/footer.
+?>
 <?php $pageTitle = 'Frequently Asked Questions'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:800px;margin:0 auto">
     <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem">FAQ</h1>
@@ -79,4 +84,3 @@ function filterFaq(q) {
 }
 </script>
 
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

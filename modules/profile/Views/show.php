@@ -1,5 +1,12 @@
+<?php
+// modules/profile/Views/show.php
+//
+// Page-chrome Batch C: fragment view. The `profile` system layout
+// (1×1, max-width 760px) provides the surrounding header/footer at
+// chrome-wrap time. $pageTitle is captured by View::renderFragment
+// and surfaces in the outer header's <title>.
+?>
 <?php $pageTitle = 'My Profile'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:760px;margin:0 auto">
 
@@ -119,4 +126,3 @@
 </div>
 </div>
 
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

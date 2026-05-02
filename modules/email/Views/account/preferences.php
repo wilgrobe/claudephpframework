@@ -1,5 +1,10 @@
+<?php
+// modules/email/Views/account/preferences.php
+//
+// Page-chrome Batch C: fragment view. The `account.email-preferences`
+// system layout (1×1, max-width 720px) provides the surrounding chrome.
+?>
 <?php $pageTitle = 'Email preferences'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:680px;margin:0 auto;padding:0 1rem">
 
@@ -52,4 +57,3 @@
 
 </div>
 
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

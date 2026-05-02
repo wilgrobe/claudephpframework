@@ -82,11 +82,13 @@ $router->get('/search', function (\Core\Request $req) {
         $results['faqs']    = $search->search('faqs',    $q, 5);
     }
 
+    // Page-chrome Batch C: fragment + chrome wrap. Slug `search`
+    // mirrors the URL. Admin layout at /admin/system-layouts/search.
     return \Core\Response::view('public.search', [
         'q'       => $q,
         'results' => $results,
         'user'    => $auth->user(),
-    ]);
+    ])->withLayout('search');
 });
 
 // ── Uploads (served from storage, outside web root) ────────────────────────────

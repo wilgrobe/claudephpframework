@@ -1,5 +1,18 @@
+<?php
+// modules/gdpr/Views/account/index.php
+//
+// Page-chrome Batch B: this view is a FRAGMENT — it does NOT include
+// layout/header.php or layout/footer.php. The chrome wrapper provides
+// those, after wrapping the body in the `gdpr.account_data` system
+// layout. AccountDataController::index() chains `->withLayout(...)`
+// to opt this surface in.
+//
+// $pageTitle is captured by View::renderFragment and surfaces in the
+// outer header.php's <title> via the capture-and-emit pattern, so the
+// existing $pageTitle = '...' line keeps working without any
+// additional plumbing.
+?>
 <?php $pageTitle = 'Your Data'; ?>
-<?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="max-width:760px;margin:0 auto;padding:0 1rem">
 
@@ -149,5 +162,3 @@ $restricted = !empty($user['processing_restricted_at']);
 <?php endif; ?>
 
 </div>
-
-<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>
