@@ -3,10 +3,12 @@
 /bin/phproot/
 /storage/logs/*.log
 /storage/cache/*
+/storage/tmp/*
 /storage/uploads/avatars/*
 /storage/uploads/group_images/*
 !/storage/logs/.gitkeep
 !/storage/cache/.gitkeep
+!/storage/tmp/.gitkeep
 !/storage/uploads/.gitkeep
 !/storage/uploads/avatars/.gitkeep
 !/storage/uploads/group_images/.gitkeep
@@ -15,3 +17,13 @@
 *.swo
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
+*.bak
+*.tmpmv
+
+# Premium modules are tracked in claudephpframeworkpremium, never in this repo.
+# This guards against a stray symlink or accidental copy back into core.
+/modules/premium/
+/premium-modules/
+/claudephpframeworkpremium/
