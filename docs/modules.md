@@ -64,8 +64,7 @@ modules/<folder>/
 ├── Views/                  ← optional: PHP view templates
 │   ├── admin/
 │   └── public/
-├── migrations/             ← optional: DB migrations
-└── install.sql             ← optional: one-shot tables for fresh installs
+└── migrations/             ← optional: DB migrations
 ```
 
 Nothing in this layout is enforced beyond `module.php`. The other folders are conventions
@@ -277,12 +276,13 @@ Site-scope setting keys this module owns. Listed keys are HIDDEN from the generi
 module's dedicated admin page. Otherwise the grid would silently clobber the
 setting's `type` column on save.
 
-## Database setup: migrations vs install.sql
+## Database setup
 
-Two patterns coexist in the codebase. Use **migrations** for everything new —
-`install.sql` is a legacy approach kept around for one-shot fresh installs.
-
-### Migrations (preferred)
+All schema changes go through **PHP migrations** under
+`database/migrations/` (framework-level) or `modules/<name>/migrations/`
+(per-module). The framework's baseline schema lives in the migration
+`database/migrations/2026_04_20_000000_create_baseline_tables.php`,
+created when the legacy `install.sql` flow was retired (see CHANGELOG).
 
 ```
 modules/greeter/migrations/2026_05_02_120000_create_greetings_table.php
@@ -316,9 +316,10 @@ module's `migrationsPath()`.
 
 ### Permission seed (when your module exposes admin routes)
 
-A non-obvious gotcha: `install.sql` only grants permissions that exist at install
-time. If you add a permission later via migration, no roles get it automatically —
-admins lose access to the new admin route until the permission is granted manually.
+A non-obvious gotcha: the baseline migration only grants the permissions that
+existed at the time it was written. If you add a permission later via a new
+migration, no roles get it automatically — admins lose access to the new
+admin route until the permission is granted manually.
 
 Pattern: every `seed_*_permission.php` migration MUST grant the admin role inline.
 
@@ -338,9 +339,10 @@ return new class extends Migration {
         );
 
         // Grant to the admin role inline — DO NOT skip this step.
-        // install.sql only grants permissions that existed at install time;
-        // skipping the inline grant means existing admins can't reach the
-        // new admin page until someone runs the right SQL by hand.
+        // The baseline migration only grants the permissions that existed
+        // when it was written; skipping the inline grant for a new
+        // permission means existing admins can't reach the new admin page
+        // until someone runs the right SQL by hand.
         $this->db->query("
             INSERT IGNORE INTO role_permissions (role_id, permission_id)
             SELECT r.id, ? FROM roles r WHERE r.slug = 'admin'
