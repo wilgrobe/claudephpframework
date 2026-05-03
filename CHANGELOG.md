@@ -5,6 +5,81 @@ the core release.
 
 ---
 
+## [3.2.0] — 2026-05-02 — Bootstrap unification
+
+The framework's bootstrap flow used to require running
+`mysql < database/install.sql` BEFORE `php artisan migrate` — the README's
+Quick start glossed over this and any flow that programmatically provisioned
+databases (e.g. multi-tenant SaaS spinning up tenant DBs at signup) had to
+shell out to mysql for every new database. This release folds the baseline
+schema into a proper migration, so a fresh install is now exactly:
+`composer install && php artisan migrate`.
+
+### Added
+- `database/migrations/2026_04_20_000000_create_baseline_tables.php` — the
+  baseline schema as a PHP migration. Up creates the 29 framework-core tables
+  (users, roles, permissions, groups, content_items, sessions, audit_log,
+  settings, menus, pages, faqs, etc.) and seeds the initial roles, admin
+  permissions, default site settings, default menus, default policy pages,
+  and demo FAQ. Down drops them in reverse-FK order. Content traced verbatim
+  from the 2026-04-19 install.sql (which itself merged schema.sql,
+  2fa_migration.sql, security_fixes_migration.sql,
+  performance_indexes_migration.sql).
+
+### Changed
+- `core/Database/Migrator.php::install()` no longer needs to scan
+  `database/*.sql` to grandfather legacy filenames as `batch = 0` records,
+  because the legacy SQL files are gone from the migration path entirely.
+  The grandfathering loop is now a no-op (its `glob('database/*.sql')`
+  matches nothing) — left in place for backward compat and clarity rather
+  than cleaned up, since deleting it adds nothing.
+- `docs/modules.md` — removed the "Database setup: migrations vs install.sql"
+  section. All schema changes now go through PHP migrations; `install.sql`
+  is no longer mentioned as an alternative pattern.
+
+### Removed
+- `database/install.sql`, `database/schema.sql`, and the seven supplementary
+  `*_migration.sql` files (2fa, security_fixes, performance_indexes,
+  message_retry, owner_removal_outcome, unescape_user_data, webhook_channel)
+  moved out of the migration path. They live at `docs/legacy/sql/` for
+  historical reference only — nothing scans that directory anymore.
+
+### Upgrading existing installs
+
+If your database was bootstrapped via the old `install.sql` flow, your
+`schema_migrations` table contains 9 batch-0 records keyed to the now-removed
+`.sql` files (`install`, `schema`, `2fa_migration`, etc.). After updating to
+this version, `php artisan migrate` will see the new
+`2026_04_20_000000_create_baseline_tables` migration as pending and try to
+run it — which will fail because the tables already exist.
+
+Two paths:
+
+**Option A (recommended for dev / no production data yet):** drop the
+database, recreate it empty, and run `php artisan migrate`. The new baseline
+migration will create everything from scratch.
+
+**Option B (production / preserve data):** mark the new migration as
+already-applied and clean up the legacy entries with this one-time SQL:
+
+```sql
+INSERT INTO schema_migrations (migration, batch)
+  VALUES ('2026_04_20_000000_create_baseline_tables', 0);
+
+DELETE FROM schema_migrations WHERE migration IN (
+  'install', 'schema',
+  '2fa_migration', 'security_fixes_migration',
+  'performance_indexes_migration', 'message_retry_migration',
+  'owner_removal_outcome_migration', 'unescape_user_data_migration',
+  'webhook_channel_migration'
+);
+```
+
+Run that, then `php artisan migrate:status` should show no pending
+migrations and no orphan legacy entries.
+
+---
+
 ## [3.1.0] — 2026-05-02 — Core (open-source release)
 
 This release prepares the framework as two paired repositories: an open-source
