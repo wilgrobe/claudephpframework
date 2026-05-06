@@ -55,6 +55,7 @@ final class CorePremiumIntegrityTest extends TestCase
      */
     private const KNOWN_PREMIUM_MODULES = [
         'activity_feed',
+        'advertising',
         'block',
         'blog',
         'comments',
