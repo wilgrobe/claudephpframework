@@ -59,12 +59,26 @@ if ($isRealComposerAutoload) {
     require BASE_PATH . '/core/helpers.php';
 }
 
-// Always autoload the Tests\ namespace (tests/TestCase.php, tests/Unit/..., etc.)
-spl_autoload_register(function (string $class) {
+// Always autoload the Tests\ namespace (tests/TestCase.php, tests/Unit/..., etc.).
+//
+// Multi-root: tests for premium modules live in the sibling
+// claudephpframeworkpremium/tests/ tree so the core repo stays free of
+// references to premium classes (CorePremiumIntegrityTest enforces the
+// runtime side; this enforces the test-code side). When the premium
+// repo isn't mounted, the second root simply doesn't resolve and the
+// autoloader falls through to the core root only.
+$__testsRoots = [BASE_PATH . '/tests'];
+$__premiumTests = realpath(BASE_PATH . '/../claudephpframeworkpremium/tests');
+if (is_string($__premiumTests) && is_dir($__premiumTests)) {
+    $__testsRoots[] = $__premiumTests;
+}
+spl_autoload_register(function (string $class) use ($__testsRoots) {
     if (!str_starts_with($class, 'Tests\\')) return;
     $rel = substr($class, strlen('Tests\\'));
-    $f = BASE_PATH . '/tests/' . str_replace('\\', '/', $rel) . '.php';
-    if (is_file($f)) require $f;
+    foreach ($__testsRoots as $root) {
+        $f = $root . '/' . str_replace('\\', '/', $rel) . '.php';
+        if (is_file($f)) { require $f; return; }
+    }
 });
 
 // Always autoload the Modules\ namespace. At runtime the framework's
