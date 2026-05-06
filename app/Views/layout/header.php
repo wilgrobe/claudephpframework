@@ -534,6 +534,7 @@ if (!in_array($__layout_orient, ['sidebar', 'topbar'], true)) $__layout_orient =
                     ['Menus',         '/admin/menus',         'menus'],
                     ['Forms',         '/admin/forms',         'forms'],
                     ['Advertising',   '/admin/advertising',   'advertising'],
+                    ['Newsletters',   '/admin/newsletters',   'newsletter'],
                     ['Taxonomy',      '/admin/taxonomy/sets', 'taxonomy'],
                     ['Hierarchies',   '/admin/hierarchies',   'hierarchies'],
                     ['Feature flags', '/admin/feature-flags', 'feature_flags'],

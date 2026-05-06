@@ -70,6 +70,7 @@ final class CorePremiumIntegrityTest extends TestCase
         'knowledge_base',
         'messaging',
         'moderation',
+        'newsletter',
         'polls',
         'reviews',
         'scheduling',
