@@ -48,12 +48,6 @@ if (!function_exists('e')) {
     }
 }
 
-if (!function_exists('asset')) {
-    function asset(string $path): string
-    {
-        return rtrim(config('app.url'), '/') . '/' . ltrim($path, '/');
-    }
-}
 
 if (!function_exists('route')) {
     /**

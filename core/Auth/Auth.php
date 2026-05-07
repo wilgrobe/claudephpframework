@@ -352,6 +352,38 @@ class Auth
         return true;
     }
 
+    /**
+     * Programmatic login: trust the caller has earned this user's login
+     * via an out-of-band path (claim email link, magic link, completed
+     * OAuth challenge, password-reset confirmation, etc.) and start a
+     * full session.
+     *
+     * Differs from attempt() in that no password is checked — the caller
+     * IS the validator. Differs from devLoginAs() in that it does NOT
+     * require APP_ENV=development, since this is the legitimate path
+     * for tenant-claim and similar flows in production.
+     *
+     * Refuses to log in a user with is_active=0 — the caller must flip
+     * is_active first if the path includes activation (which it usually
+     * does — claim flows set both password AND is_active in the same
+     * transaction).
+     *
+     * Returns true on success, false if the user is missing or inactive.
+     */
+    public function loginAs(int $userId, string $auditAction = 'auth.programmatic_login'): bool
+    {
+        $user = $this->db->fetchOne(
+            "SELECT id, email, is_active FROM users WHERE id = ?",
+            [$userId]
+        );
+        if (!$user || (int) $user['is_active'] !== 1) return false;
+
+        $this->startSession($user);
+        $this->db->query("UPDATE users SET last_login_at = NOW() WHERE id = ?", [$user['id']]);
+        $this->auditLog($auditAction, 'users', (int) $user['id']);
+        return true;
+    }
+
     // ── Session Helpers ───────────────────────────────────────────────────────
 
     private function startSession(array $user, bool $regenerate = true): void

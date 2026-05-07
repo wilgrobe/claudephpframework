@@ -34,6 +34,7 @@
                     <div style="display:flex;gap:.35rem">
                         <a href="/<?= e($p['slug']) ?>" target="_blank" class="btn btn-xs btn-secondary">View</a>
                         <a href="/admin/pages/<?= $p['id'] ?>/edit" class="btn btn-xs btn-secondary">Edit</a>
+                        <a href="/admin/pages/<?= $p['id'] ?>/layout" class="btn btn-xs btn-secondary">Layout</a>
                         <form method="POST" action="/admin/pages/<?= $p['id'] ?>/delete" data-confirm="Delete page '<?= e($p['title']) ?>'?">
                             <?= csrf_field() ?><button class="btn btn-xs btn-danger">Delete</button>
                         </form>

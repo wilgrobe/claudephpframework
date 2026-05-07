@@ -1,4 +1,5 @@
 .env
+/samplenewsletters/
 /vendor/
 /bin/phproot/
 /storage/logs/*.log

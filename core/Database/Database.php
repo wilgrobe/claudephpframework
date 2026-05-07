@@ -52,6 +52,23 @@ class Database
         return self::$instance;
     }
 
+    /**
+     * Discard the cached singleton so the next getInstance() reads
+     * config/database.php afresh and constructs a new PDO. Useful for
+     * multi-tenant flows that need to swap the active connection
+     * mid-process (e.g. the tenant:create command running framework
+     * migrations against a freshly-provisioned tenant database before
+     * returning to the central DB).
+     *
+     * Existing PDO references already handed out continue to work —
+     * they're independent objects, not proxies. Reset only affects
+     * what subsequent getInstance() calls return.
+     */
+    public static function resetInstance(): void
+    {
+        self::$instance = null;
+    }
+
     // ── Query builder entry point ─────────────────────────────────────────────
 
     /**

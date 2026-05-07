@@ -23,6 +23,25 @@ Container::setGlobal($container);
 $container->singleton(\Core\Router\Router::class);
 $container->singleton(\Core\Request::class, fn() => \Core\Request::capture());
 
+// ── Tenant resolution hook ───────────────────────────────────────────────
+// Multi-tenant deployments can hook in here to identify the tenant for the
+// current request BEFORE the Database singleton is created, so the
+// framework's getInstance() picks up the tenant's database directly via
+// $_ENV (the resolver mutates DB_DATABASE / DB_HOST / etc. for the resolved
+// tenant; bare framework installs that don't ship the resolver class load
+// exactly as before).
+//
+// Convention: a class at App\Tenancy\TenantResolver with a static resolve()
+// method. CLI invocations (artisan) skip the hook because HTTP_HOST isn't
+// meaningful there — CLI flows that need a specific tenant connection
+// (e.g. tenant:create's migration run) call Database::resetInstance() and
+// override $_ENV themselves.
+if (PHP_SAPI !== 'cli'
+    && class_exists(\App\Tenancy\TenantResolver::class)
+    && method_exists(\App\Tenancy\TenantResolver::class, 'resolve')) {
+    \App\Tenancy\TenantResolver::resolve();
+}
+
 // ── Existing singleton-style services: bind their instances ──────────────
 // Each of these already enforces singleton via ::getInstance() / ::instance();
 // we pass the same instance through the container so type-hinted resolution

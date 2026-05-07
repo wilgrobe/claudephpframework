@@ -32,6 +32,17 @@ try {
 }
 
 $__renderBody = function () use ($page, $user, $__composer) {
+    // Pre-rendered section-based layout (webappbuilder Phase 4). When a
+    // page's section composer has saved output to pages.rendered_html,
+    // serve that verbatim — the renderer already produced safe HTML and
+    // the embedded styles. The pages.rendered_html column is added by
+    // webappbuilder; the ?? null coalesce keeps this safe on framework
+    // installs that don't have the column yet.
+    $__rendered = $page['rendered_html'] ?? null;
+    if (is_string($__rendered) && $__rendered !== '') {
+        echo $__rendered;
+        return;
+    }
     if ($__composer) {
         $composer = $__composer;
         $composerContext = ['page' => $page, 'viewer' => $user];
@@ -43,7 +54,14 @@ $__renderBody = function () use ($page, $user, $__composer) {
     }
 };
 ?>
-<?php if ($user): /* ── Authenticated: full app layout ─────────────────────── */ ?>
+<?php
+// Theme-editor preview path: when the iframe sets ?_theme_preview=1, force
+// the standalone marketing shell even for authed viewers. Otherwise the
+// framework wraps the page in admin chrome (sidebar, topbar) which uses
+// a different token surface than what tenant theme presets drive.
+$__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] === '1';
+?>
+<?php if ($user && !$__forcePublicShell): /* ── Authenticated: full app layout ─────────────────────── */ ?>
     <?php $pageTitle = $page['title'] ?? 'Page'; ?>
     <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
@@ -74,6 +92,15 @@ $__renderBody = function () use ($page, $user, $__composer) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php
+    // Tenant-uploaded favicon (webappbuilder Phase 5). Falls through silently
+    // when not set — browsers retain whatever default they were using.
+    $__faviconRel = setting('builder.branding.favicon_url', '');
+    if ($__faviconRel !== '') {
+        $__faviconUrl = (new \Core\Services\FileUploadService())->url($__faviconRel);
+        echo '<link rel="icon" href="' . htmlspecialchars($__faviconUrl, ENT_QUOTES) . '">';
+    }
+    ?>
+    <?php
     // Canonical is the root for the page that's set as the guest home, and
     // /{slug} for everything else. Prevents the home page from being indexed
     // under two distinct URLs.
@@ -88,28 +115,41 @@ $__renderBody = function () use ($page, $user, $__composer) {
     ]) ?>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <?php echo \Core\Services\AnalyticsService::snippet(); ?>
+    <?php
+    // Theme override block — emits :root vars from framework defaults +
+    // admin overrides. Without this, the inline guest-shell CSS below
+    // would have nothing to bind to and the theme system would be
+    // admin-chrome-only. The output also covers light + dark mode.
+    echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle();
+    // Tenant custom font + custom CSS (webappbuilder Phase 5e/5f).
+    // No-op on framework installs that don't ship the App\Theme\BrandingRenderer
+    // class, so this hook stays passive for vanilla framework users.
+    if (class_exists(\App\Theme\BrandingRenderer::class)) {
+        echo \App\Theme\BrandingRenderer::renderHead();
+    }
+    ?>
     <style>
     *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: #f9fafb; color: #111827; }
+    body { margin: 0; font-family: var(--font-family-body, 'Inter', system-ui, sans-serif); background: var(--bg-page, #f9fafb); color: var(--text-default, #111827); }
     .site-header {
-        background: #fff; border-bottom: 1px solid #e5e7eb; padding: .85rem 1.5rem;
+        background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, #e5e7eb); padding: .85rem 1.5rem;
         display: flex; align-items: center; justify-content: space-between;
     }
-    .site-logo { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: #111827; }
+    .site-logo { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--text-default, #111827); }
     .nav-links { display: flex; gap: 1.25rem; align-items: center; }
-    .nav-links a { text-decoration: none; color: #374151; font-size: 14px; }
-    .nav-links a:hover { color: #4f46e5; }
-    .btn-login { background: #4f46e5; color: #fff !important; padding: .4rem .9rem; border-radius: 6px; font-size: 13.5px; font-weight: 500; }
+    .nav-links a { text-decoration: none; color: var(--text-default, #374151); font-size: 14px; }
+    .nav-links a:hover { color: var(--color-primary, #4f46e5); }
+    .btn-login { background: var(--color-primary, #4f46e5); color: var(--accent-contrast, #fff) !important; padding: .4rem .9rem; border-radius: var(--radius-md, 6px); font-size: 13.5px; font-weight: 500; }
 
-    .page-hero { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 3rem 1.5rem; text-align: center; }
-    .page-hero h1 { font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; }
-    .page-hero .meta { color: #6b7280; font-size: 13.5px; }
+    .page-hero { background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, #e5e7eb); padding: 3rem 1.5rem; text-align: center; }
+    .page-hero h1 { font-family: var(--font-family-heading, inherit); font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; color: var(--text-default, #111827); }
+    .page-hero .meta { color: var(--text-muted, #6b7280); font-size: 13.5px; }
 
-    .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 2.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; }
-    .page-body h2 { font-size: 1.4rem; margin-top: 2rem; }
-    .page-body h3 { font-size: 1.15rem; margin-top: 1.5rem; }
+    .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 2.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; color: var(--text-default, #111827); }
+    .page-body h2 { font-family: var(--font-family-heading, inherit); font-size: 1.4rem; margin-top: 2rem; }
+    .page-body h3 { font-family: var(--font-family-heading, inherit); font-size: 1.15rem; margin-top: 1.5rem; }
     .page-body p { margin: 0 0 1rem; }
-    .page-body a { color: #4f46e5; }
+    .page-body a { color: var(--color-primary, #4f46e5); }
     .page-body ul, .page-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
 
     /* .site-footer styles now live in app/Views/partials/site_footer.php so
@@ -121,16 +161,16 @@ $__renderBody = function () use ($page, $user, $__composer) {
        guest shell doesn't need an extra stylesheet load. */
     .skip-link {
         position: absolute; top: -40px; left: 0;
-        background: #4f46e5; color: #fff; padding: .5rem 1rem;
+        background: var(--color-primary, #4f46e5); color: var(--accent-contrast, #fff); padding: .5rem 1rem;
         z-index: 9999; font-size: 13.5px; font-weight: 600;
         border-radius: 0 0 6px 0; transition: top .15s;
         text-decoration: none;
     }
     .skip-link:focus { top: 0; }
-    :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+    :focus-visible { outline: 2px solid var(--color-primary, #4f46e5); outline-offset: 2px; }
     a:focus-visible, button:focus-visible, input:focus-visible,
     select:focus-visible, textarea:focus-visible {
-        outline: 2px solid #4f46e5; outline-offset: 2px; border-radius: 4px;
+        outline: 2px solid var(--color-primary, #4f46e5); outline-offset: 2px; border-radius: 4px;
     }
     </style>
 </head>
@@ -139,7 +179,15 @@ $__renderBody = function () use ($page, $user, $__composer) {
 <a href="#main-content" class="skip-link">Skip to main content</a>
 <?php endif; ?>
 <header class="site-header">
-    <a href="/" class="site-logo">🚀 <?= e(setting('site_name', 'App')) ?></a>
+    <a href="/" class="site-logo"><?php
+        $__logoRel = setting('builder.branding.logo_url', '');
+        if ($__logoRel !== '') {
+            $__logoUrl = (new \Core\Services\FileUploadService())->url($__logoRel);
+            echo '<img src="' . htmlspecialchars($__logoUrl, ENT_QUOTES) . '" alt="' . htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES) . '" style="max-height:36px;vertical-align:middle">';
+        } else {
+            echo '🚀 ' . htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
+        }
+    ?></a>
     <nav class="nav-links">
         <a href="/faq">FAQ</a>
         <a href="/login" class="btn-login">Sign In</a>

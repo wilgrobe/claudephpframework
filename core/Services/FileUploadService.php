@@ -131,6 +131,58 @@ class FileUploadService
     }
 
     /**
+     * Upload a file with caller-supplied MIME whitelist. Used for
+     * non-image uploads (fonts, documents) where the image-specific
+     * uploadImage() — which rejects everything outside the JPEG/PNG/
+     * GIF/WebP set and re-encodes via GD — doesn't apply.
+     *
+     * Mime detection is performed on file CONTENT (finfo) — not the
+     * client-supplied Content-Type header — same as uploadImage().
+     *
+     * @param array  $file          \$_FILES[\$key] entry
+     * @param string $subfolder     subdir under the storage root (no leading slash)
+     * @param array  $allowedMimes  ['mime/type' => 'extension', ...]
+     * @param int    $maxBytes      hard size cap
+     * @return string  relative storage key (e.g. 'fonts/abc123.woff2')
+     */
+    public function uploadFile(array $file, string $subfolder, array $allowedMimes, int $maxBytes = self::DEFAULT_MAX_BYTES): string
+    {
+        $this->validateUploadError($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        $this->validateSize($file['size'] ?? 0, $maxBytes);
+
+        $tmpPath  = $file['tmp_name'];
+        $mimeType = $this->detectMimeType($tmpPath);
+
+        if (!isset($allowedMimes[$mimeType])) {
+            // For some file types (notably fonts), finfo on certain hosts
+            // misreports as application/octet-stream. Fall back to checking
+            // the user-supplied filename extension when content sniff is
+            // ambiguous and the extension matches our whitelist.
+            $clientExt = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+            $allowedExts = array_values($allowedMimes);
+            if ($mimeType === 'application/octet-stream' && in_array($clientExt, $allowedExts, true)) {
+                $ext = $clientExt;
+            } else {
+                throw new \RuntimeException("File type '$mimeType' is not allowed for this upload.");
+            }
+        } else {
+            $ext = $allowedMimes[$mimeType];
+        }
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $ext;
+        $relKey   = trim($subfolder, '/') . '/' . $filename;
+
+        $stream = fopen($tmpPath, 'rb');
+        if ($stream === false) throw new \RuntimeException('Failed to open uploaded file.');
+        try {
+            $this->fs->writeStream($relKey, $stream, ['visibility' => 'public']);
+        } finally {
+            if (is_resource($stream)) fclose($stream);
+        }
+        return $relKey;
+    }
+
+        /**
      * Delete a stored file. No-op if path is empty or missing.
      */
     public function delete(string $relativePath): void
