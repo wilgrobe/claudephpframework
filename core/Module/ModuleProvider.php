@@ -259,6 +259,30 @@ abstract class ModuleProvider
     public function settingsKeys(): array { return []; }
 
     /**
+     * Sitemap entries contributed by this module. Each entry is an
+     * associative array consumed by App\Controllers\SitemapController:
+     *
+     *   [
+     *       'loc'        => 'https://example.com/blog/welcome',  // required
+     *       'lastmod'    => '2026-05-11',                        // optional, Y-m-d
+     *       'changefreq' => 'weekly',                            // optional
+     *       'priority'   => '0.7',                               // optional
+     *   ]
+     *
+     * Return an empty array when the module has no public URLs to
+     * advertise. Modules that DO expose URLs should restrict to
+     * publicly-accessible ones (drafts, archived, members-only etc.
+     * should be filtered out before returning).
+     *
+     * The framework's SitemapController iterates every registered
+     * provider and merges the result into /sitemap.xml so each module
+     * owns its own URL contribution — no central enumeration.
+     *
+     * @return list<array{loc:string,lastmod?:string,changefreq?:string,priority?:string}>
+     */
+    public function sitemapUrls(): array { return []; }
+
+    /**
      * Distribution tier for this module — either 'core' or 'premium'.
      *
      * Core modules ship in the open-source claudephpframework repository

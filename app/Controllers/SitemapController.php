@@ -87,6 +87,23 @@ class SitemapController
             ];
         }
 
+        // Module-contributed entries (Blog, Forum, etc.) — each
+        // ModuleProvider::sitemapUrls() returns its own URLs so the
+        // enumeration stays the module's concern, not the framework's.
+        // Defensive: registry may be absent in a tests-only or bare
+        // install, in which case the only entries come from the
+        // static + pages + groups blocks above.
+        $container = \Core\Container\Container::global();
+        if ($container->has(\Core\Module\ModuleRegistry::class)) {
+            $registry = $container->get(\Core\Module\ModuleRegistry::class);
+            foreach ($registry->all() as $provider) {
+                foreach ($provider->sitemapUrls() as $entry) {
+                    if (!is_array($entry) || empty($entry['loc'])) continue;
+                    $urls[] = $entry;
+                }
+            }
+        }
+
         // Build XML
         $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL;
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . PHP_EOL;
