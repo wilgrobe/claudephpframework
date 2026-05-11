@@ -63,6 +63,7 @@ final class CorePremiumIntegrityTest extends TestCase
         'coupons',
         'events',
         'forms',
+        'forum',
         'groups',
         'helpdesk',
         'i18n',
