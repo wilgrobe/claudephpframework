@@ -153,7 +153,7 @@ class ModuleRegistry
      * Dev and fresh installs work without the cache — the scan is the
      * fallback, not a failure mode.
      */
-    public function discover(string $modulesDir): void
+    public function discover(string $modulesDir, ?array $allowSlugs = null): void
     {
         // Track every root we're asked about, even ones that don't yet
         // exist on disk. dumpCache() needs the full list, and
@@ -176,6 +176,7 @@ class ModuleRegistry
             $cached = $this->loadCache();
             if ($cached !== null) {
                 foreach ($cached as $name => $moduleDir) {
+                    if ($allowSlugs !== null && !in_array((string) $name, $allowSlugs, true)) continue;
                     $this->registerFromDir((string) $name, (string) $moduleDir);
                 }
                 $this->cacheLoaded = true;
@@ -193,6 +194,12 @@ class ModuleRegistry
 
         foreach (new \DirectoryIterator($modulesDir) as $entry) {
             if ($entry->isDot() || !$entry->isDir()) continue;
+            $name = $entry->getFilename();
+            // Per-root allowlist: when supplied, only modules whose
+            // directory name is in the list get registered. Apps that
+            // ship a curated subset of premium modules at runtime use
+            // this to avoid pulling in the full premium catalog.
+            if ($allowSlugs !== null && !in_array($name, $allowSlugs, true)) continue;
             $moduleDir    = $entry->getPathname();
             $providerFile = $moduleDir . '/module.php';
             if (!is_file($providerFile)) continue;
@@ -215,13 +222,23 @@ class ModuleRegistry
      * if you have a fork of the same module in both core and premium,
      * the core copy is the one that registers.
      *
-     * @param string[] $modulesDirs
+     * Each entry can be either a plain string root, or an associative
+     * array `['root' => string, 'allow' => string[]]` to scope that
+     * particular root to a slug allowlist. Other roots stay open.
+     *
+     * @param array<string|array{root:string, allow?:string[]}> $modulesDirs
      */
     public function discoverMany(array $modulesDirs): void
     {
-        foreach ($modulesDirs as $dir) {
-            if (!is_string($dir) || $dir === '') continue;
-            $this->discover($dir);
+        foreach ($modulesDirs as $entry) {
+            if (is_string($entry) && $entry !== '') {
+                $this->discover($entry);
+                continue;
+            }
+            if (is_array($entry) && isset($entry['root']) && is_string($entry['root']) && $entry['root'] !== '') {
+                $allow = isset($entry['allow']) && is_array($entry['allow']) ? $entry['allow'] : null;
+                $this->discover((string) $entry['root'], $allow);
+            }
         }
     }
 
@@ -520,6 +537,28 @@ class ModuleRegistry
             $blocks = $provider->blocks();
             if (!empty($blocks)) {
                 $registry->registerMany($blocks);
+            }
+        }
+        return $registry;
+    }
+
+    /**
+     * Build the SubmoduleRegistry by collecting submodule declarations
+     * from every active provider. Same shape as blockRegistry() —
+     * skipped modules don't contribute. Memoized per request.
+     */
+    public function submoduleRegistry(): SubmoduleRegistry
+    {
+        $this->resolveDependencies();
+
+        static $registry = null;
+        if ($registry !== null) return $registry;
+
+        $registry = new SubmoduleRegistry();
+        foreach ($this->active as $provider) {
+            $submodules = $provider->submodules();
+            if (!empty($submodules)) {
+                $registry->registerForModule($provider->name(), $submodules);
             }
         }
         return $registry;

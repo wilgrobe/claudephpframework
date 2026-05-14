@@ -144,4 +144,15 @@ if (class_exists(\Core\Module\BlockRegistry::class)
     });
 }
 
+// SubmoduleRegistry — same lazy aggregation pattern as BlockRegistry, but
+// for the (project-scoped) feature toggles declared via ModuleProvider::
+// submodules(). Modules consult this in their route registration / boot
+// methods to gate per-submodule features based on the wizard-time pick.
+if (class_exists(\Core\Module\SubmoduleRegistry::class)
+    && class_exists(\Core\Module\ModuleRegistry::class)) {
+    $container->singleton(\Core\Module\SubmoduleRegistry::class, function ($c) {
+        return $c->get(\Core\Module\ModuleRegistry::class)->submoduleRegistry();
+    });
+}
+
 return $container;

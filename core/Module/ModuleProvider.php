@@ -283,6 +283,39 @@ abstract class ModuleProvider
     public function sitemapUrls(): array { return []; }
 
     /**
+     * Optional submodules / billable feature units this module exposes.
+     * Each entry is a SubmoduleDescriptor; the SubmoduleRegistry
+     * aggregates them at boot. Modules with no toggleable sub-features
+     * return [] (the default). Modules that DO declare submodules
+     * should consult the registry at runtime to decide whether to
+     * register routes / views / services for each one:
+     *
+     *   public function submodules(): array {
+     *       return [
+     *           new \Core\Module\SubmoduleDescriptor(
+     *               key: 'cart',
+     *               label: 'Shopping cart',
+     *               description: 'Persistent cart with abandoned-cart recovery.',
+     *           ),
+     *           new \Core\Module\SubmoduleDescriptor(
+     *               key: 'checkout',
+     *               label: 'Checkout flow',
+     *               description: 'Multi-step checkout with shipping + payment.',
+     *               requires: ['cart'],
+     *           ),
+     *       ];
+     *   }
+     *
+     * The runtime gate lives in
+     * `SubmoduleRegistry::isEnabledForCurrent($moduleName, $key)`. The
+     * tenant-scoped lookup is opt-in — apps that don't ship a
+     * project_submodules table get full-available behaviour.
+     *
+     * @return \Core\Module\SubmoduleDescriptor[]
+     */
+    public function submodules(): array { return []; }
+
+    /**
      * Distribution tier for this module — either 'core' or 'premium'.
      *
      * Core modules ship in the open-source claudephpframework repository

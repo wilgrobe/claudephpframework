@@ -80,6 +80,21 @@ class Request
         return array_merge($this->query, $this->post);
     }
 
+    /**
+     * Raw POST body — used by webhook handlers that need to read JSON
+     * bodies posted by external providers (Stripe, SES, SendGrid,
+     * Postmark, Mailgun, SMTP2GO, etc.). Cached on first read since
+     * `php://input` is non-rewindable on some PHP configurations.
+     */
+    public function raw(): string
+    {
+        if ($this->raw === null) {
+            $this->raw = (string) @file_get_contents('php://input');
+        }
+        return $this->raw;
+    }
+    private ?string $raw = null;
+
     public function isPost(): bool { return $this->method === 'POST'; }
     public function isGet(): bool  { return $this->method === 'GET'; }
 
