@@ -32,6 +32,26 @@ return new class extends ModuleProvider {
     }
 
     /**
+     * Submodule declarations.
+     *
+     * `admin-ui` separates the /admin/feature-flags CRUD surface from
+     * the runtime feature() helper. Sites running an external SaaS
+     * (LaunchDarkly, Unleash, Statsig) want the framework's helper +
+     * cache layer but not our internal admin UI competing with the
+     * SaaS dashboard.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'admin-ui',
+                label:       'Admin UI for flag management',
+                description: '/admin/feature-flags CRUD + per-user override pages. Disable when using an external SaaS flag platform — the runtime feature() helper keeps working.',
+            ),
+        ];
+    }
+
+    /**
      * GDPR handlers — per-user flag overrides are erased outright.
      */
     public function gdprHandlers(): array

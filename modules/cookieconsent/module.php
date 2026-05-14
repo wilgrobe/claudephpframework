@@ -27,6 +27,27 @@ return new class extends ModuleProvider {
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
     /**
+     * Submodule declarations.
+     *
+     * `banner-ui` separates the visual banner partial + reopen-link
+     * block from the underlying `consent_allowed()` gate logic. Sites
+     * using an external CMP (Cookiebot, OneTrust) want the framework's
+     * gate behaviour without our banner UI competing with theirs.
+     * The reopen-link block + banner partial check the gate before
+     * rendering anything.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'banner-ui',
+                label:       'Cookie banner UI',
+                description: 'Banner partial + "Manage cookie preferences" reopen-link block. Disable when integrating an external CMP (Cookiebot, OneTrust) — the consent_allowed() gate keeps working.',
+            ),
+        ];
+    }
+
+    /**
      * Site-scope settings owned by the cookie-consent admin page.
      * Hidden from the generic /admin/settings grid.
      */
@@ -68,6 +89,11 @@ return new class extends ModuleProvider {
                     ['key' => 'label', 'label' => 'Link text', 'type' => 'text', 'default' => 'Manage cookie preferences'],
                 ],
                 render: function (array $context, array $settings): string {
+                    // Hide the reopen link when the banner-ui submodule
+                    // is off (external CMP would have its own reopen UI).
+                    if (!\Core\Module\SubmoduleRegistry::featureEnabled('cookieconsent', 'banner-ui')) {
+                        return '';
+                    }
                     $label = (string) ($settings['label'] ?? 'Manage cookie preferences');
                     $safe  = htmlspecialchars($label, ENT_QUOTES | ENT_HTML5);
                     // Forces a fresh prompt by wiping the consent cookie

@@ -8,8 +8,16 @@
 // GDPR cookie-consent banner — self-renders only when consent is missing
 // for the current policy version. Safe to include on every page; the
 // partial returns early when the banner shouldn't display.
+//
+// Gated on cookieconsent.banner-ui submodule (default-on for installs
+// without project_submodules; deliberately off for sites running an
+// external CMP that handles the banner UI themselves).
 $__cc = BASE_PATH . '/modules/cookieconsent/Views/banner.php';
-if (file_exists($__cc)) include $__cc;
+if (file_exists($__cc)
+    && (!class_exists(\Core\Module\SubmoduleRegistry::class)
+        || \Core\Module\SubmoduleRegistry::featureEnabled('cookieconsent', 'banner-ui'))) {
+    include $__cc;
+}
 ?>
 
 <script src="<?= e(asset('/assets/js/app.js')) ?>"></script>

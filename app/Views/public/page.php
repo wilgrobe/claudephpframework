@@ -208,8 +208,13 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
 // GDPR cookie-consent banner — guest path. The authed branch above
 // renders this via layout/footer.php; this include covers the
 // standalone shell so the banner appears on public marketing pages too.
+// Gated on cookieconsent.banner-ui (off when external CMP handles UI).
 $__cc = BASE_PATH . '/modules/cookieconsent/Views/banner.php';
-if (file_exists($__cc)) include $__cc;
+if (file_exists($__cc)
+    && (!class_exists(\Core\Module\SubmoduleRegistry::class)
+        || \Core\Module\SubmoduleRegistry::featureEnabled('cookieconsent', 'banner-ui'))) {
+    include $__cc;
+}
 ?>
 </body>
 </html>

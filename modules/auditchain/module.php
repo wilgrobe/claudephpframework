@@ -42,6 +42,23 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    /**
+     * `verification-job` gates the daily AuditChainVerifyJob cron sweep.
+     * Sealing-on-insert keeps working regardless; this only turns off
+     * the proactive verification cadence. Low-change systems can run
+     * /admin/audit-chain on-demand instead.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'verification-job',
+                label:       'Daily chain verification job',
+                description: 'Cron sweep that re-walks the audit chain to detect tampering. Sealing-on-insert is unaffected. Disable for low-change systems that prefer on-demand verification.',
+            ),
+        ];
+    }
+
     public function gdprHandlers(): array { return []; }
 
     /**

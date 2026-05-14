@@ -14,6 +14,23 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    /**
+     * `completeness-meter` gates the onboarding gamification block (% of
+     * profile fields filled + missing-field hints). Sites that prefer a
+     * lighter onboarding can disable just this without losing the
+     * editor surface.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'completeness-meter',
+                label:       'Profile completeness meter',
+                description: 'Onboarding gamification block showing % of profile filled + missing-field hints. Pure UX nudge; disable for minimal onboarding flows.',
+            ),
+        ];
+    }
+
     public function blocks(): array
     {
         // Field weights for the completeness meter — declared once and

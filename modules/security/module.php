@@ -36,6 +36,23 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    /**
+     * `hibp-cache` gates the 24h SHA-1 prefix cache layer in
+     * PasswordBreachService::checkPassword() before the HIBP network
+     * call. Sites with their own cache layer (Redis / Memcached) or
+     * an external breach-check service can disable internal caching.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'hibp-cache',
+                label:       'HIBP cache layer',
+                description: '24h SHA-1 prefix cache for Have I Been Pwned lookups. Disable for sites with their own cache layer or an external breach-check service.',
+            ),
+        ];
+    }
+
     public function gdprHandlers(): array { return []; }
 
     /**

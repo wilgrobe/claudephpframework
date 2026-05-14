@@ -13,6 +13,22 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    /**
+     * `unread-counter` gates the /notifications/count endpoint + the
+     * bell-badge polling block. Sites with an external notification
+     * platform may not need this counter.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'unread-counter',
+                label:       'Unread notification counter',
+                description: '/notifications/count XHR endpoint + the header bell-badge polling block. Disable when an external notification platform provides its own counter.',
+            ),
+        ];
+    }
+
     public function blocks(): array
     {
         return [
