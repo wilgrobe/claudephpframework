@@ -24,13 +24,14 @@ $router->get ('/account/email-preferences',     "$U@preferenceCenter", [AuthMidd
 $router->post('/account/email-preferences',     "$U@savePreferences",  [CsrfMiddleware::class, AuthMiddleware::class]);
 
 // ── Provider webhooks ─────────────────────────────────────────────────
-// All four exempt from CSRF — providers post raw JSON without a session.
+// All five exempt from CSRF — providers post raw JSON without a session.
 // Auth is per-handler: SES via SNS signing, Mailgun via HMAC, SendGrid +
-// Postmark via shared MAIL_WEBHOOK_SECRET env.
+// Postmark + SMTP2GO via shared MAIL_WEBHOOK_SECRET env.
 $router->post('/webhooks/email/ses',            "$W@ses",      [CsrfExempt::class]);
 $router->post('/webhooks/email/sendgrid',       "$W@sendgrid", [CsrfExempt::class]);
 $router->post('/webhooks/email/postmark',       "$W@postmark", [CsrfExempt::class]);
 $router->post('/webhooks/email/mailgun',        "$W@mailgun",  [CsrfExempt::class]);
+$router->post('/webhooks/email/smtp2go',        "$W@smtp2go",  [CsrfExempt::class]);
 
 // ── Admin ─────────────────────────────────────────────────────────────
 $router->get ('/admin/email-suppressions',                    "$A@index",   [AuthMiddleware::class, RequireAdmin::class]);

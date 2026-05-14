@@ -14,6 +14,7 @@ use Modules\Email\Services\SuppressionService;
  *   POST /webhooks/email/sendgrid
  *   POST /webhooks/email/postmark
  *   POST /webhooks/email/mailgun
+ *   POST /webhooks/email/smtp2go
  *
  * Each provider posts its own JSON shape. Each handler:
  *   1. Verifies the request (signature / shared secret per provider).
@@ -160,6 +161,66 @@ class WebhookController
         } elseif ($type === 'SubscriptionChange' && empty($event['SuppressSending'])) {
             // User resubscribed via Postmark UI — clear our wildcard suppression
             // (admin can decide whether to honour this; default: log only).
+        }
+
+        return new Response('OK', 200);
+    }
+
+    /**
+     * SMTP2GO — events posted as a JSON object with `events` array
+     * (or a single event at the top level for very old webhook
+     * versions).
+     *
+     * Event types we react to:
+     *   bounce / hard_bounce    → REASON_HARD_BOUNCE
+     *   spam / complaint        → REASON_COMPLAINT
+     *   unsubscribed            → REASON_USER_UNSUBSCRIBE
+     *
+     * `soft_bounce` and `delivered` / `processed` / `opened` etc.
+     * are logged-only — temporary failures shouldn't kill the
+     * address, and engagement events aren't suppression-relevant.
+     *
+     * Auth: shared secret via MAIL_WEBHOOK_SECRET (matches the
+     * SendGrid / Postmark pattern). SMTP2GO supports a custom
+     * `X-Smtp2go-Token` header, a query-string param, or a Bearer
+     * token — all three land in verifySharedSecret's check.
+     */
+    public function smtp2go(Request $request): Response
+    {
+        if (!$this->verifySharedSecret($request)) {
+            return Response::json(['ok' => false], 401);
+        }
+
+        $body    = $request->raw();
+        $payload = json_decode($body, true);
+        if (!is_array($payload)) {
+            return new Response('OK', 200);
+        }
+
+        // SMTP2GO sends either {"events":[...]} OR a single event at
+        // the top level (older webhook format). Normalise to a list.
+        $events = isset($payload['events']) && is_array($payload['events'])
+            ? $payload['events']
+            : [$payload];
+
+        foreach ($events as $e) {
+            if (!is_array($e)) continue;
+            $email = strtolower((string) ($e['email'] ?? ''));
+            $type  = strtolower((string) ($e['event'] ?? ''));
+            if ($email === '') continue;
+
+            $this->logEvent('smtp2go', $type, [$email], json_encode($e));
+
+            if ($type === 'bounce' || $type === 'hard_bounce') {
+                $reason = trim((string) ($e['reason'] ?? $e['description'] ?? ''));
+                $this->suppressAll([$email], SuppressionService::REASON_HARD_BOUNCE,
+                    'SMTP2GO bounce' . ($reason !== '' ? ": $reason" : ''));
+            } elseif ($type === 'spam' || $type === 'complaint' || $type === 'reject') {
+                $this->suppressAll([$email], SuppressionService::REASON_COMPLAINT, 'SMTP2GO spam complaint');
+            } elseif ($type === 'unsubscribed' || $type === 'unsubscribe') {
+                $this->suppressAll([$email], SuppressionService::REASON_USER_UNSUBSCRIBE, 'SMTP2GO unsubscribe');
+            }
+            // soft_bounce / delivered / processed / opened / clicked: log only.
         }
 
         return new Response('OK', 200);

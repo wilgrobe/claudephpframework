@@ -69,6 +69,26 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    /**
+     * Submodule declarations. Catalog-only — runtime gating is opt-in
+     * via SubmoduleRegistry::isEnabledForCurrent() inside callers.
+     */
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'webhook-handlers',
+                label:       'Bounce + complaint webhooks',
+                description: 'Auto-suppress hard bounces and spam complaints from SES / SendGrid / Postmark / Mailgun / SMTP2GO.',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'preference-center',
+                label:       'Granular preference center',
+                description: 'Per-category subscribe/unsubscribe UI at /account/email-preferences (beyond the basic one-click unsubscribe).',
+            ),
+        ];
+    }
+
     public function blocks(): array
     {
         return [
