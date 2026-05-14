@@ -134,4 +134,75 @@ class AuditLogService
             'new' => !empty($row['new_values']) ? (json_decode((string) $row['new_values'], true) ?: null) : null,
         ];
     }
+
+    /**
+     * Stream filtered audit rows to a row-emitter callback for CSV
+     * export. Caller owns the fopen/fwrite; the service just walks
+     * the result set in pages so the memory footprint stays bounded
+     * even on millions of rows.
+     *
+     * @param array $filters  same shape as list()
+     * @param callable(array): void $emit  invoked once per row
+     * @return int  total rows emitted
+     */
+    public function streamForExport(array $filters, callable $emit, int $hardLimit = 100000): int
+    {
+        $perPage = 500;
+        $page    = 1;
+        $emitted = 0;
+        while ($emitted < $hardLimit) {
+            $res = $this->list($filters, $page, $perPage);
+            if (empty($res['items'])) break;
+            foreach ($res['items'] as $row) {
+                $emit($row);
+                $emitted++;
+                if ($emitted >= $hardLimit) break 2;
+            }
+            if (count($res['items']) < $perPage) break;
+            $page++;
+        }
+        return $emitted;
+    }
+
+    /**
+     * Find the chronologically-adjacent audit row id (newer or older)
+     * so the show view can render Prev/Next navigation. NULL when
+     * the current row is the first/last in the table.
+     */
+    public function neighbourId(int $currentId, string $direction): ?int
+    {
+        $op = $direction === 'next' ? '>' : '<';
+        $order = $direction === 'next' ? 'ASC' : 'DESC';
+        $id = $this->db->fetchColumn(
+            "SELECT id FROM audit_log WHERE id $op ? ORDER BY id $order LIMIT 1",
+            [$currentId],
+        );
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * Quick chain-integrity readout for the index view's status pill.
+     * Delegates to auditchain when the module is installed; falls back
+     * to "unknown" when it isn't. Best-effort — never throws.
+     *
+     * @return array{available:bool, breaks:int, last_verified_at:?string}
+     */
+    public function chainStatus(): array
+    {
+        $out = ['available' => false, 'breaks' => 0, 'last_verified_at' => null];
+        if (!class_exists(\Modules\Auditchain\Services\AuditChainService::class)) {
+            return $out;
+        }
+        try {
+            $svc   = new \Modules\Auditchain\Services\AuditChainService();
+            $stats = $svc->stats();
+            return [
+                'available'        => true,
+                'breaks'           => (int) ($stats['recent_breaks_open'] ?? $stats['breaks'] ?? 0),
+                'last_verified_at' => $stats['last_verified_at'] ?? null,
+            ];
+        } catch (\Throwable) {
+            return $out;
+        }
+    }
 }

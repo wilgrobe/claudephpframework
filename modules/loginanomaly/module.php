@@ -38,6 +38,23 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'geo-lookup',
+                label:       'Geo IP lookup',
+                description: 'Resolve login IP to country + region + city via ip-api.com (~45 req/min limit).',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'impossible-travel-alerts',
+                label:       'Impossible travel alerts',
+                description: 'Flag + email-notify when consecutive logins from distant locations imply faster-than-flight travel. Requires geo-lookup.',
+                requires:    ['geo-lookup'],
+            ),
+        ];
+    }
+
     /**
      * GDPR — login_anomalies rows are anonymise-on-erasure (security
      * audit value retained, identity scrubbed). FK CASCADE on user_id

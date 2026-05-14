@@ -37,6 +37,23 @@ class NotificationService
             'group'    => 'Groups',
             'channels' => ['in_app', 'email'],
         ],
+
+        // ── Marketing broadcast lifecycle (fired by premium marketing module) ──
+        'broadcast.scheduled_sent' => [
+            'label'    => 'A scheduled email broadcast fires',
+            'group'    => 'Marketing',
+            'channels' => ['in_app', 'email'],
+        ],
+        'broadcast.ab_decided' => [
+            'label'    => 'An A/B test picks a winner',
+            'group'    => 'Marketing',
+            'channels' => ['in_app', 'email'],
+        ],
+        'broadcast.finished' => [
+            'label'    => 'An email broadcast finishes sending to every recipient',
+            'group'    => 'Marketing',
+            'channels' => ['in_app'],
+        ],
     ];
 
     private Database $db;

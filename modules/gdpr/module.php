@@ -32,6 +32,22 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'dsar-portal',
+                label:       'DSAR portal',
+                description: 'User-facing /account/data UI for data export + erasure requests.',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'automated-purge',
+                label:       'Automated purge job',
+                description: 'PurgeUserJob runs on the cron sweeper to fulfill erasure requests past the grace period.',
+            ),
+        ];
+    }
+
     public function blocks(): array
     {
         return [

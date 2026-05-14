@@ -104,4 +104,53 @@ class NotificationsController
         $count = count($this->notif->getUnread($this->auth->id(), 99));
         return Response::json(['count' => $count]);
     }
+
+    /**
+     * Per-user notification preferences UI.
+     *
+     *   GET  /notifications/preferences   — grouped form with one
+     *                                       row per notification type
+     *                                       and a per-channel toggle
+     *   POST /notifications/preferences   — write prefs[] from POST
+     *                                       to notification_preferences
+     */
+    public function preferences(Request $request): Response
+    {
+        if ($this->auth->guest()) return Response::redirect('/login');
+
+        $prefs = $this->notif->preferencesFor((int) $this->auth->id());
+
+        // Group TYPES by their declared `group` for the view's grouping.
+        $byGroup = [];
+        foreach (NotificationService::TYPES as $type => $meta) {
+            $group = (string) ($meta['group'] ?? 'Other');
+            $byGroup[$group][] = [
+                'type'     => $type,
+                'label'    => (string) ($meta['label'] ?? $type),
+                'channels' => (array)   ($meta['channels'] ?? ['in_app']),
+                'prefs'    => $prefs[$type] ?? [],
+            ];
+        }
+        ksort($byGroup);
+
+        return Response::view('notifications::preferences', [
+            'by_group' => $byGroup,
+            'user'     => $this->auth->user(),
+            'csrf'     => csrf_token(),
+        ]);
+    }
+
+    public function savePreferences(Request $request): Response
+    {
+        if ($this->auth->guest()) return Response::redirect('/login');
+
+        // Form posts a nested array: prefs[type][channel] = '1' when
+        // checked, absent when unchecked. NotificationService::set
+        // Preferences treats absent as 0 — same semantics.
+        $raw = (array) $request->post('prefs', []);
+        $this->notif->setPreferences((int) $this->auth->id(), $raw);
+
+        return Response::redirect('/notifications/preferences')
+            ->withFlash('success', 'Notification preferences saved.');
+    }
 }

@@ -22,6 +22,27 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'csv-import',
+                label:       'CSV import',
+                description: 'Upload + map columns to model fields; streaming row-by-row insert.',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'csv-export',
+                label:       'CSV export',
+                description: 'Streaming export of any registered handler\'s table set to a downloadable CSV.',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'column-mapping-ui',
+                label:       'Column-mapping UI',
+                description: 'Interactive header-to-field mapper at /admin/import; required for non-conventional CSV layouts.',
+            ),
+        ];
+    }
+
     public function register(Container $container): void
     {
         // Built-in `users` handler. Reads + upserts via Database directly

@@ -27,6 +27,22 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    public function submodules(): array
+    {
+        return [
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'marketing-blocks',
+                label:       'Marketing blocks',
+                description: 'Hero, pricing table, testimonials, feature grid, logo cloud, stats — high-conversion landing-page blocks.',
+            ),
+            new \Core\Module\SubmoduleDescriptor(
+                key:         'form-blocks',
+                label:       'Form blocks',
+                description: 'Newsletter signup, contact form, login, register — form-bearing site blocks (excluding cookie-consent / chrome).',
+            ),
+        ];
+    }
+
     public function blocks(): array
     {
         return [
