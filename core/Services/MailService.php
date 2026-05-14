@@ -65,7 +65,19 @@ class MailService implements MailDriver
     private const RETRY_BACKOFF_MINUTES = [1, 5, 25];
     private const MAX_ATTEMPTS          = 3;
 
-    public function send(string $to, string $subject, string $htmlBody, string $textBody = ''): bool
+    /**
+     * Send an email. Returns true on successful transport, false on
+     * failure (which has already been logged + queued for retry).
+     *
+     * Pass an optional $chargeUserId to meter the send against a user's
+     * wallet. On a successful send we call
+     * `\App\Services\TokenGate::chargeActionFor($chargeUserId, 'action.email.send')`
+     * via class_exists guard — framework users without TokenGate get
+     * no charging behaviour. Pass null (default) for system-triggered
+     * mail (claim emails, password resets, queue retries, 2FA codes)
+     * that shouldn't bill anyone.
+     */
+    public function send(string $to, string $subject, string $htmlBody, string $textBody = '', ?int $chargeUserId = null): bool
     {
         $logId = $this->db->insert('message_log', [
             'channel'      => 'email',
@@ -77,7 +89,15 @@ class MailService implements MailDriver
             'max_attempts' => self::MAX_ATTEMPTS,
         ]);
 
-        return $this->attemptSend($logId, $to, $subject, $htmlBody, $textBody);
+        $ok = $this->attemptSend($logId, $to, $subject, $htmlBody, $textBody);
+        if ($ok && $chargeUserId !== null && class_exists(\App\Services\TokenGate::class)) {
+            \App\Services\TokenGate::chargeActionFor(
+                $chargeUserId,
+                'action.email.send',
+                "Email send to $to",
+            );
+        }
+        return $ok;
     }
 
     public function resend(int $logId): bool
@@ -248,7 +268,7 @@ class MailService implements MailDriver
         return $mail->send();
     }
 
-    public function sendTemplate(string $to, string $subject, string $template, array $vars = []): bool
+    public function sendTemplate(string $to, string $subject, string $template, array $vars = [], ?int $chargeUserId = null): bool
     {
         ob_start();
         extract($vars, EXTR_SKIP);
@@ -257,6 +277,6 @@ class MailService implements MailDriver
             include $templatePath;
         }
         $html = ob_get_clean();
-        return $this->send($to, $subject, $html);
+        return $this->send($to, $subject, $html, '', $chargeUserId);
     }
 }

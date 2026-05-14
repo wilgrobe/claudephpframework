@@ -116,7 +116,7 @@ class GeoIpService
             ]);
             $body = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
+            // curl_close() removed — no-op since PHP 8.0, deprecated in 8.5.
             if (!is_string($body) || $code < 200 || $code >= 300) return null;
             return $body;
         }

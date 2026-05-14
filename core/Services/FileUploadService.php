@@ -154,13 +154,17 @@ class FileUploadService
         $mimeType = $this->detectMimeType($tmpPath);
 
         if (!isset($allowedMimes[$mimeType])) {
-            // For some file types (notably fonts), finfo on certain hosts
-            // misreports as application/octet-stream. Fall back to checking
-            // the user-supplied filename extension when content sniff is
-            // ambiguous and the extension matches our whitelist.
-            $clientExt = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+            // Ambiguous MIMEs we accept by client extension when the file
+            // is otherwise allowed:
+            //   application/octet-stream — finfo gave up entirely
+            //   font/sfnt                — RFC 8081 type shared by TTF + OTF
+            //                              (same SFNT container — must
+            //                              disambiguate by extension or
+            //                              magic bytes)
+            $ambiguousMimes = ['application/octet-stream', 'font/sfnt'];
+            $clientExt   = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
             $allowedExts = array_values($allowedMimes);
-            if ($mimeType === 'application/octet-stream' && in_array($clientExt, $allowedExts, true)) {
+            if (in_array($mimeType, $ambiguousMimes, true) && in_array($clientExt, $allowedExts, true)) {
                 $ext = $clientExt;
             } else {
                 throw new \RuntimeException("File type '$mimeType' is not allowed for this upload.");
