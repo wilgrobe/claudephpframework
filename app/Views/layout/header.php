@@ -463,10 +463,21 @@ $__themeClass = match ($__themePref) {
 $__layout_orient = (string) setting('layout_orientation', 'sidebar');
 if (!in_array($__layout_orient, ['sidebar', 'topbar'], true)) $__layout_orient = 'sidebar';
 ?>
+<?php
+// Header chrome toggles — read once for both the sidebar and topbar
+// branches. setting() returns the raw stored value; the empty/'false'
+// guards match the layout/_form.php's toggle-switch convention.
+$__hdrShowLogo   = setting('header_show_logo', true);
+$__hdrShowSearch = setting('header_show_search', true);
+$__hdrShowLogo   = $__hdrShowLogo   !== false && $__hdrShowLogo   !== '' && $__hdrShowLogo   !== 'false' && $__hdrShowLogo   !== '0';
+$__hdrShowSearch = $__hdrShowSearch !== false && $__hdrShowSearch !== '' && $__hdrShowSearch !== 'false' && $__hdrShowSearch !== '0';
+?>
 <div class="layout layout--<?= e($__layout_orient) ?>">
     <!-- Sidebar -->
     <aside class="sidebar">
+        <?php if ($__hdrShowLogo): ?>
         <a href="/dashboard" class="sidebar-logo">🚀 <?= e(setting('site_name', 'App')) ?></a>
+        <?php endif; ?>
         <nav class="sidebar-nav">
             <?php foreach (menu('header') as $menuItem): ?>
                 <?php if (!empty($menuItem['children'])): ?>
@@ -598,7 +609,9 @@ if (!in_array($__layout_orient, ['sidebar', 'topbar'], true)) $__layout_orient =
         <header class="topbar">
             <div class="topbar-left">
                 <?php if ($__layout_orient === 'topbar'): ?>
+                    <?php if ($__hdrShowLogo): ?>
                     <a href="/dashboard" class="topbar-logo">🚀 <?= e(setting('site_name', 'App')) ?></a>
+                    <?php endif; ?>
                     <nav class="topbar-nav" aria-label="Primary">
                         <?php foreach (menu('header') as $__tb_item): ?>
                             <a href="<?= e($__tb_item['url'] ?? '#') ?>"><?= e($__tb_item['label']) ?></a>
@@ -655,11 +668,13 @@ if (!in_array($__layout_orient, ['sidebar', 'topbar'], true)) $__layout_orient =
                 <?php endif; ?>
             </div>
             <div class="topbar-right">
+                <?php if ($__hdrShowSearch): ?>
                 <!-- Inline search -->
                 <form method="GET" action="/search" style="display:flex;align-items:center">
                     <input type="text" name="q" placeholder="Search…" aria-label="Search"
                            class="form-control" style="width:180px;padding:.35rem .65rem;font-size:13px">
                 </form>
+                <?php endif; ?>
                 <?php if ($auth->check()): ?>
                 <!-- Superadmin mode toggle -->
                 <?php if ($auth->isSuperAdmin() && !$auth->isEmulating()): ?>
