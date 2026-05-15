@@ -350,7 +350,6 @@ class BroadcastService
         ]);
         $body = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         if ($code < 200 || $code >= 300 || $body === false) {
             error_log("[broadcast] Ably token request failed: HTTP $code");
@@ -376,7 +375,6 @@ class BroadcastService
         $response = curl_exec($ch);
         $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err      = curl_error($ch);
-        curl_close($ch);
 
         if ($response === false) {
             error_log("[broadcast] curl failed for $url: $err");
