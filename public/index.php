@@ -141,7 +141,14 @@ if ($bcastProvider === 'pusher' || $bcastProvider === 'soketi') {
         $parts = parse_url($bcastHost);
         if (!empty($parts['host'])) {
             $host = $parts['host'] . (!empty($parts['port']) ? ':' . $parts['port'] : '');
-            $connectExtras .= " https://$host wss://$host";
+            // Allow the configured scheme's HTTP origin + its matching WS
+            // origin. Plain `http://` deployments (local Soketi without TLS)
+            // need `ws://` since the Pusher SDK falls back to it when wss
+            // fails; production Soketi-behind-TLS keeps the secure pair.
+            $isHttps = ($parts['scheme'] ?? 'https') === 'https';
+            $connectExtras .= $isHttps
+                ? " https://$host wss://$host"
+                : " http://$host ws://$host";
         }
     }
 } elseif ($bcastProvider === 'ably') {
