@@ -45,10 +45,7 @@ class SettingsController
     private const GENERAL_KEYS = [
         'site_name'           => 'string',
         'site_tagline'        => 'string',
-        'site_logo_url'       => 'string',
         'site_url'            => 'string',
-        'site_timezone'       => 'string',
-        'site_default_locale' => 'string',
     ];
 
     private const LAYOUT_KEYS = [
@@ -90,25 +87,13 @@ class SettingsController
         // Reviews
         'store.reviews_enabled'           => 'boolean',
         'store.reviews_badge_in_listing'  => 'boolean',
-        // Currency + low-stock threshold. setting() reads return null
-        // for unset keys so adding rows here is non-breaking.
-        'store.currency_default'          => 'string',
-        'store.low_stock_threshold'       => 'integer',
     ];
 
     private const INTEGRATIONS_KEYS = [
-        // Mail — read by MailService at send time. Driver=none disables
-        // outbound mail entirely (verification + password reset etc still
-        // queue but never go out).
-        'mail_driver'        => 'string',
-        'mail_from_address'  => 'string',
-        'mail_from_name'     => 'string',
         // Analytics provider snippet emitted from the layout. Provider
         // values: 'none' | 'plausible' | 'ga' | 'umami'.
         'analytics_provider' => 'string',
         'analytics_site_id'  => 'string',
-        // Sentry DSN for client + server error reporting. Empty disables.
-        'sentry_dsn'         => 'string',
     ];
 
     private const GROUP_KEYS = [

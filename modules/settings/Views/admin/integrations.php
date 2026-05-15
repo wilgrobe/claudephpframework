@@ -15,34 +15,6 @@
         <?= csrf_field() ?>
         <div class="card-body">
 
-            <h3 style="margin:0 0 .85rem;font-size:1.05rem">Outbound mail</h3>
-
-            <div class="form-group">
-                <label for="mail_driver">Mail driver</label>
-                <select id="mail_driver" name="mail_driver" class="form-control">
-                    <?php $driver = (string) ($values['mail_driver'] ?? 'smtp'); ?>
-                    <option value="smtp"     <?= $driver === 'smtp'     ? 'selected' : '' ?>>SMTP</option>
-                    <option value="sendmail" <?= $driver === 'sendmail' ? 'selected' : '' ?>>Sendmail (server-local)</option>
-                    <option value="log"      <?= $driver === 'log'      ? 'selected' : '' ?>>Log only (development)</option>
-                    <option value="none"     <?= $driver === 'none'     ? 'selected' : '' ?>>None (disable outbound mail)</option>
-                </select>
-                <small style="color:var(--color-gray-500)">SMTP credentials live in <code>.env</code> (<code>MAIL_HOST</code>, <code>MAIL_PORT</code>, <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code>) — not editable here for security.</small>
-            </div>
-
-            <div class="form-group">
-                <label for="mail_from_address">From address</label>
-                <input id="mail_from_address" name="mail_from_address" type="email" class="form-control"
-                       value="<?= e((string) ($values['mail_from_address'] ?? '')) ?>" placeholder="noreply@example.com">
-            </div>
-
-            <div class="form-group">
-                <label for="mail_from_name">From name</label>
-                <input id="mail_from_name" name="mail_from_name" class="form-control"
-                       value="<?= e((string) ($values['mail_from_name'] ?? '')) ?>" placeholder="Site Name">
-                <small style="color:var(--color-gray-500)">Defaults to the General panel's site name when blank.</small>
-            </div>
-
-            <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Analytics</h3>
 
             <div class="form-group">
@@ -63,22 +35,25 @@
                        value="<?= e((string) ($values['analytics_site_id'] ?? '')) ?>" placeholder="example.com / G-XXXXXXX / your-id">
             </div>
 
-            <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
-            <h3 style="margin:0 0 .85rem;font-size:1.05rem">Error reporting</h3>
-
-            <div class="form-group">
-                <label for="sentry_dsn">Sentry DSN</label>
-                <input id="sentry_dsn" name="sentry_dsn" class="form-control"
-                       value="<?= e((string) ($values['sentry_dsn'] ?? '')) ?>" placeholder="https://abcdef@o123456.ingest.sentry.io/789">
-                <small style="color:var(--color-gray-500)">Empty disables Sentry. Project user-context is set per the
-                    <a href="/admin/audit-log" style="color:var(--color-primary)">audit log policy</a> (id + email + IP).</small>
-            </div>
-
         </div>
         <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save Integrations</button>
         </div>
     </form>
+</div>
+
+<div class="card" style="margin-top:1rem">
+    <div class="card-body" style="background:var(--color-gray-50)">
+        <h3 style="margin:0 0 .5rem;font-size:.95rem">Mail + error reporting</h3>
+        <p style="margin:0;color:var(--color-gray-500);font-size:13px;line-height:1.5">
+            Outbound mail (driver, SMTP host, from-address, from-name) and Sentry
+            DSN are configured via <code>.env</code> for security — see
+            <code>MAIL_DRIVER</code>, <code>MAIL_HOST</code>, <code>MAIL_PORT</code>,
+            <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code>,
+            <code>MAIL_FROM_ADDRESS</code>, <code>MAIL_FROM_NAME</code>, and
+            <code>SENTRY_DSN</code>. Restart the web server to pick up changes.
+        </p>
+    </div>
 </div>
 
 <div class="card" style="margin-top:1rem">
