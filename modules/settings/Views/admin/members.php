@@ -96,16 +96,6 @@
             </div>
 
             <div class="field-row">
-                <label class="field-label" for="maintenance_mode">
-                    Site-wide maintenance mode
-                    <span class="help-icon" title="When on, only superadmins can reach non-login routes. Everyone else sees a maintenance page. Use during deployments or schema changes.">i</span>
-                </label>
-                <div class="field-control">
-                    <?= toggle_switch('maintenance_mode', !empty($access['maintenance_mode']) && $access['maintenance_mode'] !== 'false') ?>
-                </div>
-            </div>
-
-            <div class="field-row">
                 <label class="field-label" for="coppa_enabled">
                     COPPA / age-gate at registration
                     <span class="help-icon" title="When on, the registration form gains a date-of-birth field. Applicants under the minimum age are rejected with the configured message. US COPPA min is 13; GDPR Art. 8 strict default is 16.">i</span>

@@ -56,17 +56,6 @@
                 <small style="color:var(--color-gray-500)">BCP-47 / ICU format. Used for date / number formatting fallback.</small>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px">
-                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
-                    <?= toggle_switch('maintenance_mode', !empty($values['maintenance_mode']) && $values['maintenance_mode'] !== 'false') ?>
-                    Maintenance mode (site-wide)
-                </label>
-                <div style="font-size:12.5px;color:var(--color-warning-fg);margin-top:.35rem;line-height:1.5">
-                    When on, only superadmins can reach non-login routes. Everyone else
-                    sees a maintenance page. Use during deployments or when running
-                    schema changes that would break the live experience.
-                </div>
-            </div>
 
         </div>
         <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">

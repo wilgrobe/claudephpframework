@@ -49,7 +49,6 @@ class SettingsController
         'site_url'            => 'string',
         'site_timezone'       => 'string',
         'site_default_locale' => 'string',
-        'maintenance_mode'    => 'boolean', // also in ACCESS_KEYS for legacy reasons; both writes touch the same row
     ];
 
     private const LAYOUT_KEYS = [
@@ -58,7 +57,6 @@ class SettingsController
         'header_show_logo'      => 'boolean',
         // Sidebar / orientation
         'layout_orientation'    => 'string',  // 'sidebar' or 'topbar'
-        'sidebar_collapsed_default' => 'boolean',
         // Footer settings (managed here now — the legacy /admin/settings/footer
         // page remains as a redirect to /admin/settings/layout)
         'footer_enabled'       => 'boolean',
@@ -186,9 +184,6 @@ class SettingsController
         // Require users to click the verification link in their welcome
         // email before their first login succeeds.
         'require_email_verify'   => 'boolean',
-        // Site-wide maintenance page — when on, only superadmins can
-        // reach non-login routes; everyone else sees the maintenance view.
-        'maintenance_mode'       => 'boolean',
         // COPPA / age-gate at registration. When `coppa_enabled` is on,
         // the registration form gains a date_of_birth field and applicants
         // under `coppa_minimum_age` are rejected with the configured

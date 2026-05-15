@@ -79,20 +79,6 @@
                 </div>
             </div>
 
-            <!-- Maintenance mode -->
-            <div class="form-group" style="padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid #fcd34d;border-radius:6px;margin-bottom:1.25rem">
-                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
-                    <?= toggle_switch('maintenance_mode', !empty($values['maintenance_mode'])) ?>
-                    Maintenance mode
-                </label>
-                <div style="font-size:12.5px;color:var(--color-warning-fg);margin-top:.35rem;line-height:1.5">
-                    <strong>Site-wide off-switch.</strong> When on, every non-login route shows
-                    a maintenance page. Only superadmins can still reach the dashboard —
-                    so make sure you have superadmin access before flipping this on.
-                    Login and logout continue to work; this is a "please come back later"
-                    banner, not a firewall.
-                </div>
-            </div>
 
         </div>
         <div class="card-footer" style="padding:.75rem 1.25rem;background:var(--color-gray-50);text-align:right">

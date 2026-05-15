@@ -26,17 +26,6 @@
                 <small style="color:var(--color-gray-500)">Sidebar suits admin-heavy sites; topbar reads better for content-first sites.</small>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px">
-                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
-                    <?= toggle_switch('sidebar_collapsed_default', !empty($values['sidebar_collapsed_default']) && $values['sidebar_collapsed_default'] !== 'false') ?>
-                    Start sidebar collapsed by default
-                </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
-                    Users can still toggle on a per-session basis; this only sets the
-                    initial state for first-load.
-                </div>
-            </div>
-
             <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Header</h3>
 
