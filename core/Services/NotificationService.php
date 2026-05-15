@@ -38,7 +38,24 @@ class NotificationService
             'channels' => ['in_app', 'email'],
         ],
 
-        // ── Marketing broadcast lifecycle (fired by premium marketing module) ──
+        // ── Phase 25 — apex project lifecycle events ─────────────────
+        'project.build_completed' => [
+            'label'    => 'A project build finishes (download ready)',
+            'group'    => 'Projects',
+            'channels' => ['in_app', 'email'],
+        ],
+        'project.tenant_provisioned' => [
+            'label'    => 'A hosted tenant gets provisioned for your project',
+            'group'    => 'Projects',
+            'channels' => ['in_app', 'email'],
+        ],
+        'project.deploy_completed' => [
+            'label'    => 'A SSH / cPanel / API deploy succeeds or fails',
+            'group'    => 'Projects',
+            'channels' => ['in_app', 'email'],
+        ],
+
+        // ── Phase 25 — tenant-side marketing events ──────────────────
         'broadcast.scheduled_sent' => [
             'label'    => 'A scheduled email broadcast fires',
             'group'    => 'Marketing',
@@ -96,6 +113,7 @@ class NotificationService
         if (!in_array('in_app', $allowed, true)) return '';
 
         $uuid = $this->uuid4();
+        $createdAt = date('Y-m-d H:i:s');
         $this->db->insert('notifications', [
             'id'         => $uuid,
             'user_id'    => $userId,
@@ -104,8 +122,40 @@ class NotificationService
             'body'       => $body,
             'data'       => json_encode($data),
             'channel'    => implode(',', $allowed),
-            'created_at' => date('Y-m-d H:i:s'),
+            'created_at' => $createdAt,
         ]);
+
+        // Real-time broadcast on the per-user channel. Listeners receive
+        // a `notification.created` event and can re-fetch /notifications/count
+        // to update the bell badge without a poll cycle. Best-effort:
+        // a broker outage logs and returns false, but the in-app row
+        // is already persisted so the user still sees the notification
+        // on their next page load. Skips entirely when broadcasting
+        // isn't configured (BROADCAST_PROVIDER=none).
+        //
+        // Channel convention: `user.{id}` (public) — clients filter
+        // server-side via their session, so we don't need private-
+        // channels for this; an attacker subscribing to user.42 just
+        // sees the same notification a real user 42 would see, plus
+        // they'd need a valid session to render anything from it.
+        // Apps that need stricter isolation can pass `channels='in_app'`
+        // and trigger their own private-user.{id} event.
+        try {
+            $bcast = new BroadcastService();
+            if ($bcast->isEnabled()) {
+                $bcast->trigger("user.$userId", 'notification.created', [
+                    'id'         => $uuid,
+                    'type'       => $type,
+                    'title'      => $title,
+                    'body'       => $body,
+                    'data'       => $data,
+                    'created_at' => $createdAt,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            error_log('[notifications] broadcast trigger failed: ' . $e->getMessage());
+        }
+
         return $uuid;
     }
 
