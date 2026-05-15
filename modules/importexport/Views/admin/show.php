@@ -1,7 +1,7 @@
 <?php $pageTitle = 'Import #' . (int) $import['id']; ?>
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
-<a href="/admin/import" style="color:#6b7280;font-size:13px;text-decoration:none">← Imports</a>
+<a href="/admin/import" style="color:var(--color-gray-500);font-size:13px;text-decoration:none">← Imports</a>
 <h1 style="margin:.5rem 0 1rem 0">Import #<?= (int) $import['id'] ?> · <?= e((string) $import['entity_type']) ?>
     <span class="badge" style="margin-left:.5rem"><?= e((string) $import['status']) ?></span>
 </h1>
@@ -11,7 +11,7 @@
     <form method="post" action="/admin/import/<?= (int) $import['id'] ?>/map">
         <?= csrf_field() ?>
         <div class="card-body">
-            <p style="color:#6b7280;font-size:13px">
+            <p style="color:var(--color-gray-500);font-size:13px">
                 File format: <code><?= e((string) $import['file_format']) ?></code> ·
                 <?= (int) $import['row_count'] ?> rows detected ·
                 Source columns: <code><?= e(implode(', ', $headers)) ?></code>
@@ -35,7 +35,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer" style="padding:.5rem 1rem;text-align:right;background:#f9fafb">
+        <div class="card-footer" style="padding:.5rem 1rem;text-align:right;background:var(--color-gray-50)">
             <button type="submit" class="btn btn-primary">Save mapping</button>
         </div>
     </form>
@@ -62,7 +62,7 @@
 <div class="card" style="margin-top:1rem">
     <div class="card-header"><strong>Result</strong></div>
     <div class="card-body">
-        <pre style="background:#f9fafb;padding:.5rem;border-radius:4px;font-size:12px;margin:0"><?= e(json_encode(json_decode((string) $import['stats_json'], true), JSON_PRETTY_PRINT)) ?></pre>
+        <pre style="background:var(--color-gray-50);padding:.5rem;border-radius:4px;font-size:12px;margin:0"><?= e(json_encode(json_decode((string) $import['stats_json'], true), JSON_PRETTY_PRINT)) ?></pre>
         <?php $errors = json_decode((string) ($import['errors_json'] ?? '[]'), true) ?: []; ?>
         <?php if (!empty($errors)): ?>
         <h4 style="margin-top:.5rem">Errors (first <?= count($errors) ?>)</h4>

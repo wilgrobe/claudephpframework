@@ -65,7 +65,7 @@ if (!is_string($__settings)) {
                  row position. JS keeps it in sync when the dropdown changes
                  (see the page-layout / system-layout editor scripts). */ ?>
         <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:11px">
-            <span class="placement-row-label" style="color:#6b7280;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            <span class="placement-row-label" style="color:var(--color-gray-500);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
                   title="<?= e($__key) ?>"><?= e($__key) ?: '—' ?></span>
             <input type="checkbox" name="placements[<?= $i ?>][_delete]" value="1" class="placement-delete-checkbox">
         </label>

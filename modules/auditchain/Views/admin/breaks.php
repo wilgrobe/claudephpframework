@@ -3,11 +3,11 @@
 
 <div style="max-width:1080px;margin:0 auto;padding:0 1rem">
 
-<div style="font-size:12px;color:#6b7280;margin-bottom:.25rem">
-    <a href="/admin/audit-chain" style="color:#4f46e5;text-decoration:none">← Audit chain</a>
+<div style="font-size:12px;color:var(--color-gray-500);margin-bottom:.25rem">
+    <a href="/admin/audit-chain" style="color:var(--color-primary);text-decoration:none">← Audit chain</a>
 </div>
 <h1 style="margin:0 0 .25rem;font-size:1.3rem;font-weight:700">Chain breaks</h1>
-<p style="margin:0 0 1rem;color:#6b7280;font-size:13.5px;line-height:1.55">
+<p style="margin:0 0 1rem;color:var(--color-gray-500);font-size:13.5px;line-height:1.55">
     Every detected mismatch between an audit_log row's stored hash and
     the recomputed value. Cause is usually one of:
     (1) a row was edited after insert (tampering),
@@ -18,7 +18,7 @@
 
 <div class="card">
     <table class="table" style="width:100%;font-size:12.5px;margin:0">
-        <thead style="background:#f9fafb">
+        <thead style="background:var(--color-gray-50)">
             <tr>
                 <th style="text-align:left;padding:.4rem .75rem">When</th>
                 <th style="text-align:left;padding:.4rem .75rem">Day</th>
@@ -30,36 +30,36 @@
         </thead>
         <tbody>
             <?php if (empty($rows)): ?>
-                <tr><td colspan="6" style="padding:1.5rem;text-align:center;color:#10b981">
+                <tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--color-success)">
                     No breaks detected. The chain is intact.
                 </td></tr>
             <?php else: foreach ($rows as $r):
                 $isAck = !empty($r['acknowledged_at']);
                 $reasonColors = [
-                    'hash_mismatch'  => '#ef4444',
-                    'prev_mismatch'  => '#f59e0b',
-                    'missing_hash'   => '#6b7280',
+                    'hash_mismatch'  => 'var(--color-danger)',
+                    'prev_mismatch'  => 'var(--color-warning)',
+                    'missing_hash'   => 'var(--color-gray-500)',
                     'row_missing'    => '#dc2626',
                     'tampered_field' => '#dc2626',
                 ];
-                $color = $reasonColors[$r['reason']] ?? '#6b7280';
+                $color = $reasonColors[$r['reason']] ?? 'var(--color-gray-500)';
             ?>
-                <tr style="border-top:1px solid #f3f4f6;<?= !$isAck ? 'background:#fef2f2' : '' ?>">
-                    <td style="padding:.4rem .75rem;color:#6b7280;font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['detected_at']))) ?></td>
-                    <td style="padding:.4rem .75rem;color:#6b7280"><?= e($r['day_anchor']) ?></td>
+                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck ? 'background:#fef2f2' : '' ?>">
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['detected_at']))) ?></td>
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500)"><?= e($r['day_anchor']) ?></td>
                     <td style="padding:.4rem .75rem">
-                        <a href="/admin/audit-log/<?= (int) $r['audit_log_id'] ?>" style="color:#4f46e5;text-decoration:none">
+                        <a href="/admin/audit-log/<?= (int) $r['audit_log_id'] ?>" style="color:var(--color-primary);text-decoration:none">
                             #<?= (int) $r['audit_log_id'] ?>
                         </a>
                     </td>
                     <td style="padding:.4rem .75rem">
                         <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
                     </td>
-                    <td style="padding:.4rem .75rem;color:#6b7280">
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500)">
                         <?php if ($isAck): ?>
                             <span style="font-size:11px">acknowledged by <?= e($r['ack_username'] ?? '?') ?></span>
                         <?php else: ?>
-                            <span style="color:#ef4444;font-size:11px;font-weight:600">unack</span>
+                            <span style="color:var(--color-danger);font-size:11px;font-weight:600">unack</span>
                         <?php endif; ?>
                     </td>
                     <td style="padding:.4rem .75rem;text-align:right">
@@ -74,7 +74,7 @@
                 </tr>
                 <?php if (!empty($r['expected_hash']) || !empty($r['expected_prev'])): ?>
                 <tr style="border-top:1px solid #fafafa;background:#fafafa">
-                    <td colspan="6" style="padding:.35rem .75rem;font-family:ui-monospace,monospace;font-size:11px;color:#6b7280">
+                    <td colspan="6" style="padding:.35rem .75rem;font-family:ui-monospace,monospace;font-size:11px;color:var(--color-gray-500)">
                         <?php if ($r['expected_prev']): ?>
                             expected_prev = <?= e(substr((string) $r['expected_prev'], 0, 16)) ?>… · observed_prev = <?= e(substr((string) ($r['observed_prev'] ?? ''), 0, 16)) ?>…
                         <?php endif; ?>

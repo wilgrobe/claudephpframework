@@ -5,11 +5,11 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
     <div>
-        <div style="font-size:12px;color:#6b7280">
-            <a href="/admin" style="color:#4f46e5;text-decoration:none">← Admin</a>
+        <div style="font-size:12px;color:var(--color-gray-500)">
+            <a href="/admin" style="color:var(--color-primary);text-decoration:none">← Admin</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.3rem;font-weight:700">Data retention</h1>
-        <p style="margin:.25rem 0 0;color:#6b7280;font-size:13.5px;line-height:1.5">
+        <p style="margin:.25rem 0 0;color:var(--color-gray-500);font-size:13.5px;line-height:1.5">
             Time-based purge / anonymise rules. The daily sweep runs every
             enabled rule; admins can also preview a count or run a rule on
             demand. Edit any rule's retention days or action; module-declared
@@ -33,15 +33,15 @@
     <div class="card-body" style="display:flex;gap:.75rem;flex-wrap:wrap;padding:1rem">
         <?php
         $cards = [
-            ['Total rules',    (int) ($totals['total']     ?? 0), '#374151'],
-            ['Enabled',        (int) ($totals['enabled']   ?? 0), '#10b981'],
-            ['Purge',          (int) ($totals['purge']     ?? 0), '#ef4444'],
-            ['Anonymize',      (int) ($totals['anonymize'] ?? 0), '#f59e0b'],
+            ['Total rules',    (int) ($totals['total']     ?? 0), 'var(--color-gray-700)'],
+            ['Enabled',        (int) ($totals['enabled']   ?? 0), 'var(--color-success)'],
+            ['Purge',          (int) ($totals['purge']     ?? 0), 'var(--color-danger)'],
+            ['Anonymize',      (int) ($totals['anonymize'] ?? 0), 'var(--color-warning)'],
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
             <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
-                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
+                <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
         <?php endforeach; ?>
@@ -59,11 +59,11 @@ foreach ($grouped as $modName => $modRules):
 ?>
 <div class="card" style="margin-bottom:1rem">
     <div class="card-header" style="padding:.75rem 1rem;background:#fafafa">
-        <strong style="font-size:13px;color:#374151"><?= htmlspecialchars((string) $modName, ENT_QUOTES) ?></strong>
-        <span style="color:#9ca3af;font-size:11.5px"> · <?= count($modRules) ?> rule<?= count($modRules) === 1 ? '' : 's' ?></span>
+        <strong style="font-size:13px;color:var(--color-gray-700)"><?= htmlspecialchars((string) $modName, ENT_QUOTES) ?></strong>
+        <span style="color:var(--color-gray-400);font-size:11.5px"> · <?= count($modRules) ?> rule<?= count($modRules) === 1 ? '' : 's' ?></span>
     </div>
     <table class="table" style="width:100%;font-size:13px;margin:0">
-        <thead style="background:#f9fafb">
+        <thead style="background:var(--color-gray-50)">
             <tr>
                 <th style="text-align:left;padding:.5rem .75rem">Rule</th>
                 <th style="text-align:left;padding:.5rem .75rem">Table</th>
@@ -76,37 +76,37 @@ foreach ($grouped as $modName => $modRules):
         </thead>
         <tbody>
             <?php foreach ($modRules as $r):
-                $actionColors = ['purge' => '#ef4444', 'anonymize' => '#f59e0b'];
-                $color = $actionColors[$r['action']] ?? '#6b7280';
-                $statusColors = ['ok' => '#10b981', 'failed' => '#ef4444', 'dry_run' => '#3b82f6'];
+                $actionColors = ['purge' => 'var(--color-danger)', 'anonymize' => 'var(--color-warning)'];
+                $color = $actionColors[$r['action']] ?? 'var(--color-gray-500)';
+                $statusColors = ['ok' => 'var(--color-success)', 'failed' => 'var(--color-danger)', 'dry_run' => 'var(--color-info)'];
             ?>
-                <tr style="border-top:1px solid #f3f4f6;<?= !$r['is_enabled'] ? 'opacity:.55' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= !$r['is_enabled'] ? 'opacity:.55' : '' ?>">
                     <td style="padding:.5rem .75rem">
                         <strong><?= htmlspecialchars((string) $r['label'], ENT_QUOTES) ?></strong>
                         <?php if (!$r['is_enabled']): ?>
-                            <span style="font-size:10px;background:#f3f4f6;color:#6b7280;padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">DISABLED</span>
+                            <span style="font-size:10px;background:var(--color-gray-100);color:var(--color-gray-500);padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">DISABLED</span>
                         <?php endif; ?>
                         <?php if ($r['source'] === 'admin_custom'): ?>
-                            <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">edited</span>
+                            <span style="font-size:10px;background:var(--color-info-bg);color:var(--color-info-fg);padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">edited</span>
                         <?php endif; ?>
-                        <div style="font-size:11.5px;color:#9ca3af;margin-top:.15rem"><code><?= htmlspecialchars((string) $r['key'], ENT_QUOTES) ?></code></div>
+                        <div style="font-size:11.5px;color:var(--color-gray-400);margin-top:.15rem"><code><?= htmlspecialchars((string) $r['key'], ENT_QUOTES) ?></code></div>
                     </td>
-                    <td style="padding:.5rem .75rem;font-family:monospace;font-size:11.5px;color:#6b7280"><?= htmlspecialchars((string) $r['table_name'], ENT_QUOTES) ?></td>
+                    <td style="padding:.5rem .75rem;font-family:monospace;font-size:11.5px;color:var(--color-gray-500)"><?= htmlspecialchars((string) $r['table_name'], ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem">
                         <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= htmlspecialchars((string) $r['action'], ENT_QUOTES) ?></span>
                     </td>
                     <td style="padding:.5rem .75rem;text-align:right;font-weight:600"><?= (int) $r['days_keep'] ?></td>
-                    <td style="padding:.5rem .75rem;font-size:12px;color:#6b7280;white-space:nowrap">
+                    <td style="padding:.5rem .75rem;font-size:12px;color:var(--color-gray-500);white-space:nowrap">
                         <?php if ($r['last_run_at']): ?>
                             <?= htmlspecialchars(date('M j, g:ia', strtotime((string) $r['last_run_at'])), ENT_QUOTES) ?>
                             <?php if ($r['last_run_status']): ?>
-                                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:<?= $statusColors[$r['last_run_status']] ?? '#6b7280' ?>;margin-left:.25rem"></span>
+                                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:<?= $statusColors[$r['last_run_status']] ?? 'var(--color-gray-500)' ?>;margin-left:.25rem"></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <em style="color:#9ca3af">never</em>
+                            <em style="color:var(--color-gray-400)">never</em>
                         <?php endif; ?>
                     </td>
-                    <td style="padding:.5rem .75rem;text-align:right;color:#6b7280"><?= $r['last_run_rows'] !== null ? number_format((int) $r['last_run_rows']) : '—' ?></td>
+                    <td style="padding:.5rem .75rem;text-align:right;color:var(--color-gray-500)"><?= $r['last_run_rows'] !== null ? number_format((int) $r['last_run_rows']) : '—' ?></td>
                     <td style="padding:.5rem .75rem;text-align:right">
                         <a href="/admin/retention/<?= (int) $r['id'] ?>" class="btn btn-secondary" style="padding:.2rem .6rem;font-size:12px">Manage</a>
                     </td>
@@ -121,7 +121,7 @@ foreach ($grouped as $modName => $modRules):
 <div class="card">
     <div class="card-header" style="padding:.75rem 1rem"><strong style="font-size:13.5px">Recent runs (last 25)</strong></div>
     <table class="table" style="width:100%;font-size:12.5px;margin:0">
-        <thead style="background:#f9fafb">
+        <thead style="background:var(--color-gray-50)">
             <tr>
                 <th style="text-align:left;padding:.4rem .75rem">When</th>
                 <th style="text-align:left;padding:.4rem .75rem">Rule</th>
@@ -133,21 +133,21 @@ foreach ($grouped as $modName => $modRules):
         </thead>
         <tbody>
             <?php foreach ($recent as $r): ?>
-                <tr style="border-top:1px solid #f3f4f6">
-                    <td style="padding:.4rem .75rem;color:#6b7280;white-space:nowrap"><?= htmlspecialchars(date('M j, g:ia', strtotime((string) $r['started_at'])), ENT_QUOTES) ?></td>
+                <tr style="border-top:1px solid var(--color-gray-100)">
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500);white-space:nowrap"><?= htmlspecialchars(date('M j, g:ia', strtotime((string) $r['started_at'])), ENT_QUOTES) ?></td>
                     <td style="padding:.4rem .75rem">
-                        <a href="/admin/retention/<?= (int) $r['rule_id'] ?>" style="color:#4f46e5;text-decoration:none"><?= htmlspecialchars((string) $r['rule_label'], ENT_QUOTES) ?></a>
+                        <a href="/admin/retention/<?= (int) $r['rule_id'] ?>" style="color:var(--color-primary);text-decoration:none"><?= htmlspecialchars((string) $r['rule_label'], ENT_QUOTES) ?></a>
                     </td>
-                    <td style="padding:.4rem .75rem;color:#6b7280"><?= htmlspecialchars((string) $r['rule_module'], ENT_QUOTES) ?></td>
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500)"><?= htmlspecialchars((string) $r['rule_module'], ENT_QUOTES) ?></td>
                     <td style="padding:.4rem .75rem;text-align:right"><?= $r['rows_affected'] !== null ? number_format((int) $r['rows_affected']) : '—' ?></td>
-                    <td style="padding:.4rem .75rem;text-align:right;color:#6b7280"><?= $r['duration_ms'] !== null ? (int) $r['duration_ms'] . ' ms' : '—' ?></td>
+                    <td style="padding:.4rem .75rem;text-align:right;color:var(--color-gray-500)"><?= $r['duration_ms'] !== null ? (int) $r['duration_ms'] . ' ms' : '—' ?></td>
                     <td style="padding:.4rem .75rem">
                         <?php if ((int) $r['dry_run'] === 1): ?>
-                            <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:.1rem .35rem;border-radius:999px">dry-run</span>
+                            <span style="font-size:10px;background:var(--color-info-bg);color:var(--color-info-fg);padding:.1rem .35rem;border-radius:999px">dry-run</span>
                         <?php elseif (!empty($r['error_message'])): ?>
-                            <span style="font-size:10px;background:#fee2e2;color:#991b1b;padding:.1rem .35rem;border-radius:999px">failed</span>
+                            <span style="font-size:10px;background:var(--color-danger-bg);color:var(--color-danger-fg);padding:.1rem .35rem;border-radius:999px">failed</span>
                         <?php else: ?>
-                            <span style="font-size:10px;background:#d1fae5;color:#065f46;padding:.1rem .35rem;border-radius:999px">ok</span>
+                            <span style="font-size:10px;background:#d1fae5;color:var(--color-success-fg);padding:.1rem .35rem;border-radius:999px">ok</span>
                         <?php endif; ?>
                     </td>
                 </tr>

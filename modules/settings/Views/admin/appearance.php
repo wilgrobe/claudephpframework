@@ -76,16 +76,16 @@
        so the body's theme-dark class doesn't bleed into it; only the
        preview's own Light/Dark sub-toggle should swap these values
        (via JS setting inline style.setProperty on this element). */
-    --color-primary: #4f46e5;
-    --color-primary-dark: #3730a3;
+    --color-primary: var(--color-primary);
+    --color-primary-dark: var(--color-primary-dark);
     --color-secondary: #0ea5e9;
-    --color-success: #10b981;
-    --color-danger: #ef4444;
-    --color-warning: #f59e0b;
-    --color-info: #3b82f6;
-    --bg-page: #f9fafb; --bg-panel: #ffffff;
-    --text-default: #111827; --text-muted: #6b7280; --text-subtle: #9ca3af;
-    --border-default: #e5e7eb; --border-strong: #d1d5db; --border-subtle: #f3f4f6;
+    --color-success: var(--color-success);
+    --color-danger: var(--color-danger);
+    --color-warning: var(--color-warning);
+    --color-info: var(--color-info);
+    --bg-page: var(--color-gray-50); --bg-panel: #ffffff;
+    --text-default: var(--color-gray-900); --text-muted: var(--color-gray-500); --text-subtle: var(--color-gray-400);
+    --border-default: var(--color-gray-200); --border-strong: var(--color-gray-300); --border-subtle: var(--color-gray-100);
     --accent-subtle: #eef2ff; --accent-contrast: #ffffff;
     --radius-md: 8px; --radius-sm: 4px; --radius-lg: 12px;
     --font-family-body: 'Inter', system-ui, sans-serif;

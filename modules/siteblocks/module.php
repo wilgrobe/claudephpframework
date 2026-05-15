@@ -190,7 +190,7 @@ return new class extends ModuleProvider {
                     if ($embedSrc === null) {
                         $auth = \Core\Auth\Auth::getInstance();
                         return $auth->hasRole(['super-admin','admin'])
-                            ? '<div class="siteblock-video-error" style="background:#fef3c7;border:1px dashed #fcd34d;color:#92400e;padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognised — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
+                            ? '<div class="siteblock-video-error" style="background:var(--color-warning-bg);border:1px dashed #fcd34d;color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognised — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
                             : '';
                     }
 
@@ -395,7 +395,7 @@ return new class extends ModuleProvider {
                         $u = $auth->user();
                         $name = htmlspecialchars((string) ($u['username'] ?? $u['email'] ?? 'you'), ENT_QUOTES | ENT_HTML5);
                         return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;text-align:center">'
-                             . '<p style="margin:0 0 .75rem;font-size:14px;color:#374151">You\'re signed in as <strong>@' . $name . '</strong>.</p>'
+                             . '<p style="margin:0 0 .75rem;font-size:14px;color:var(--color-gray-700)">You\'re signed in as <strong>@' . $name . '</strong>.</p>'
                              . '<form method="POST" action="/logout" style="display:inline">' . csrf_field()
                              . '<button type="submit" class="btn btn-sm btn-secondary">Sign out</button>'
                              . '</form>'
@@ -665,7 +665,7 @@ return new class extends ModuleProvider {
 
                         $featureHtml = '';
                         foreach ($features as $f) {
-                            $featureHtml .= '<li style="padding:.35rem 0;color:#374151">✓ '
+                            $featureHtml .= '<li style="padding:.35rem 0;color:var(--color-gray-700)">✓ '
                                           . htmlspecialchars((string) $f, ENT_QUOTES | ENT_HTML5) . '</li>';
                         }
 
@@ -928,9 +928,9 @@ return new class extends ModuleProvider {
                         $suffix = htmlspecialchars((string) ($s['suffix'] ?? ''), ENT_QUOTES | ENT_HTML5);
                         $cellsHtml .= '<div style="text-align:center;padding:1rem">'
                                     . '<div style="font-size:2.5rem;font-weight:800;color:var(--color-primary);line-height:1.1">'
-                                    .   ($prefix !== '' ? '<span style="font-size:1.5rem;font-weight:700;vertical-align:top;color:#6366f1">' . $prefix . '</span>' : '')
+                                    .   ($prefix !== '' ? '<span style="font-size:1.5rem;font-weight:700;vertical-align:top;color:var(--color-primary)">' . $prefix . '</span>' : '')
                                     .   $value
-                                    .   ($suffix !== '' ? '<span style="font-size:1.5rem;font-weight:700;color:#6366f1">' . $suffix . '</span>' : '')
+                                    .   ($suffix !== '' ? '<span style="font-size:1.5rem;font-weight:700;color:var(--color-primary)">' . $suffix . '</span>' : '')
                                     . '</div>'
                                     . ($label !== '' ? '<div style="color:var(--text-muted);font-size:13px;margin-top:.35rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600">' . $label . '</div>' : '')
                                     . '</div>';

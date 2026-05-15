@@ -318,7 +318,7 @@ final class WebhookDashboardController
         $color = match ((string) $r['event_type']) {
             'hard_bounce', 'bounce', 'complaint', 'spam' => '#dc2626',
             'delivered', 'opened', 'open'                => '#16a34a',
-            default                                      => '#6b7280',
+            default                                      => 'var(--color-gray-500)',
         };
         return [
             'kind'          => 'email',

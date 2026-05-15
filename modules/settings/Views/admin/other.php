@@ -18,7 +18,7 @@
 }
 .add-setting-dialog .dialog-header {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--color-gray-200);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -33,15 +33,15 @@
     border: 0;
     font-size: 1.4rem;
     line-height: 1;
-    color: #6b7280;
+    color: var(--color-gray-500);
     cursor: pointer;
     padding: 0 .25rem;
 }
 .add-setting-dialog .dialog-body { padding: 1rem 1.25rem; }
 .add-setting-dialog .dialog-footer {
     padding: .75rem 1.25rem;
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+    background: var(--color-gray-50);
+    border-top: 1px solid var(--color-gray-200);
     display: flex;
     justify-content: flex-end;
     gap: .5rem;
@@ -51,7 +51,7 @@
    cell uses 100% so the input grows with available width. */
 .other-grid .col-key   { width: 30%; min-width: 220px; font-family: monospace; font-size: 12.5px; }
 .other-grid .col-value { width: 100%; }
-.other-grid .col-type  { width: 90px; color: #6b7280; font-size: 12.5px; }
+.other-grid .col-type  { width: 90px; color: var(--color-gray-500); font-size: 12.5px; }
 .other-grid .col-act   { width: 50px; text-align: right; }
 .other-grid .col-value input { width: 100%; }
 </style>
@@ -59,7 +59,7 @@
 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem">
     <div>
         <h1 style="margin:0;font-size:1.4rem">Other / Unmanaged</h1>
-        <p style="color:#6b7280;font-size:13.5px;margin:.35rem 0 0;max-width:640px">
+        <p style="color:var(--color-gray-500);font-size:13.5px;margin:.35rem 0 0;max-width:640px">
             Free-form key/value rows that aren't claimed by any panel.
             In a healthy install this is mostly empty — anything common
             ends up on its own panel. Use this grid for ad-hoc /
@@ -76,7 +76,7 @@
     <div class="card-header"><h2 style="margin:0;font-size:1rem">Site Settings</h2></div>
     <?php if (empty($settings)): ?>
     <div class="card-body">
-        <p style="color:#6b7280;margin:0">
+        <p style="color:var(--color-gray-500);margin:0">
             No ad-hoc settings yet. Every site-level setting is currently claimed by a panel.
             Click <strong>+ Add setting</strong> above to create a custom one.
         </p>
@@ -113,7 +113,7 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <div class="card-body" style="background:#f9fafb;border-top:1px solid #e5e7eb;text-align:right">
+        <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);text-align:right">
             <button type="submit" class="btn btn-primary">Save All</button>
         </div>
     </form>
@@ -147,7 +147,7 @@
             <div class="form-group">
                 <label for="new_key">Key</label>
                 <input name="new_key" class="form-control" placeholder="namespace.key_name" required autofocus id="new_key">
-                <small style="color:#6b7280">Convention: lowercase + dots / underscores. e.g. <code>integrations.foo_token</code>.</small>
+                <small style="color:var(--color-gray-500)">Convention: lowercase + dots / underscores. e.g. <code>integrations.foo_token</code>.</small>
             </div>
             <div class="form-group">
                 <label for="new_value">Value</label>

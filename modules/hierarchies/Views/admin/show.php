@@ -2,7 +2,7 @@
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
 <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-    <a href="/admin/hierarchies" style="color:#6b7280;text-decoration:none;font-size:13px">← All hierarchies</a>
+    <a href="/admin/hierarchies" style="color:var(--color-gray-500);text-decoration:none;font-size:13px">← All hierarchies</a>
     <h1 style="margin:0;font-size:1.5rem;flex:1"><?= e($hierarchy['name']) ?></h1>
     <code><?= e($hierarchy['slug']) ?></code>
 </div>
@@ -18,14 +18,14 @@
             if (empty($nodes)) return;
             echo '<ul style="list-style:none;padding-left:' . ($depth ? '1.25rem' : '0') . '">';
             foreach ($nodes as $n) {
-                echo '<li style="padding:.25rem 0;border-bottom:1px solid #f3f4f6">';
+                echo '<li style="padding:.25rem 0;border-bottom:1px solid var(--color-gray-100)">';
                 echo '<div style="display:flex;align-items:center;gap:.5rem">';
                 echo '<strong>' . e($n['label']) . '</strong>';
-                echo '<code style="color:#9ca3af;font-size:11px">' . e($n['slug']) . '</code>';
-                if (!empty($n['url'])) echo '<a href="' . e($n['url']) . '" style="font-size:11px;color:#6b7280" target="_blank">' . e($n['url']) . '</a>';
+                echo '<code style="color:var(--color-gray-400);font-size:11px">' . e($n['slug']) . '</code>';
+                if (!empty($n['url'])) echo '<a href="' . e($n['url']) . '" style="font-size:11px;color:var(--color-gray-500)" target="_blank">' . e($n['url']) . '</a>';
                 echo '<span style="margin-left:auto;display:flex;gap:.25rem">';
-                echo '<details style="display:inline-block"><summary style="cursor:pointer;color:#6b7280;font-size:12px">Add child</summary>';
-                echo '<form method="post" action="/admin/hierarchies/' . (int) $n['hierarchy_id'] . '/nodes" style="margin-top:.25rem;padding:.5rem;background:#f9fafb;border-radius:4px">';
+                echo '<details style="display:inline-block"><summary style="cursor:pointer;color:var(--color-gray-500);font-size:12px">Add child</summary>';
+                echo '<form method="post" action="/admin/hierarchies/' . (int) $n['hierarchy_id'] . '/nodes" style="margin-top:.25rem;padding:.5rem;background:var(--color-gray-50);border-radius:4px">';
                 echo csrf_field();
                 echo '<input type="hidden" name="parent_id" value="' . (int) $n['id'] . '">';
                 echo '<input name="label" placeholder="Label" required>';
@@ -46,7 +46,7 @@
         };
         ?>
         <?php if (empty($tree)): ?>
-        <div style="text-align:center;color:#6b7280;padding:1.5rem">Empty — add a root node from the right panel.</div>
+        <div style="text-align:center;color:var(--color-gray-500);padding:1.5rem">Empty — add a root node from the right panel.</div>
         <?php else: ?>
         <?php $render($tree, 0); ?>
         <?php endif; ?>
@@ -63,9 +63,9 @@
                 <label style="display:block;margin-top:.5rem">Slug <input name="slug" style="width:100%" placeholder="auto from label"></label>
                 <label style="display:block;margin-top:.5rem">URL <input name="url" style="width:100%"></label>
                 <label style="display:block;margin-top:.5rem">Icon <input name="icon" style="width:100%"></label>
-                <label style="display:block;margin-top:.5rem">Color <input name="color" style="width:100%" placeholder="#3b82f6"></label>
+                <label style="display:block;margin-top:.5rem">Color <input name="color" style="width:100%" placeholder="var(--color-info)"></label>
             </div>
-            <div class="card-footer" style="padding:.5rem;background:#f9fafb;text-align:right">
+            <div class="card-footer" style="padding:.5rem;background:var(--color-gray-50);text-align:right">
                 <button type="submit" class="btn btn-sm btn-primary">Add root</button>
             </div>
         </form>
@@ -73,11 +73,11 @@
 
     <div class="card" style="margin-top:1rem">
         <div class="card-header"><strong>Embed this tree</strong></div>
-        <div class="card-body" style="font-size:12px;color:#6b7280">
+        <div class="card-body" style="font-size:12px;color:var(--color-gray-500)">
             In a view:
-            <pre style="background:#f3f4f6;padding:.5rem;border-radius:4px;margin-top:.25rem"><?= e('<?= render_hierarchy_nav(\'' . $hierarchy['slug'] . '\') ?>') ?></pre>
+            <pre style="background:var(--color-gray-100);padding:.5rem;border-radius:4px;margin-top:.25rem"><?= e('<?= render_hierarchy_nav(\'' . $hierarchy['slug'] . '\') ?>') ?></pre>
             Or read the tree directly:
-            <pre style="background:#f3f4f6;padding:.5rem;border-radius:4px;margin-top:.25rem"><?= e('$tree = hierarchy_tree(\'' . $hierarchy['slug'] . '\');') ?></pre>
+            <pre style="background:var(--color-gray-100);padding:.5rem;border-radius:4px;margin-top:.25rem"><?= e('$tree = hierarchy_tree(\'' . $hierarchy['slug'] . '\');') ?></pre>
         </div>
     </div>
 </aside>

@@ -13,15 +13,15 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #e5e7eb;
-    color: #6b7280;
+    background: var(--color-gray-200);
+    color: var(--color-gray-500);
     font-size: 11px;
     font-weight: 600;
     cursor: help;
     margin-left: .35rem;
     user-select: none;
 }
-.help-icon:hover { background: #d1d5db; color: #374151; }
+.help-icon:hover { background: var(--color-gray-300); color: var(--color-gray-700); }
 
 .field-row {
     display: flex;
@@ -29,14 +29,14 @@
     justify-content: space-between;
     gap: 1rem;
     padding: .85rem 0;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--color-gray-100);
 }
 .field-row:last-child { border-bottom: 0; }
 .field-row label.field-label {
     flex: 1;
     font-size: 14px;
     font-weight: 500;
-    color: #111827;
+    color: var(--color-gray-900);
     cursor: pointer;
     margin: 0;
     display: flex;
@@ -46,21 +46,21 @@
 .field-row .field-control input[type="number"] {
     width: 110px;
     padding: .35rem .5rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--color-gray-300);
     border-radius: 4px;
     font-size: 14px;
 }
 .field-row .field-control input[type="text"] {
     width: 240px;
     padding: .35rem .5rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--color-gray-300);
     border-radius: 4px;
     font-size: 14px;
 }
 </style>
 
 <h1 style="margin:0 0 1rem;font-size:1.4rem">Members</h1>
-<p style="color:#6b7280;font-size:13.5px;margin:0 0 1.25rem">
+<p style="color:var(--color-gray-500);font-size:13.5px;margin:0 0 1.25rem">
     Who can join the site, how their accounts get verified, and the
     rules that govern group membership. Hover the
     <span class="help-icon">i</span> icons for details on each setting.
@@ -139,7 +139,7 @@
             </div>
 
         </div>
-        <div class="card-body" style="background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save Access</button>
         </div>
     </form>
@@ -174,7 +174,7 @@
             </div>
 
         </div>
-        <div class="card-body" style="background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save Groups</button>
         </div>
     </form>
@@ -183,21 +183,21 @@
 <div class="card">
     <div class="card-header"><h3 style="margin:0;font-size:.95rem">Member tools</h3></div>
     <div class="card-body" style="display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr))">
-        <a href="/admin/users" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/users" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Users</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Search, edit, deactivate, role assignment.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Search, edit, deactivate, role assignment.</div>
         </a>
-        <a href="/admin/roles" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/roles" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Roles &amp; permissions</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Custom role definitions + permission grants.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Custom role definitions + permission grants.</div>
         </a>
-        <a href="/admin/groups" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/groups" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Groups</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Group membership + per-group roles.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Group membership + per-group roles.</div>
         </a>
-        <a href="/admin/coppa" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/coppa" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>COPPA rejections</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Audit-log review of registrations blocked under the age gate.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Audit-log review of registrations blocked under the age gate.</div>
         </a>
     </div>
 </div>

@@ -8,15 +8,15 @@
         <a href="/profile/2fa" class="btn btn-secondary btn-sm">Cancel</a>
     </div>
     <div class="card-body">
-        <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:1rem;margin-bottom:1.25rem;display:flex;gap:.75rem;align-items:flex-start">
+        <div style="background:var(--color-danger-bg);border:1px solid #fca5a5;border-radius:8px;padding:1rem;margin-bottom:1.25rem;display:flex;gap:.75rem;align-items:flex-start">
             <span style="font-size:1.3rem;flex-shrink:0">⚠️</span>
-            <div style="font-size:13.5px;color:#991b1b;line-height:1.5">
+            <div style="font-size:13.5px;color:var(--color-danger-fg);line-height:1.5">
                 Disabling two-factor authentication will make your account less secure. You will no longer need a second step when signing in.
             </div>
         </div>
 
         <?php $error = \Core\Session::flash('error'); ?>
-        <?php if ($error): ?><div style="background:#fee2e2;color:#991b1b;padding:.75rem 1rem;border-radius:6px;font-size:13.5px;border:1px solid #fca5a5;margin-bottom:1rem"><?= e($error) ?></div><?php endif; ?>
+        <?php if ($error): ?><div style="background:var(--color-danger-bg);color:var(--color-danger-fg);padding:.75rem 1rem;border-radius:6px;font-size:13.5px;border:1px solid #fca5a5;margin-bottom:1rem"><?= e($error) ?></div><?php endif; ?>
 
         <form method="POST" action="/profile/2fa/disable">
             <?= csrf_field() ?>

@@ -85,7 +85,7 @@ return new class extends ModuleProvider {
                        . '</div><div class="card-body" style="padding:0">';
 
                     if (empty($items)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#6b7280;font-size:13px;margin:0">No notifications yet.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--color-gray-500);font-size:13px;margin:0">No notifications yet.</p>';
                     } else {
                         foreach (array_slice($items, 0, $limit) as $n) {
                             $id    = htmlspecialchars((string) ($n['id'] ?? ''), ENT_QUOTES | ENT_HTML5);
@@ -104,7 +104,7 @@ return new class extends ModuleProvider {
                             }
                             $h .= '<div style="font-weight:' . ($unread ? '600' : '500') . ';font-size:13px;color:#111827;padding-right:1rem">' . $title . '</div>';
                             if ($body !== '') {
-                                $h .= '<div style="font-size:12px;color:#6b7280;margin-top:.15rem;line-height:1.4">' . $body . '</div>';
+                                $h .= '<div style="font-size:12px;color:var(--color-gray-500);margin-top:.15rem;line-height:1.4">' . $body . '</div>';
                             }
                             if ($whenStr !== '') {
                                 $h .= '<div style="font-size:11px;color:#9ca3af;margin-top:.25rem">' . $whenStr . '</div>';

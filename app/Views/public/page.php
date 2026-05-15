@@ -68,13 +68,13 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     <style>
     /* Scoped hero/body styles — only included on authed renders so the
        guest standalone shell keeps using its own definitions below. */
-    .page-hero { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 2rem 1.5rem; text-align: center; margin-bottom: 1rem; border-radius: 8px; }
+    .page-hero { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 2rem 1.5rem; text-align: center; margin-bottom: 1rem; border-radius: 8px; }
     .page-hero h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
     .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 1.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; }
     .page-body h2 { font-size: 1.3rem; margin-top: 1.75rem; }
     .page-body h3 { font-size: 1.1rem; margin-top: 1.25rem; }
     .page-body p  { margin: 0 0 1rem; }
-    .page-body a  { color: #4f46e5; }
+    .page-body a  { color: var(--color-primary); }
     .page-body ul, .page-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
     </style>
 
@@ -130,26 +130,26 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     ?>
     <style>
     *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font-family-body, 'Inter', system-ui, sans-serif); background: var(--bg-page, #f9fafb); color: var(--text-default, #111827); }
+    body { margin: 0; font-family: var(--font-family-body, 'Inter', system-ui, sans-serif); background: var(--bg-page, var(--color-gray-50)); color: var(--text-default, var(--color-gray-900)); }
     .site-header {
-        background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, #e5e7eb); padding: .85rem 1.5rem;
+        background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, var(--color-gray-200)); padding: .85rem 1.5rem;
         display: flex; align-items: center; justify-content: space-between;
     }
-    .site-logo { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--text-default, #111827); }
+    .site-logo { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--text-default, var(--color-gray-900)); }
     .nav-links { display: flex; gap: 1.25rem; align-items: center; }
-    .nav-links a { text-decoration: none; color: var(--text-default, #374151); font-size: 14px; }
-    .nav-links a:hover { color: var(--color-primary, #4f46e5); }
-    .btn-login { background: var(--color-primary, #4f46e5); color: var(--accent-contrast, #fff) !important; padding: .4rem .9rem; border-radius: var(--radius-md, 6px); font-size: 13.5px; font-weight: 500; }
+    .nav-links a { text-decoration: none; color: var(--text-default, var(--color-gray-700)); font-size: 14px; }
+    .nav-links a:hover { color: var(--color-primary, var(--color-primary)); }
+    .btn-login { background: var(--color-primary, var(--color-primary)); color: var(--accent-contrast, #fff) !important; padding: .4rem .9rem; border-radius: var(--radius-md, 6px); font-size: 13.5px; font-weight: 500; }
 
-    .page-hero { background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, #e5e7eb); padding: 3rem 1.5rem; text-align: center; }
-    .page-hero h1 { font-family: var(--font-family-heading, inherit); font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; color: var(--text-default, #111827); }
-    .page-hero .meta { color: var(--text-muted, #6b7280); font-size: 13.5px; }
+    .page-hero { background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, var(--color-gray-200)); padding: 3rem 1.5rem; text-align: center; }
+    .page-hero h1 { font-family: var(--font-family-heading, inherit); font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; color: var(--text-default, var(--color-gray-900)); }
+    .page-hero .meta { color: var(--text-muted, var(--color-gray-500)); font-size: 13.5px; }
 
-    .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 2.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; color: var(--text-default, #111827); }
+    .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 2.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; color: var(--text-default, var(--color-gray-900)); }
     .page-body h2 { font-family: var(--font-family-heading, inherit); font-size: 1.4rem; margin-top: 2rem; }
     .page-body h3 { font-family: var(--font-family-heading, inherit); font-size: 1.15rem; margin-top: 1.5rem; }
     .page-body p { margin: 0 0 1rem; }
-    .page-body a { color: var(--color-primary, #4f46e5); }
+    .page-body a { color: var(--color-primary, var(--color-primary)); }
     .page-body ul, .page-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
 
     /* .site-footer styles now live in app/Views/partials/site_footer.php so
@@ -161,16 +161,16 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
        guest shell doesn't need an extra stylesheet load. */
     .skip-link {
         position: absolute; top: -40px; left: 0;
-        background: var(--color-primary, #4f46e5); color: var(--accent-contrast, #fff); padding: .5rem 1rem;
+        background: var(--color-primary, var(--color-primary)); color: var(--accent-contrast, #fff); padding: .5rem 1rem;
         z-index: 9999; font-size: 13.5px; font-weight: 600;
         border-radius: 0 0 6px 0; transition: top .15s;
         text-decoration: none;
     }
     .skip-link:focus { top: 0; }
-    :focus-visible { outline: 2px solid var(--color-primary, #4f46e5); outline-offset: 2px; }
+    :focus-visible { outline: 2px solid var(--color-primary, var(--color-primary)); outline-offset: 2px; }
     a:focus-visible, button:focus-visible, input:focus-visible,
     select:focus-visible, textarea:focus-visible {
-        outline: 2px solid var(--color-primary, #4f46e5); outline-offset: 2px; border-radius: 4px;
+        outline: 2px solid var(--color-primary, var(--color-primary)); outline-offset: 2px; border-radius: 4px;
     }
     </style>
 </head>

@@ -17,13 +17,13 @@
 <div class="card">
     <div class="card-body" style="text-align:center;padding:3rem">
         <div style="font-size:2.5rem;margin-bottom:.75rem">🔔</div>
-        <p style="color:#6b7280;margin:0">No notifications yet.</p>
+        <p style="color:var(--color-gray-500);margin:0">No notifications yet.</p>
     </div>
 </div>
 <?php else: ?>
 <div style="display:flex;flex-direction:column;gap:.5rem">
 <?php foreach ($notifications as $n): ?>
-<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background:#fff;border:1px solid <?= $n['read_at'] ? '#e5e7eb' : '#c7d2fe' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:#f5f3ff;' : '' ?>">
+<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background:#fff;border:1px solid <?= $n['read_at'] ? 'var(--color-gray-200)' : '#c7d2fe' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:#f5f3ff;' : '' ?>">
     <?php if (!empty($n['can_delete'])): ?>
     <!-- Dismiss (×). Only rendered once the notification is read AND any
          action it carried has been resolved. Controller enforces the same
@@ -31,7 +31,7 @@
     <button type="button" onclick="dismissNotification(this)"
             title="Dismiss"
             aria-label="Dismiss notification"
-            style="position:absolute;top:.4rem;right:.55rem;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;line-height:1;padding:.15rem .35rem;border-radius:4px">×</button>
+            style="position:absolute;top:.4rem;right:.55rem;background:none;border:none;cursor:pointer;color:var(--color-gray-400);font-size:16px;line-height:1;padding:.15rem .35rem;border-radius:4px">×</button>
     <?php endif; ?>
     <div style="font-size:1.4rem;flex-shrink:0">
         <?php
@@ -49,11 +49,11 @@
         ?>
     </div>
     <div style="flex:1;min-width:0">
-        <div class="notif-title" style="font-weight:<?= $n['read_at'] ? '400' : '600' ?>;font-size:14px;color:#111827">
+        <div class="notif-title" style="font-weight:<?= $n['read_at'] ? '400' : '600' ?>;font-size:14px;color:var(--color-gray-900)">
             <?= e($n['title'] ?? $n['type']) ?>
         </div>
         <?php if ($n['body']): ?>
-        <div style="color:#6b7280;font-size:13.5px;margin-top:.2rem"><?= e($n['body']) ?></div>
+        <div style="color:var(--color-gray-500);font-size:13.5px;margin-top:.2rem"><?= e($n['body']) ?></div>
         <?php endif; ?>
         <?php
         // Extract action data from the notification payload. Different
@@ -89,7 +89,7 @@
                 <?= csrf_field() ?>
                 <button type="submit" class="btn btn-xs btn-primary">Accept</button>
             </form>
-            <a href="<?= e($joinUrl) ?>" style="font-size:13px;color:#6b7280;text-decoration:none">
+            <a href="<?= e($joinUrl) ?>" style="font-size:13px;color:var(--color-gray-500);text-decoration:none">
                 View details
             </a>
         </div>
@@ -101,22 +101,22 @@
         </div>
 
         <?php elseif ($joinUrl): ?>
-        <a href="<?= e($joinUrl) ?>" style="font-size:13px;color:#4f46e5;text-decoration:none;display:inline-block;margin-top:.35rem">
+        <a href="<?= e($joinUrl) ?>" style="font-size:13px;color:var(--color-primary);text-decoration:none;display:inline-block;margin-top:.35rem">
             View invitation →
         </a>
         <?php endif; ?>
     </div>
     <div style="flex-shrink:0;text-align:right">
-        <div style="font-size:12px;color:#9ca3af;white-space:nowrap">
+        <div style="font-size:12px;color:var(--color-gray-400);white-space:nowrap">
             <?= date('M j, g:i A', strtotime($n['created_at'])) ?>
         </div>
         <?php if (!$n['read_at']): ?>
         <button onclick="markRead('<?= e($n['id']) ?>', this)"
-                style="font-size:11px;color:#4f46e5;background:none;border:none;cursor:pointer;padding:0;margin-top:.3rem">
+                style="font-size:11px;color:var(--color-primary);background:none;border:none;cursor:pointer;padding:0;margin-top:.3rem">
             Mark read
         </button>
         <?php else: ?>
-        <div style="font-size:11px;color:#9ca3af;margin-top:.3rem">Read</div>
+        <div style="font-size:11px;color:var(--color-gray-400);margin-top:.3rem">Read</div>
         <?php endif; ?>
     </div>
 </div>
@@ -150,14 +150,14 @@ async function markRead(id, btn) {
     if (res && res.error) { alert(res.error); return; }
 
     row.style.background  = '#fff';
-    row.style.borderColor = '#e5e7eb';
+    row.style.borderColor = 'var(--color-gray-200)';
     const title = row.querySelector('.notif-title');
     if (title) title.style.fontWeight = '400';
 
     // Swap the button for a plain "Read" marker so the spot doesn't
     // visually collapse.
     const readMark = document.createElement('div');
-    readMark.style.cssText = 'font-size:11px;color:#9ca3af;margin-top:.3rem';
+    readMark.style.cssText = 'font-size:11px;color:var(--color-gray-400);margin-top:.3rem';
     readMark.textContent = 'Read';
     btn.replaceWith(readMark);
 }

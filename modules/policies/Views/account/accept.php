@@ -11,7 +11,7 @@
 }
 .policy-accept-panel {
     background: var(--bg-card, #fff);
-    color: var(--text-default, #111827);
+    color: var(--text-default, var(--color-gray-900));
     width: min(720px, 100%);
     max-height: calc(100vh - 2rem);
     border-radius: 10px;
@@ -21,10 +21,10 @@
 }
 .policy-accept-header {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-default, #e5e7eb);
+    border-bottom: 1px solid var(--border-default, var(--color-gray-200));
 }
 .policy-accept-header h1 { margin: 0 0 .35rem; font-size: 1.25rem; }
-.policy-accept-header p  { margin: 0; color: var(--text-muted, #6b7280); font-size: 13.5px; line-height: 1.55; }
+.policy-accept-header p  { margin: 0; color: var(--text-muted, var(--color-gray-500)); font-size: 13.5px; line-height: 1.55; }
 .policy-accept-body {
     padding: 1rem 1.5rem;
     overflow-y: auto;
@@ -32,25 +32,25 @@
 }
 .policy-accept-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border-default, #e5e7eb);
-    background: var(--bg-page, #f9fafb);
+    border-top: 1px solid var(--border-default, var(--color-gray-200));
+    background: var(--bg-page, var(--color-gray-50));
     display: flex; gap: .75rem; justify-content: flex-end; align-items: center;
 }
 .policy-row {
     padding: .9rem 0;
-    border-bottom: 1px solid var(--border-default, #f3f4f6);
+    border-bottom: 1px solid var(--border-default, var(--color-gray-100));
 }
 .policy-row:last-of-type { border-bottom: 0; }
 .policy-row__title { font-weight: 600; font-size: 14px; margin-bottom: .25rem; }
-.policy-row__meta  { font-size: 12px; color: var(--text-muted, #6b7280); }
+.policy-row__meta  { font-size: 12px; color: var(--text-muted, var(--color-gray-500)); }
 .policy-row__summary {
     margin-top: .35rem;
     background: var(--bg-page, #fafafa);
     padding: .5rem .75rem;
-    border-left: 3px solid var(--color-primary, #4f46e5);
+    border-left: 3px solid var(--color-primary, var(--color-primary));
     border-radius: 4px;
     font-size: 13px;
-    color: var(--text-default, #374151);
+    color: var(--text-default, var(--color-gray-700));
 }
 .policy-row__check {
     margin-top: .55rem;
@@ -58,7 +58,7 @@
     font-size: 13px;
 }
 .policy-row__check input { margin-top: .2rem; }
-.policy-row__check a { color: var(--color-primary, #4f46e5); text-decoration: none; }
+.policy-row__check a { color: var(--color-primary, var(--color-primary)); text-decoration: none; }
 .policy-row__check a:hover { text-decoration: underline; }
 </style>
 
@@ -83,7 +83,7 @@
                     $effective    = htmlspecialchars(date('M j, Y', strtotime((string) $u['effective_date'])), ENT_QUOTES);
                 ?>
                 <div class="policy-row">
-                    <div class="policy-row__title"><?= $kindLabel ?> <span style="font-weight:400;color:#6b7280">— v<?= $versionLabel ?></span></div>
+                    <div class="policy-row__title"><?= $kindLabel ?> <span style="font-weight:400;color:var(--color-gray-500)">— v<?= $versionLabel ?></span></div>
                     <div class="policy-row__meta">Effective <?= $effective ?></div>
 
                     <?php if (!empty($u['summary'])): ?>
@@ -107,7 +107,7 @@
             </div>
 
             <footer class="policy-accept-footer">
-                <a href="/logout" style="font-size:12.5px;color:#6b7280;text-decoration:none;margin-right:auto">
+                <a href="/logout" style="font-size:12.5px;color:var(--color-gray-500);text-decoration:none;margin-right:auto">
                     Sign out instead
                 </a>
                 <button type="submit" class="btn btn-primary" style="font-size:13.5px">

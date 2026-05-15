@@ -24,20 +24,20 @@
                 <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.5rem">
                     <?php if (!empty($user['avatar'])): ?>
                     <img src="<?= e($user['avatar']) ?>" alt="Current avatar"
-                         style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb">
+                         style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--color-gray-200)">
                     <?php else: ?>
-                    <div style="width:56px;height:56px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">
+                    <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">
                         <?= e(strtoupper(substr($user['first_name']??'?',0,1))) ?>
                     </div>
                     <?php endif; ?>
                     <div>
                         <input type="file" name="avatar" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp"
                                style="font-size:13px" onchange="previewAvatar(this)">
-                        <div style="font-size:11.5px;color:#6b7280;margin-top:.2rem">JPEG, PNG, GIF or WebP · max 2 MB</div>
+                        <div style="font-size:11.5px;color:var(--color-gray-500);margin-top:.2rem">JPEG, PNG, GIF or WebP · max 2 MB</div>
                     </div>
                 </div>
                 <?php if (!empty($errors['avatar'])): ?><span class="form-error"><?= e($errors['avatar'][0]) ?></span><?php endif; ?>
-                <img id="avatar-preview" src="" alt="" style="display:none;width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #4f46e5;margin-top:.5rem">
+                <img id="avatar-preview" src="" alt="" style="display:none;width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--color-primary);margin-top:.5rem">
             </div>
 
             <div class="grid grid-2">
@@ -57,7 +57,7 @@
 
             <div class="form-group">
                 <label for="phone">Phone Number
-                    <span style="font-weight:400;color:#6b7280;font-size:12px">(required for SMS two-factor authentication)</span>
+                    <span style="font-weight:400;color:var(--color-gray-500);font-size:12px">(required for SMS two-factor authentication)</span>
                 </label>
                 <input type="tel" name="phone" class="form-control" value="<?= e($user['phone'] ?? '')?>" placeholder="+1 555 000 0000" id="phone">
                 <?php if (!empty($errors['phone'])): ?><span class="form-error"><?= e($errors['phone'][0]) ?></span><?php endif; ?>
@@ -68,8 +68,8 @@
                 <textarea name="bio" class="form-control" rows="3" maxlength="1000" id="bio"><?= e($user['bio'] ?? '') ?></textarea>
             </div>
 
-            <div style="border-top:1px solid #e5e7eb;margin:1.25rem 0;padding-top:1.25rem">
-                <div style="font-weight:600;font-size:14px;margin-bottom:.75rem">Change Password <span style="font-weight:400;color:#6b7280">(leave blank to keep current)</span></div>
+            <div style="border-top:1px solid var(--color-gray-200);margin:1.25rem 0;padding-top:1.25rem">
+                <div style="font-weight:600;font-size:14px;margin-bottom:.75rem">Change Password <span style="font-weight:400;color:var(--color-gray-500)">(leave blank to keep current)</span></div>
                 <div class="form-group">
                     <label for="password-input">New Password</label>
                     <input type="password" id="password-input" name="password" class="form-control <?= !empty($errors['password'])?'is-invalid':'' ?>"

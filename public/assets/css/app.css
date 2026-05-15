@@ -11,13 +11,26 @@
     --color-danger:       #ef4444;
     --color-warning:      #f59e0b;
     --color-info:         #3b82f6;
+    --color-purple:       #7c3aed;
     --color-gray-50:      #f9fafb;
     --color-gray-100:     #f3f4f6;
     --color-gray-200:     #e5e7eb;
     --color-gray-300:     #d1d5db;
+    --color-gray-400:     #9ca3af;
     --color-gray-500:     #6b7280;
     --color-gray-700:     #374151;
     --color-gray-900:     #111827;
+    /* Soft background variants — for status pills, alert tints, focus rings */
+    --color-success-bg:   #ecfdf5;
+    --color-success-fg:   #065f46;
+    --color-warning-bg:   #fef3c7;
+    --color-warning-fg:   #92400e;
+    --color-danger-bg:    #fee2e2;
+    --color-danger-fg:    #991b1b;
+    --color-info-bg:      #dbeafe;
+    --color-info-fg:      #1e40af;
+    --color-purple-bg:    #ede9fe;
+    --color-purple-fg:    #5b21b6;
     --font:               'Inter', system-ui, -apple-system, sans-serif;
     --radius:             8px;
     --radius-lg:          12px;
@@ -160,6 +173,144 @@ textarea:focus-visible {
     .card-header { flex-wrap: wrap; gap: .5rem; }
 }
 
+/* ── Shared components ───────────────────────────────────────
+   These were originally only inlined as critical CSS in
+   app/Views/layout/header.php, so views that don't include the
+   layout (auth, signup, claim, public site shell) couldn't use
+   them. Now they're available everywhere via this stylesheet.
+   The inline header.php block still defines the same rules with
+   theme-token variants — those load AFTER this file via <style>,
+   so authed views get the theme-aware versions and unauthed
+   views get these baseline versions.                            */
+
+/* Cards */
+.card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--color-gray-200);
+}
+.card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-gray-200);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h2 { margin: 0; font-size: .95rem; font-weight: 600; }
+.card-body { padding: 1.25rem; }
+
+/* Alerts */
+.alert {
+    padding: .85rem 1rem; border-radius: var(--radius);
+    margin-bottom: 1rem; font-size: 13.5px;
+    display: flex; align-items: center; gap: .5rem;
+}
+.alert-success { background: var(--color-success-bg); color: var(--color-success-fg); border: 1px solid #6ee7b7; }
+.alert-error   { background: var(--color-danger-bg);  color: var(--color-danger-fg);  border: 1px solid #fca5a5; }
+.alert-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); border: 1px solid #fcd34d; }
+.alert-info    { background: var(--color-info-bg);    color: var(--color-info-fg);    border: 1px solid #93c5fd; }
+
+/* Form-group + form-control (legacy pattern; .form-row in admin.css is preferred for new code) */
+.form-group { margin-bottom: 1rem; }
+.form-group label {
+    display: block; font-weight: 500;
+    margin-bottom: .35rem; font-size: 13.5px;
+}
+.form-control {
+    width: 100%; padding: .55rem .75rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 6px; font-size: 14px;
+    font-family: var(--font);
+    background: #fff; color: var(--color-gray-900);
+    transition: border-color .15s, box-shadow .15s;
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+}
+.form-control.is-invalid { border-color: var(--color-danger); }
+.form-error { color: var(--color-danger); font-size: 12px; margin-top: .25rem; display: block; }
+.form-hint  { color: var(--color-gray-500); font-size: 12px; margin-top: .25rem; }
+textarea.form-control { resize: vertical; min-height: 100px; }
+select.form-control {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    padding-right: 2rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .5rem 1rem; border-radius: 6px;
+    font-weight: 500; font-size: 13.5px;
+    cursor: pointer; text-decoration: none;
+    border: 1px solid transparent;
+    transition: all .15s;
+    font-family: var(--font); line-height: 1.4;
+}
+.btn-primary   { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.btn-primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+.btn-secondary { background: #fff; color: var(--color-gray-700); border-color: var(--color-gray-300); }
+.btn-secondary:hover { background: var(--color-gray-50); }
+.btn-danger    { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
+.btn-danger:hover { background: var(--color-danger-fg); }
+.btn-success   { background: var(--color-success); color: #fff; border-color: var(--color-success); }
+.btn-sm { padding: .3rem .65rem; font-size: 12.5px; }
+.btn-xs { padding: .2rem .5rem; font-size: 11.5px; }
+
+/* Tables */
+.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table th, .table td {
+    padding: .65rem 1rem; text-align: left;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+.table th {
+    font-weight: 600; color: var(--color-gray-500);
+    font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+    background: var(--color-gray-50);
+}
+.table tbody tr:hover { background: var(--color-gray-50); }
+.table-responsive { overflow-x: auto; }
+
+/* Badges */
+.badge {
+    display: inline-block; padding: .2rem .55rem;
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+    line-height: 1;
+}
+.badge-primary { background: var(--color-purple-bg); color: var(--color-primary-dark); }
+.badge-success { background: var(--color-success-bg); color: var(--color-success-fg); }
+.badge-danger  { background: var(--color-danger-bg);  color: var(--color-danger-fg); }
+.badge-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); }
+.badge-gray    { background: var(--color-gray-100);   color: var(--color-gray-700); }
+
+/* Grid */
+.grid { display: grid; gap: 1rem; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── Page shell wrappers ─────────────────────────────────────── */
+/* Centered, padded container for full-page views (wizard, dashboard,
+   auth, marketing pages). Replaces ad-hoc `.wiz-shell`, `.dash-shell`,
+   `.auth-shell` definitions that were inlined per-view.                */
+.shell {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+.shell--narrow { max-width: 680px; }
+.shell--medium { max-width: 880px; }
+.shell--wide   { max-width: 1400px; }
+@media (max-width: 640px) {
+    .shell { padding: 1.25rem 1rem; }
+}
+
 /* ── Utility classes ─────────────────────────────────────────── */
 .sr-only {
     position: absolute; width: 1px; height: 1px;
@@ -170,14 +321,30 @@ textarea:focus-visible {
 .text-danger  { color: var(--color-danger); }
 .text-success { color: var(--color-success); }
 .text-center  { text-align: center; }
+.text-right   { text-align: right; }
+.fs-12 { font-size: 12px; }
+.fs-13 { font-size: 13px; }
 .mt-0 { margin-top: 0; }
 .mb-0 { margin-bottom: 0; }
 .d-flex { display: flex; }
+.d-inline-flex { display: inline-flex; }
+.flex-wrap { flex-wrap: wrap; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
 .gap-1 { gap: .5rem; }
 .gap-2 { gap: 1rem; }
+.gap-3 { gap: 1.5rem; }
 .flex-1 { flex: 1; }
 .w-100 { width: 100%; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Inline meta line — replaces the `style="color:#6b7280;font-size:12px"`
+   pattern that appears 50+ times across admin/wizard views.            */
+.muted-meta {
+    color: var(--color-gray-500);
+    font-size: 12px;
+    line-height: 1.5;
+}
 
 /* ───────────────────────────────────────────────────────────────────────────
  * menus.embed block (modules/menus/module.php)

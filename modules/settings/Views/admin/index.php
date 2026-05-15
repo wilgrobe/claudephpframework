@@ -45,7 +45,7 @@
         <div class="card-header"><h2><?= ucfirst($scope) ?> Settings</h2></div>
         <?php if (empty($settings)): ?>
         <div class="card-body">
-            <p style="color:#6b7280;margin:0">
+            <p style="color:var(--color-gray-500);margin:0">
                 <?php if ($scope === 'site' && !empty($managedKeys)): ?>
                     No ad-hoc settings yet. Every site-level setting is currently managed on a dedicated page above.
                 <?php else: ?>
@@ -137,7 +137,7 @@
                 <input type="hidden" name="scope" value="<?= e($scope) ?>">
                 <?php if ($scope !== 'site'): ?>
                 <div class="form-group">
-                    <label for="scope_key">Scope Key <span style="font-weight:400;color:#6b7280">(page slug, function name, group id…)</span></label>
+                    <label for="scope_key">Scope Key <span style="font-weight:400;color:var(--color-gray-500)">(page slug, function name, group id…)</span></label>
                     <input type="text" name="scope_key" class="form-control" value="<?= e($scopeKey ?? '')?>" id="scope_key">
                 </div>
                 <?php endif; ?>

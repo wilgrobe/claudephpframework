@@ -151,7 +151,7 @@
         .pc-row-grid { grid-template-columns: 1fr !important; }
     }
     .page-composer-missing {
-        background: #fef3c7; color: #92400e;
+        background: var(--color-warning-bg); color: var(--color-warning-fg);
         border: 1px dashed #fcd34d; padding: .6rem .85rem;
         border-radius: 6px; font-size: 12.5px;
     }

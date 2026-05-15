@@ -175,7 +175,7 @@ return new class extends ModuleProvider {
                     $depOff = (int) ($row['dep_off'] ?? 0);
                     $admOff = (int) ($row['adm_off'] ?? 0);
                     $total  = $depOff + $admOff;
-                    $bg     = $total > 0 ? 'background:#fef3c7;color:#92400e' : '';
+                    $bg     = $total > 0 ? 'background:var(--color-warning-bg);color:var(--color-warning-fg)' : '';
                     $detail = $total === 0
                         ? 'all active'
                         : ($depOff . ' dep · ' . $admOff . ' admin');
@@ -221,12 +221,12 @@ return new class extends ModuleProvider {
                     foreach ($snap['probes'] as $key => $probe) {
                         $label = $labels[$key] ?? ucfirst($key);
                         $icon  = $probe['ok'] ? '✓' : '✗';
-                        $iconColor = $probe['ok'] ? '#10b981' : '#dc2626';
+                        $iconColor = $probe['ok'] ? 'var(--color-success)' : '#dc2626';
                         $note  = htmlspecialchars((string) $probe['note'], ENT_QUOTES | ENT_HTML5);
                         $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:13px">'
                             . '<div><span style="color:' . $iconColor . ';font-weight:700;font-size:14px;margin-right:.4rem">' . $icon . '</span>'
                             . '<span style="color:#111827">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span></div>'
-                            . '<div style="color:#6b7280;font-size:11.5px">' . $note . '</div>'
+                            . '<div style="color:var(--color-gray-500);font-size:11.5px">' . $note . '</div>'
                             . '</div>';
                     }
                     return $h . '</div></div>';

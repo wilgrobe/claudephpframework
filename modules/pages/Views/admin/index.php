@@ -18,10 +18,10 @@
                 <td>
                     <strong><?= e($p['title']) ?></strong>
                     <?php if ($isHome): ?>
-                    <span class="badge" style="background:#fef3c7;color:#78350f;border:1px solid #fde68a;font-size:10.5px;margin-left:.4rem;padding:.15rem .45rem;border-radius:10px" title="Shown at / for guests">🏠 HOME</span>
+                    <span class="badge" style="background:var(--color-warning-bg);color:#78350f;border:1px solid #fde68a;font-size:10.5px;margin-left:.4rem;padding:.15rem .45rem;border-radius:10px" title="Shown at / for guests">🏠 HOME</span>
                     <?php endif; ?>
                 </td>
-                <td><code style="font-size:12px;background:#f3f4f6;padding:.1rem .35rem;border-radius:4px">/<?= e($p['slug']) ?></code></td>
+                <td><code style="font-size:12px;background:var(--color-gray-100);padding:.1rem .35rem;border-radius:4px">/<?= e($p['slug']) ?></code></td>
                 <td>
                     <?php if ($p['status'] === 'published'): ?>
                     <span class="badge badge-success">Published</span>

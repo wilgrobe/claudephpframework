@@ -73,7 +73,7 @@ $pageTitle = 'Notification preferences';
         </div>
         <?php endforeach; ?>
 
-        <div style="padding:1rem 1.25rem;display:flex;gap:.5rem;justify-content:flex-end;background:var(--bg-page,#f9fafb)">
+        <div style="padding:1rem 1.25rem;display:flex;gap:.5rem;justify-content:flex-end;background:var(--bg-page,var(--color-gray-50))">
             <button type="submit" class="btn btn-primary">Save preferences</button>
         </div>
     </form>

@@ -252,7 +252,7 @@
             </div>
 
         </div>
-        <div class="card-footer" style="padding:.75rem 1.25rem;background:#f9fafb;text-align:right">
+        <div class="card-footer" style="padding:.75rem 1.25rem;background:var(--color-gray-50);text-align:right">
             <a href="/admin/settings" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">Save</button>
         </div>

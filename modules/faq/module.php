@@ -120,7 +120,7 @@ return new class extends ModuleProvider {
                         $a = \Core\Validation\Validator::sanitizeHtml((string) ($r['answer'] ?? ''));
                         $h .= '<details style="border:1px solid #e5e7eb;border-radius:6px;padding:.6rem 1rem;margin-bottom:.5rem">'
                             . '<summary style="font-weight:600;font-size:14px;cursor:pointer;color:#111827">' . $q . '</summary>'
-                            . '<div style="font-size:13.5px;color:#374151;margin-top:.5rem;line-height:1.6">' . $a . '</div>'
+                            . '<div style="font-size:13.5px;color:var(--color-gray-700);margin-top:.5rem;line-height:1.6">' . $a . '</div>'
                             . '</details>';
                     }
                     return $h . '</section>';

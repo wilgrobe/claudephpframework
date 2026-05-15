@@ -2,8 +2,8 @@
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 <?php include __DIR__ . '/_nav.php'; ?>
 
-<div style="font-size:12px;color:#6b7280;margin-bottom:.25rem">
-    <a href="/admin/settings/members" style="color:#4f46e5;text-decoration:none">← Members</a>
+<div style="font-size:12px;color:var(--color-gray-500);margin-bottom:.25rem">
+    <a href="/admin/settings/members" style="color:var(--color-primary);text-decoration:none">← Members</a>
 </div>
 <h1 style="margin:0 0 1rem;font-size:1.4rem">Group Policy</h1>
 
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Single group only -->
-            <div class="form-group" style="padding:.85rem 1rem;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;margin-bottom:1.25rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;margin-bottom:1.25rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;color:#78350f;margin:0">
                     <?= toggle_switch('single_group_only', !empty($values['single_group_only'])) ?>
                     Limit users to a single group

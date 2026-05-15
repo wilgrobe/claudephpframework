@@ -184,7 +184,7 @@ final class ActivityController
             'created_at'  => $r['created_at'],
             'icon'        => $this->iconFor((string) $r['type']),
             'badge_label' => 'notification',
-            'badge_color' => '#4f46e5',
+            'badge_color' => 'var(--color-primary)',
             'title'       => (string) $r['title'],
             'body'        => (string) ($r['body'] ?? ''),
             'subject'     => $r['user_username'] ? '@' . $r['user_username'] : '—',

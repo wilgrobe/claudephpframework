@@ -5,14 +5,14 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
     <div>
-        <div style="font-size:12px;color:#6b7280">
-            <a href="/admin" style="color:#4f46e5;text-decoration:none">← Admin</a>
+        <div style="font-size:12px;color:var(--color-gray-500)">
+            <a href="/admin" style="color:var(--color-primary);text-decoration:none">← Admin</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.3rem;font-weight:700">Login anomalies</h1>
-        <p style="margin:.25rem 0 0;color:#6b7280;font-size:13.5px">
+        <p style="margin:.25rem 0 0;color:var(--color-gray-500);font-size:13.5px">
             Geo + impossible-travel detection on every authenticated sign-in.
             Toggle + thresholds on
-            <a href="/admin/settings/security" style="color:#4f46e5;text-decoration:none">/admin/settings/security</a>.
+            <a href="/admin/settings/security" style="color:var(--color-primary);text-decoration:none">/admin/settings/security</a>.
         </p>
     </div>
 </div>
@@ -22,16 +22,16 @@
     <div class="card-body" style="display:flex;gap:.75rem;flex-wrap:wrap;padding:1rem">
         <?php
         $cards = [
-            ['Total (30d)',    (int) ($stats['total']         ?? 0), '#374151'],
-            ['Info',           (int) ($stats['info']          ?? 0), '#3b82f6'],
-            ['Warn',           (int) ($stats['warn']          ?? 0), '#f59e0b'],
-            ['Alert',          (int) ($stats['alerts']        ?? 0), '#ef4444'],
-            ['Unacknowledged', (int) ($stats['unacknowledged']?? 0), ($stats['unacknowledged'] > 0 ? '#ef4444' : '#10b981')],
+            ['Total (30d)',    (int) ($stats['total']         ?? 0), 'var(--color-gray-700)'],
+            ['Info',           (int) ($stats['info']          ?? 0), 'var(--color-info)'],
+            ['Warn',           (int) ($stats['warn']          ?? 0), 'var(--color-warning)'],
+            ['Alert',          (int) ($stats['alerts']        ?? 0), 'var(--color-danger)'],
+            ['Unacknowledged', (int) ($stats['unacknowledged']?? 0), ($stats['unacknowledged'] > 0 ? 'var(--color-danger)' : 'var(--color-success)')],
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
             <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
-                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
+                <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
         <?php endforeach; ?>
@@ -43,7 +43,7 @@
         <strong style="font-size:13.5px">Recent anomalies</strong>
     </div>
     <table class="table" style="width:100%;font-size:12.5px;margin:0">
-        <thead style="background:#f9fafb">
+        <thead style="background:var(--color-gray-50)">
             <tr>
                 <th style="text-align:left;padding:.5rem .75rem">When</th>
                 <th style="text-align:left;padding:.5rem .75rem">User</th>
@@ -57,35 +57,35 @@
         </thead>
         <tbody>
             <?php if (empty($recent)): ?>
-                <tr><td colspan="8" style="padding:1.5rem;text-align:center;color:#10b981">No anomalies detected.</td></tr>
+                <tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--color-success)">No anomalies detected.</td></tr>
             <?php else: foreach ($recent as $r):
-                $sevColors = ['info' => '#3b82f6', 'warn' => '#f59e0b', 'alert' => '#ef4444'];
-                $color = $sevColors[$r['severity']] ?? '#6b7280';
+                $sevColors = ['info' => 'var(--color-info)', 'warn' => 'var(--color-warning)', 'alert' => 'var(--color-danger)'];
+                $color = $sevColors[$r['severity']] ?? 'var(--color-gray-500)';
                 $isAck = !empty($r['acknowledged_at']);
             ?>
-                <tr style="border-top:1px solid #f3f4f6;<?= !$isAck && $r['severity'] === 'alert' ? 'background:#fef2f2' : '' ?>">
-                    <td style="padding:.4rem .75rem;color:#6b7280;font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['created_at']))) ?></td>
+                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck && $r['severity'] === 'alert' ? 'background:#fef2f2' : '' ?>">
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['created_at']))) ?></td>
                     <td style="padding:.4rem .75rem">
-                        <a href="/admin/users/<?= (int) $r['user_id'] ?>" style="color:#4f46e5;text-decoration:none"><?= e($r['username'] ?? '?') ?></a>
+                        <a href="/admin/users/<?= (int) $r['user_id'] ?>" style="color:var(--color-primary);text-decoration:none"><?= e($r['username'] ?? '?') ?></a>
                     </td>
-                    <td style="padding:.4rem .75rem;font-size:11.5px;color:#374151">
+                    <td style="padding:.4rem .75rem;font-size:11.5px;color:var(--color-gray-700)">
                         <strong><?= e($r['city'] ?? '?') ?>, <?= e($r['country_code'] ?? '?') ?></strong>
-                        <span style="color:#9ca3af"> ← </span>
-                        <span style="color:#6b7280"><?= e($r['prior_city'] ?? '?') ?>, <?= e($r['prior_country_code'] ?? '?') ?></span>
+                        <span style="color:var(--color-gray-400)"> ← </span>
+                        <span style="color:var(--color-gray-500)"><?= e($r['prior_city'] ?? '?') ?>, <?= e($r['prior_country_code'] ?? '?') ?></span>
                     </td>
                     <td style="padding:.4rem .75rem;text-align:right"><?= $r['distance_km'] !== null ? number_format((int) $r['distance_km']) . ' km' : '—' ?></td>
-                    <td style="padding:.4rem .75rem;text-align:right;<?= ((int) ($r['implied_kmh'] ?? 0)) >= 2000 ? 'color:#ef4444;font-weight:600' : '' ?>"><?= $r['implied_kmh'] !== null ? number_format((int) $r['implied_kmh']) . ' km/h' : '—' ?></td>
+                    <td style="padding:.4rem .75rem;text-align:right;<?= ((int) ($r['implied_kmh'] ?? 0)) >= 2000 ? 'color:var(--color-danger);font-weight:600' : '' ?>"><?= $r['implied_kmh'] !== null ? number_format((int) $r['implied_kmh']) . ' km/h' : '—' ?></td>
                     <td style="padding:.4rem .75rem">
                         <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:10px;background:<?= $color ?>"><?= e($r['severity']) ?></span>
-                        <div style="font-size:10.5px;color:#9ca3af;margin-top:.15rem"><?= e($r['rule']) ?></div>
+                        <div style="font-size:10.5px;color:var(--color-gray-400);margin-top:.15rem"><?= e($r['rule']) ?></div>
                     </td>
-                    <td style="padding:.4rem .75rem;color:#6b7280;font-size:11.5px">
+                    <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px">
                         <?php if ($isAck): ?>
                             ack by <?= e($r['ack_username'] ?? '?') ?>
                         <?php else: ?>
-                            <span style="color:#ef4444;font-weight:500">unack</span>
+                            <span style="color:var(--color-danger);font-weight:500">unack</span>
                             <?php if ($r['action_taken']): ?>
-                                <div style="font-size:10.5px;color:#9ca3af"><?= e($r['action_taken']) ?></div>
+                                <div style="font-size:10.5px;color:var(--color-gray-400)"><?= e($r['action_taken']) ?></div>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>
@@ -103,9 +103,9 @@
     </table>
 </div>
 
-<div style="margin:1.5rem 0;padding:1rem;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:#92400e;line-height:1.6">
+<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
     <strong>Detection notes:</strong> Geo lookups use the free
-    <a href="https://ip-api.com" target="_blank" rel="noopener" style="color:#92400e">ip-api.com</a>
+    <a href="https://ip-api.com" target="_blank" rel="noopener" style="color:var(--color-warning-fg)">ip-api.com</a>
     service (rate-limited to 45 req/min per origin IP). Cached 30 days per IP.
     Severity escalates above 900 km/h (warn — faster than commercial flight)
     and 2000 km/h (alert — definitely VPN / proxy hop). False positives are

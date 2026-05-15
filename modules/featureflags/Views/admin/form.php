@@ -5,7 +5,7 @@ $selectedGroups = !empty($flag['groups_json']) ? array_map('intval', (array) jso
 ?>
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 
-<a href="/admin/feature-flags" style="color:#6b7280;font-size:13px;text-decoration:none">← Flags</a>
+<a href="/admin/feature-flags" style="color:var(--color-gray-500);font-size:13px;text-decoration:none">← Flags</a>
 
 <div class="card" style="margin-top:.5rem">
     <div class="card-header"><h2 style="margin:0"><?= $isNew ? 'New flag' : 'Edit ' . e((string) $flag['key']) ?></h2></div>
@@ -13,7 +13,7 @@ $selectedGroups = !empty($flag['groups_json']) ? array_map('intval', (array) jso
         <?= csrf_field() ?>
         <div class="card-body">
             <label>Key
-                <input name="key" required value="<?= e((string) ($flag['key'] ?? '')) ?>" <?= $isNew ? '' : 'readonly style="background:#f3f4f6"' ?> placeholder="new_checkout" style="width:100%">
+                <input name="key" required value="<?= e((string) ($flag['key'] ?? '')) ?>" <?= $isNew ? '' : 'readonly style="background:var(--color-gray-100)"' ?> placeholder="new_checkout" style="width:100%">
             </label>
             <label style="display:block;margin-top:.5rem">Label
                 <input name="label" required value="<?= e((string) ($flag['label'] ?? '')) ?>" style="width:100%">
@@ -39,9 +39,9 @@ $selectedGroups = !empty($flag['groups_json']) ? array_map('intval', (array) jso
                     <?php endforeach; ?>
                 </select>
             </label>
-            <p style="color:#9ca3af;font-size:12px">Users in any selected group see the flag regardless of rollout percent.</p>
+            <p style="color:var(--color-gray-400);font-size:12px">Users in any selected group see the flag regardless of rollout percent.</p>
         </div>
-        <div class="card-footer" style="padding:.75rem 1.25rem;background:#f9fafb;text-align:right">
+        <div class="card-footer" style="padding:.75rem 1.25rem;background:var(--color-gray-50);text-align:right">
             <button type="submit" class="btn btn-primary"><?= $isNew ? 'Create flag' : 'Save' ?></button>
         </div>
     </form>

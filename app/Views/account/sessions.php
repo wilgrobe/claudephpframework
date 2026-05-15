@@ -3,13 +3,13 @@
 
 <div style="max-width:760px;margin:0 auto">
 <h1 style="margin:0 0 .25rem 0">Active sessions</h1>
-<p style="color:#6b7280;font-size:14px;margin:0 0 1rem 0">
+<p style="color:var(--color-gray-500);font-size:14px;margin:0 0 1rem 0">
     Every device currently signed in as you. Sign out any device individually;
     signing out the current device logs you out here.
 </p>
 
 <?php if (empty($sessions)): ?>
-<div class="card"><div class="card-body" style="color:#9ca3af;text-align:center;padding:2rem 1rem">
+<div class="card"><div class="card-body" style="color:var(--color-gray-400);text-align:center;padding:2rem 1rem">
     No active sessions.
 </div></div>
 <?php else: ?>
@@ -24,15 +24,15 @@
             : ($ago < 86400 ? floor($ago / 3600) . ' hours ago'
             : floor($ago / 86400) . ' days ago'));
 ?>
-<div style="padding:1rem 1.25rem;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--color-gray-100);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
     <div style="flex:1;min-width:0">
         <div>
             <strong style="font-size:14px" title="<?= e($ua) ?>"><?= e($uaShort) ?></strong>
             <?php if (!empty($s['is_current'])): ?>
-            <span style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;padding:.1rem .5rem;border-radius:10px;font-size:11px;margin-left:.5rem">This device</span>
+            <span style="background:var(--color-success-bg);color:#059669;border:1px solid #a7f3d0;padding:.1rem .5rem;border-radius:10px;font-size:11px;margin-left:.5rem">This device</span>
             <?php endif; ?>
         </div>
-        <div style="color:#9ca3af;font-size:12px;margin-top:.25rem">
+        <div style="color:var(--color-gray-400);font-size:12px;margin-top:.25rem">
             IP <?= e((string) ($s['ip_address'] ?? 'unknown')) ?> · last active <?= e($agoLabel) ?>
         </div>
     </div>
@@ -47,7 +47,7 @@
 <?php endforeach; ?>
 </div>
 
-<p style="color:#9ca3af;font-size:12px;margin-top:1rem">
+<p style="color:var(--color-gray-400);font-size:12px;margin-top:1rem">
     If you see a device you don't recognize, sign it out and change your password
     immediately.
 </p>

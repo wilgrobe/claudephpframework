@@ -3,8 +3,8 @@
 
 <div style="max-width:880px;margin:0 auto;padding:0 1rem">
 
-<div style="font-size:12px;color:#6b7280;margin-bottom:.25rem">
-    <a href="/admin/gdpr" style="color:#4f46e5;text-decoration:none">← DSAR queue</a>
+<div style="font-size:12px;color:var(--color-gray-500);margin-bottom:.25rem">
+    <a href="/admin/gdpr" style="color:var(--color-primary);text-decoration:none">← DSAR queue</a>
 </div>
 <h1 style="margin:0 0 1rem;font-size:1.3rem;font-weight:700">
     DSAR #<?= (int) $row['id'] ?>: <?= htmlspecialchars((string) $row['kind'], ENT_QUOTES) ?>
@@ -13,34 +13,34 @@
 <div class="card" style="margin-bottom:1rem">
     <div class="card-body" style="padding:1rem 1.25rem;font-size:13px">
         <div style="display:grid;grid-template-columns:140px 1fr;gap:.5rem 1rem">
-            <div style="color:#6b7280">Requested by</div>
+            <div style="color:var(--color-gray-500)">Requested by</div>
             <div>
                 <?= htmlspecialchars((string) ($row['requester_name'] ?: '(no name)'), ENT_QUOTES) ?>
                 &lt;<?= htmlspecialchars((string) $row['requester_email'], ENT_QUOTES) ?>&gt;
                 <?php if ($row['user_id']): ?>
-                    — <a href="/admin/users/<?= (int) $row['user_id'] ?>" style="color:#4f46e5;text-decoration:none">user #<?= (int) $row['user_id'] ?></a>
+                    — <a href="/admin/users/<?= (int) $row['user_id'] ?>" style="color:var(--color-primary);text-decoration:none">user #<?= (int) $row['user_id'] ?></a>
                 <?php endif; ?>
             </div>
 
-            <div style="color:#6b7280">Source</div>
+            <div style="color:var(--color-gray-500)">Source</div>
             <div><?= htmlspecialchars((string) $row['source'], ENT_QUOTES) ?></div>
 
-            <div style="color:#6b7280">Requested at</div>
+            <div style="color:var(--color-gray-500)">Requested at</div>
             <div><?= htmlspecialchars(date('M j, Y g:ia T', strtotime((string) $row['requested_at'])), ENT_QUOTES) ?></div>
 
-            <div style="color:#6b7280">SLA due</div>
+            <div style="color:var(--color-gray-500)">SLA due</div>
             <div>
                 <?= htmlspecialchars(date('M j, Y g:ia T', strtotime((string) $row['sla_due_at'])), ENT_QUOTES) ?>
                 <?php if (strtotime((string) $row['sla_due_at']) < time() && !in_array($row['status'], ['completed','denied','expired'], true)): ?>
-                    <span style="color:#ef4444;font-weight:600">— OVERDUE</span>
+                    <span style="color:var(--color-danger);font-weight:600">— OVERDUE</span>
                 <?php endif; ?>
             </div>
 
-            <div style="color:#6b7280">Status</div>
+            <div style="color:var(--color-gray-500)">Status</div>
             <div><strong><?= htmlspecialchars((string) $row['status'], ENT_QUOTES) ?></strong></div>
 
             <?php if ($row['notes']): ?>
-                <div style="color:#6b7280">Notes</div>
+                <div style="color:var(--color-gray-500)">Notes</div>
                 <div style="white-space:pre-wrap"><?= htmlspecialchars((string) $row['notes'], ENT_QUOTES) ?></div>
             <?php endif; ?>
         </div>
@@ -79,7 +79,7 @@
                 <input type="hidden" name="dsar_id" value="<?= (int) $row['id'] ?>">
                 <input type="hidden" name="userId"  value="<?= (int) $row['user_id'] ?>">
                 <button type="submit" class="btn btn-secondary" style="font-size:13px">Build data export for user #<?= (int) $row['user_id'] ?></button>
-                <span style="font-size:12px;color:#6b7280;margin-left:.5rem">
+                <span style="font-size:12px;color:var(--color-gray-500);margin-left:.5rem">
                     The download link appears below once the export is ready.
                 </span>
             </form>
@@ -91,11 +91,11 @@
                   style="display:flex;gap:.5rem;align-items:center">
                 <?= csrf_field() ?>
                 <input type="text" name="confirm" placeholder='type "erase" to confirm' required style="font-size:13px;flex:1 1 200px" autocomplete="off" aria-label="Confirm">
-                <button type="submit" class="btn btn-danger" style="font-size:13px;background:#ef4444;color:#fff">
+                <button type="submit" class="btn btn-danger" style="font-size:13px;background:var(--color-danger);color:#fff">
                     Erase user #<?= (int) $row['user_id'] ?>
                 </button>
             </form>
-            <div style="margin-top:.5rem;font-size:12px;color:#6b7280;line-height:1.5">
+            <div style="margin-top:.5rem;font-size:12px;color:var(--color-gray-500);line-height:1.5">
                 Runs the registry: every active module's gdprHandlers() pipes through DataPurger.
                 Tables marked legal-hold are anonymised, not deleted. Audit-trail row written.
             </div>
@@ -111,8 +111,8 @@
     <table class="table" style="width:100%;font-size:13px">
         <tbody>
             <?php foreach ($exports as $exp): ?>
-                <tr style="border-top:1px solid #f3f4f6">
-                    <td style="padding:.5rem .75rem;color:#6b7280;font-size:12px"><?= htmlspecialchars(date('M j, g:ia', strtotime((string) $exp['requested_at'])), ENT_QUOTES) ?></td>
+                <tr style="border-top:1px solid var(--color-gray-100)">
+                    <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px"><?= htmlspecialchars(date('M j, g:ia', strtotime((string) $exp['requested_at'])), ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem"><?= htmlspecialchars((string) $exp['status'], ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem"><?= $exp['file_size'] ? number_format((int) $exp['file_size'] / 1024, 1) . ' KB' : '—' ?></td>
                     <td style="padding:.5rem .75rem;text-align:right">

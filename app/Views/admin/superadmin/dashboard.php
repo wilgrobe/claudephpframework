@@ -31,14 +31,14 @@
             <tbody>
             <?php foreach ($recentAudit as $row): ?>
             <tr>
-                <td style="color:#6b7280;font-size:12px;white-space:nowrap"><?= date('M j H:i', strtotime($row['created_at'])) ?></td>
+                <td style="color:var(--color-gray-500);font-size:12px;white-space:nowrap"><?= date('M j H:i', strtotime($row['created_at'])) ?></td>
                 <td>
                     <?= e($row['actor_username'] ?? 'System') ?>
                     <?php if ($row['superadmin_mode']): ?><span class="badge badge-danger" style="font-size:9px">SA</span><?php endif; ?>
                 </td>
-                <td><?= $row['emulated_username'] ? '<span style="color:#dc2626">'.e($row['emulated_username']).'</span>' : '<span style="color:#9ca3af">—</span>' ?></td>
-                <td><code style="font-size:12px;background:#f3f4f6;padding:.1rem .35rem;border-radius:4px"><?= e($row['action']) ?></code></td>
-                <td style="font-size:12px;color:#6b7280"><?= $row['model'] ? e($row['model']).'#'.$row['model_id'] : '—' ?></td>
+                <td><?= $row['emulated_username'] ? '<span style="color:#dc2626">'.e($row['emulated_username']).'</span>' : '<span style="color:var(--color-gray-400)">—</span>' ?></td>
+                <td><code style="font-size:12px;background:var(--color-gray-100);padding:.1rem .35rem;border-radius:4px"><?= e($row['action']) ?></code></td>
+                <td style="font-size:12px;color:var(--color-gray-500)"><?= $row['model'] ? e($row['model']).'#'.$row['model_id'] : '—' ?></td>
             </tr>
             <?php endforeach; ?>
             </tbody>

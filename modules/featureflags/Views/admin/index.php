@@ -7,7 +7,7 @@
         <a href="/admin/feature-flags/create" class="btn btn-sm btn-primary">New flag</a>
     </div>
     <?php if (empty($flags)): ?>
-    <div class="card-body" style="text-align:center;color:#6b7280;padding:3rem 1rem">No flags defined.</div>
+    <div class="card-body" style="text-align:center;color:var(--color-gray-500);padding:3rem 1rem">No flags defined.</div>
     <?php else: ?>
     <table class="table">
         <thead><tr><th>Key</th><th>Label</th><th>Global</th><th>Rollout</th><th>Groups</th><th></th></tr></thead>

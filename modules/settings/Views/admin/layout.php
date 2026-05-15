@@ -3,11 +3,11 @@
 <?php include __DIR__ . '/_nav.php'; ?>
 
 <h1 style="margin:0 0 1rem;font-size:1.4rem">Layout</h1>
-<p style="color:#6b7280;font-size:13.5px;margin:0 0 1.25rem;max-width:560px">
+<p style="color:var(--color-gray-500);font-size:13.5px;margin:0 0 1.25rem;max-width:560px">
     Site chrome — what wraps every page. Header, sidebar/topbar
     orientation, footer block, and the menus assigned to each region.
     Visual styling (colors, fonts) lives under
-    <a href="/admin/settings/appearance" style="color:#4f46e5">Appearance</a>.
+    <a href="/admin/settings/appearance" style="color:var(--color-primary)">Appearance</a>.
 </p>
 
 <div class="card">
@@ -23,7 +23,7 @@
                     <option value="sidebar" <?= $orient === 'sidebar' ? 'selected' : '' ?>>Sidebar (default — left rail)</option>
                     <option value="topbar"  <?= $orient === 'topbar'  ? 'selected' : '' ?>>Topbar (horizontal nav row)</option>
                 </select>
-                <small style="color:#6b7280">Sidebar suits admin-heavy sites; topbar reads better for content-first sites.</small>
+                <small style="color:var(--color-gray-500)">Sidebar suits admin-heavy sites; topbar reads better for content-first sites.</small>
             </div>
 
             <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px">
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <hr style="margin:1.5rem 0;border:0;border-top:1px solid #e5e7eb">
+            <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Header</h3>
 
             <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
@@ -61,7 +61,7 @@
                 </div>
             </div>
 
-            <hr style="margin:1.5rem 0;border:0;border-top:1px solid #e5e7eb">
+            <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Footer</h3>
 
             <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
@@ -116,11 +116,11 @@
                     </option>
                     <?php endforeach; ?>
                 </select>
-                <small style="color:#6b7280">Menu picker reads from the menus module — define menus first at <a href="/admin/menus" style="color:#4f46e5">/admin/menus</a>.</small>
+                <small style="color:var(--color-gray-500)">Menu picker reads from the menus module — define menus first at <a href="/admin/menus" style="color:var(--color-primary)">/admin/menus</a>.</small>
             </div>
 
         </div>
-        <div class="card-body" style="background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save Layout</button>
         </div>
     </form>

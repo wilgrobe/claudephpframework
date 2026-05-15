@@ -28,6 +28,6 @@ if (empty($pag) || ($pag['last_page'] ?? 1) <= 1) return;
     <a href="?page=<?= $pag['current_page'] + 1 ?>">Next ›</a>
     <?php endif; ?>
 </div>
-<div style="font-size:12px;color:#9ca3af;margin-top:.35rem">
+<div style="font-size:12px;color:var(--color-gray-400);margin-top:.35rem">
     Showing <?= (($pag['current_page']-1)*$pag['per_page'])+1 ?>–<?= min($pag['current_page']*$pag['per_page'], $pag['total']) ?> of <?= number_format($pag['total']) ?>
 </div>

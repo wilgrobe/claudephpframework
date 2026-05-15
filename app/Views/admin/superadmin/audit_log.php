@@ -28,7 +28,7 @@
 <div class="card">
     <div class="card-header">
         <h2>Audit Log</h2>
-        <span style="color:#6b7280;font-size:13px"><?= number_format($log['total']) ?> entries</span>
+        <span style="color:var(--color-gray-500);font-size:13px"><?= number_format($log['total']) ?> entries</span>
     </div>
     <div class="table-responsive">
         <table class="table">
@@ -38,22 +38,22 @@
             <tbody>
             <?php foreach ($log['items'] as $row): ?>
             <tr>
-                <td style="white-space:nowrap;font-size:12px;color:#6b7280"><?= date('M j Y H:i:s', strtotime($row['created_at'])) ?></td>
+                <td style="white-space:nowrap;font-size:12px;color:var(--color-gray-500)"><?= date('M j Y H:i:s', strtotime($row['created_at'])) ?></td>
                 <td style="font-size:13px"><?= e($row['actor_username'] ?? '—') ?></td>
                 <td>
                     <?php if ($row['emulated_username']): ?>
                     <span style="color:#dc2626;font-size:13px">⚠️ <?= e($row['emulated_username']) ?></span>
                     <?php else: ?>
-                    <span style="color:#9ca3af">—</span>
+                    <span style="color:var(--color-gray-400)">—</span>
                     <?php endif; ?>
                 </td>
                 <td><?= $row['superadmin_mode'] ? '<span class="badge badge-danger">ON</span>' : '' ?></td>
-                <td><code style="font-size:11px;background:#f3f4f6;padding:.1rem .35rem;border-radius:3px"><?= e($row['action']) ?></code></td>
-                <td style="font-size:12px;color:#6b7280">
+                <td><code style="font-size:11px;background:var(--color-gray-100);padding:.1rem .35rem;border-radius:3px"><?= e($row['action']) ?></code></td>
+                <td style="font-size:12px;color:var(--color-gray-500)">
                     <?= $row['model'] ? e($row['model']).' #'.$row['model_id'] : '—' ?>
                     <?php if ($row['notes']): ?><div style="font-size:11px"><?= e($row['notes']) ?></div><?php endif; ?>
                 </td>
-                <td style="font-size:12px;color:#9ca3af"><?= e($row['ip_address'] ?? '—') ?></td>
+                <td style="font-size:12px;color:var(--color-gray-400)"><?= e($row['ip_address'] ?? '—') ?></td>
             </tr>
             <?php endforeach; ?>
             </tbody>

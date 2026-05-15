@@ -7,7 +7,7 @@
         <a href="/admin/hierarchies/create" class="btn btn-sm btn-primary">New hierarchy</a>
     </div>
     <?php if (empty($hierarchies)): ?>
-    <div class="card-body" style="text-align:center;color:#6b7280;padding:3rem 1rem">
+    <div class="card-body" style="text-align:center;color:var(--color-gray-500);padding:3rem 1rem">
         No hierarchies yet. Create one for each navigable tree you need — site nav, product catalog, sections, org chart, etc.
     </div>
     <?php else: ?>
@@ -16,7 +16,7 @@
         <tbody>
         <?php foreach ($hierarchies as $h): ?>
         <tr>
-            <td><strong><?= e($h['name']) ?></strong><?php if (!empty($h['description'])): ?><div style="color:#9ca3af;font-size:12px"><?= e($h['description']) ?></div><?php endif; ?></td>
+            <td><strong><?= e($h['name']) ?></strong><?php if (!empty($h['description'])): ?><div style="color:var(--color-gray-400);font-size:12px"><?= e($h['description']) ?></div><?php endif; ?></td>
             <td><code><?= e($h['slug']) ?></code></td>
             <td><?= (int) $h['active'] ? '✓' : '—' ?></td>
             <td>

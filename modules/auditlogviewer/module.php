@@ -62,7 +62,7 @@ return new class extends ModuleProvider {
                             $h .= '<div style="padding:.5rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:13px">'
                                 . '<div style="color:#111827"><strong>@' . $actor . '</strong> '
                                 . '<code style="font-size:12px;color:#4f46e5">' . $action . '</code>'
-                                . ($model !== '' ? ' <span style="color:#6b7280">on ' . $model . '</span>' : '')
+                                . ($model !== '' ? ' <span style="color:var(--color-gray-500)">on ' . $model . '</span>' : '')
                                 . '</div>'
                                 . ($when !== '' ? '<div style="color:#9ca3af;font-size:11px;margin-top:.15rem">' . $when . '</div>' : '')
                                 . '</div>';

@@ -12,7 +12,7 @@ $smsCapture      = $isDev && ($smsDriver     === '' || in_array($smsDriver,     
 $webhookCapture  = $isDev && ($webhookDriver === '' || in_array($webhookDriver, ['auto','log','capture'], true));
 ?>
 <?php if ($smsCapture || $webhookCapture): ?>
-<div style="margin-bottom:1rem;padding:.65rem .9rem;border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;font-size:13px;color:#3730a3">
+<div style="margin-bottom:1rem;padding:.65rem .9rem;border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;font-size:13px;color:var(--color-primary-dark)">
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.25rem">
         <span>🧪</span><strong>Local-capture mode is active for:</strong>
     </div>
@@ -55,7 +55,7 @@ $webhookCapture  = $isDev && ($webhookDriver === '' || in_array($webhookDriver, 
 <div class="card">
     <div class="card-header">
         <h2>Message Log</h2>
-        <span style="color:#6b7280;font-size:13px"><?= number_format($log['total']) ?> entries</span>
+        <span style="color:var(--color-gray-500);font-size:13px"><?= number_format($log['total']) ?> entries</span>
     </div>
     <div class="table-responsive">
         <table class="table">
@@ -63,7 +63,7 @@ $webhookCapture  = $isDev && ($webhookDriver === '' || in_array($webhookDriver, 
             <tbody>
             <?php foreach ($log['items'] as $row): ?>
             <tr>
-                <td style="white-space:nowrap;font-size:12px;color:#6b7280"><?= date('M j H:i', strtotime($row['created_at'])) ?></td>
+                <td style="white-space:nowrap;font-size:12px;color:var(--color-gray-500)"><?= date('M j H:i', strtotime($row['created_at'])) ?></td>
                 <td>
                     <?php $chBadge = ['email'=>'badge-primary','sms'=>'badge-gray','webhook'=>'badge-info'][$row['channel']] ?? 'badge-gray'; ?>
                     <span class="badge <?= $chBadge ?>"><?= e($row['channel']) ?></span>
@@ -79,16 +79,16 @@ $webhookCapture  = $isDev && ($webhookDriver === '' || in_array($webhookDriver, 
                     <div style="font-size:11px;color:#dc2626;margin-top:.15rem"><?= e(substr($row['error'],0,60)) ?></div>
                     <?php endif; ?>
                 </td>
-                <td style="font-size:12px;color:#6b7280;white-space:nowrap">
+                <td style="font-size:12px;color:var(--color-gray-500);white-space:nowrap">
                     <?= (int)($row['attempts'] ?? 0) ?> / <?= (int)($row['max_attempts'] ?? 3) ?>
                     <?php if (!empty($row['next_attempt_at']) && $row['status'] === 'failed'): ?>
                         <div style="font-size:11px">next: <?= e(date('M j H:i', strtotime($row['next_attempt_at']))) ?></div>
                     <?php endif; ?>
                 </td>
-                <td style="font-size:12px;color:#6b7280">
+                <td style="font-size:12px;color:var(--color-gray-500)">
                     <?= e($row['provider'] ?? '—') ?>
                     <?php if (($row['provider'] ?? '') === 'log' || ($row['provider'] ?? '') === 'capture'): ?>
-                        <span title="Local capture — not actually delivered" style="display:inline-block;margin-left:.2rem;padding:0 .35rem;border-radius:3px;background:#fef3c7;color:#92400e;font-size:10.5px;font-weight:600">CAPTURED</span>
+                        <span title="Local capture — not actually delivered" style="display:inline-block;margin-left:.2rem;padding:0 .35rem;border-radius:3px;background:var(--color-warning-bg);color:var(--color-warning-fg);font-size:10.5px;font-weight:600">CAPTURED</span>
                     <?php endif; ?>
                 </td>
                 <td style="white-space:nowrap">

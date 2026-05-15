@@ -133,8 +133,8 @@ $descs = [
     left: 0; right: 0; bottom: 0;
     z-index: 9000;
     background: var(--bg-card, #fff);
-    color: var(--text-default, #111827);
-    border-top: 1px solid var(--border-default, #e5e7eb);
+    color: var(--text-default, var(--color-gray-900));
+    border-top: 1px solid var(--border-default, var(--color-gray-200));
     box-shadow: 0 -4px 16px rgba(0,0,0,.08);
     font-size: 14px;
     line-height: 1.5;
@@ -153,8 +153,8 @@ $descs = [
 }
 .cc-banner__text { flex: 1 1 320px; min-width: 0; }
 .cc-banner__title { display:block; font-size: 14px; margin-bottom: .15rem; }
-.cc-banner__body  { margin: 0; color: var(--text-muted, #6b7280); }
-.cc-banner__link  { color: var(--color-primary, #4f46e5); text-decoration: none; white-space: nowrap; }
+.cc-banner__body  { margin: 0; color: var(--text-muted, var(--color-gray-500)); }
+.cc-banner__link  { color: var(--color-primary, var(--color-primary)); text-decoration: none; white-space: nowrap; }
 .cc-banner__link:hover { text-decoration: underline; }
 
 .cc-banner__actions {
@@ -175,25 +175,25 @@ $descs = [
     white-space: nowrap;
 }
 .cc-btn--primary {
-    background: var(--color-primary, #4f46e5);
+    background: var(--color-primary, var(--color-primary));
     color: #fff;
 }
-.cc-btn--primary:hover  { background: var(--color-primary-dark, #3730a3); }
+.cc-btn--primary:hover  { background: var(--color-primary-dark, var(--color-primary-dark)); }
 /* Equal-weight filled neutral, paired with --primary for Reject/Accept
    parity (EDPB Guidelines 5/2020 §41 — refuse must be as easy as accept).
    Same padding + font-weight + border-radius as --primary; only the fill
    color differs. Slate-700 in light mode; theme tokens take over in dark. */
 .cc-btn--reject {
-    background: var(--bg-button-neutral, #374151);
+    background: var(--bg-button-neutral, var(--color-gray-700));
     color: var(--text-on-dark, #fff);
 }
 .cc-btn--reject:hover   { background: var(--bg-button-neutral-hover, #1f2937); }
 .cc-btn--ghost {
     background: transparent;
-    border-color: var(--border-default, #d1d5db);
-    color: var(--text-default, #111827);
+    border-color: var(--border-default, var(--color-gray-300));
+    color: var(--text-default, var(--color-gray-900));
 }
-.cc-btn--ghost:hover    { background: var(--bg-page, #f9fafb); }
+.cc-btn--ghost:hover    { background: var(--bg-page, var(--color-gray-50)); }
 
 /* Modal */
 .cc-modal {
@@ -205,7 +205,7 @@ $descs = [
 .cc-modal__panel {
     position: relative;
     background: var(--bg-card, #fff);
-    color: var(--text-default, #111827);
+    color: var(--text-default, var(--color-gray-900));
     width: min(560px, calc(100% - 2rem));
     max-height: calc(100vh - 4rem);
     border-radius: 10px;
@@ -216,11 +216,11 @@ $descs = [
 .cc-modal__header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-default, #e5e7eb);
+    border-bottom: 1px solid var(--border-default, var(--color-gray-200));
 }
 .cc-modal__header h2 { margin: 0; font-size: 16px; }
 .cc-modal__close {
-    background: none; border: 0; color: var(--text-muted, #6b7280);
+    background: none; border: 0; color: var(--text-muted, var(--color-gray-500));
     font-size: 22px; line-height: 1; cursor: pointer; padding: 0 .25rem;
 }
 .cc-modal__body {
@@ -229,13 +229,13 @@ $descs = [
 .cc-modal__footer {
     display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end;
     padding: 1rem 1.25rem;
-    border-top: 1px solid var(--border-default, #e5e7eb);
-    background: var(--bg-page, #f9fafb);
+    border-top: 1px solid var(--border-default, var(--color-gray-200));
+    background: var(--bg-page, var(--color-gray-50));
 }
 
 .cc-cat {
     padding: .85rem 0;
-    border-bottom: 1px solid var(--border-default, #f3f4f6);
+    border-bottom: 1px solid var(--border-default, var(--color-gray-100));
 }
 .cc-cat:last-of-type { border-bottom: 0; }
 .cc-cat__row {
@@ -247,10 +247,10 @@ $descs = [
 }
 .cc-cat__badge {
     font-size: 11px; font-weight: 500;
-    background: var(--bg-page, #f3f4f6); color: var(--text-muted, #6b7280);
+    background: var(--bg-page, var(--color-gray-100)); color: var(--text-muted, var(--color-gray-500));
     padding: .15rem .45rem; border-radius: 999px;
 }
-.cc-cat__desc { margin: .35rem 0 0; color: var(--text-muted, #6b7280); font-size: 13px; }
+.cc-cat__desc { margin: .35rem 0 0; color: var(--text-muted, var(--color-gray-500)); font-size: 13px; }
 
 /* Sliding toggle — same visual language the framework's superadmin
    header toggle uses, so the banner doesn't feel like a different app. */
@@ -258,7 +258,7 @@ $descs = [
 .cc-toggle input { opacity: 0; width: 0; height: 0; }
 .cc-toggle__slider {
     position: absolute; cursor: pointer; inset: 0;
-    background-color: #d1d5db;
+    background-color: var(--color-gray-300);
     transition: .2s; border-radius: 22px;
 }
 .cc-toggle__slider:before {
@@ -268,7 +268,7 @@ $descs = [
     background-color: #fff;
     transition: .2s; border-radius: 50%;
 }
-.cc-toggle input:checked + .cc-toggle__slider { background-color: var(--color-primary, #4f46e5); }
+.cc-toggle input:checked + .cc-toggle__slider { background-color: var(--color-primary, var(--color-primary)); }
 .cc-toggle input:checked + .cc-toggle__slider:before { transform: translateX(18px); }
 .cc-toggle input:disabled + .cc-toggle__slider { opacity: .65; cursor: not-allowed; }
 

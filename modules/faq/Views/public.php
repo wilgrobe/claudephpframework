@@ -8,7 +8,7 @@
 
 <div style="max-width:800px;margin:0 auto">
     <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:.5rem">FAQ</h1>
-    <p style="color:#6b7280;margin-bottom:2rem">Find answers to common questions below.</p>
+    <p style="color:var(--color-gray-500);margin-bottom:2rem">Find answers to common questions below.</p>
 
     <!-- Search -->
     <div style="margin-bottom:1.5rem">
@@ -20,17 +20,17 @@
         if (empty($catFaqs)) continue;
     ?>
     <div class="faq-category" style="margin-bottom:2rem">
-        <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid #e5e7eb;padding-bottom:.5rem;margin-bottom:1rem">
+        <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid var(--color-gray-200);padding-bottom:.5rem;margin-bottom:1rem">
             <?= e($cat['name']) ?>
         </h2>
         <?php foreach ($catFaqs as $faq): ?>
-        <div class="faq-item" style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:.5rem;overflow:hidden">
+        <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
             <button onclick="toggleFaq(this)"
                     style="width:100%;text-align:left;padding:.85rem 1.1rem;background:#fff;border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
-                <span style="font-size:1.1rem;color:#9ca3af;flex-shrink:0;margin-left:.5rem">+</span>
+                <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
             </button>
-            <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid #f3f4f6;color:#374151;font-size:14px;line-height:1.7">
+            <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid var(--color-gray-100);color:var(--color-gray-700);font-size:14px;line-height:1.7">
                 <?= $faq['answer'] /* already sanitized on store */ ?>
             </div>
         </div>
@@ -40,14 +40,14 @@
 
     <?php if (!empty($uncategorized)): ?>
     <div class="faq-category" style="margin-bottom:2rem">
-        <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid #e5e7eb;padding-bottom:.5rem;margin-bottom:1rem">General</h2>
+        <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid var(--color-gray-200);padding-bottom:.5rem;margin-bottom:1rem">General</h2>
         <?php foreach ($uncategorized as $faq): ?>
-        <div class="faq-item" style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:.5rem;overflow:hidden">
+        <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
             <button onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:.85rem 1.1rem;background:#fff;border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
-                <span style="font-size:1.1rem;color:#9ca3af;flex-shrink:0;margin-left:.5rem">+</span>
+                <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
             </button>
-            <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid #f3f4f6;color:#374151;font-size:14px;line-height:1.7">
+            <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid var(--color-gray-100);color:var(--color-gray-700);font-size:14px;line-height:1.7">
                 <?= $faq['answer'] ?>
             </div>
         </div>
@@ -56,7 +56,7 @@
     <?php endif; ?>
 
     <?php if (empty($categories) && empty($uncategorized)): ?>
-    <div style="text-align:center;padding:3rem;color:#6b7280">
+    <div style="text-align:center;padding:3rem;color:var(--color-gray-500)">
         <div style="font-size:2.5rem;margin-bottom:.75rem">❓</div>
         <p>No FAQ entries have been added yet.</p>
     </div>

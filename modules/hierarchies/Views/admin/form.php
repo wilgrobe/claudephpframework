@@ -10,7 +10,7 @@
             <label style="display:block;margin-top:.75rem">Slug <input name="slug" required style="width:100%" placeholder="main-nav"></label>
             <label style="display:block;margin-top:.75rem">Description <textarea name="description" rows="2" style="width:100%"></textarea></label>
         </div>
-        <div class="card-footer" style="padding:.75rem 1.25rem;background:#f9fafb">
+        <div class="card-footer" style="padding:.75rem 1.25rem;background:var(--color-gray-50)">
             <a href="/admin/hierarchies" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">Create</button>
         </div>

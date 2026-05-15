@@ -3,6 +3,26 @@
    Loaded from app/Views/layout/header.php after app.css and the
    inlined critical CSS, so anything here can override those.
 
+   ── Vocabulary (commit to these; do NOT redefine locally) ────────────
+     Page layout:  .shell, .shell--narrow|--medium|--wide  (app.css)
+     Page header:  .page-header, .page-header-actions
+     Surface:      .card, .card-header, .card-body, .tbl-card, .surface
+     Forms:        .form-row, .form-grid--2|--3|--2-1|--1-2,
+                   .admin-fieldset, .form-actions, .form-actions .spacer
+     Field manage: .field-list, .field-row, .field-type-badge
+     Inputs:       (raw inputs inside .form-row auto-style; .form-control
+                   also exists for views still using .form-group pattern)
+     Buttons:      .btn, .btn-primary, .btn-secondary, .btn-danger,
+                   .btn-sm, .btn-xs, .btn-group
+     Status:       .badge, .badge-success, .badge-danger, .badge-gray,
+                   .badge-info, .badge-warning, .badge-purple, plus the
+                   `-soft` variants (lighter bg, deeper fg).
+                   .status-pill is a smaller uppercase variant for tight
+                   contexts (table rows, project cards).
+     Tables:       .table, .table-responsive, .row-subtext
+     Toolbars:     .toolbar, .toolbar-spacer
+     Misc:         .empty-state, .code-chip, .price-cell, .muted-meta
+
    Scoping strategy:
      • Generic utility-like classes (.page-header, .btn-group, .empty-state,
        .row-subtext, .code-chip, .badge-info) are global and safe to use
@@ -251,8 +271,75 @@
     color: var(--color-gray-500);
 }
 
-/* ── Missing badge variant used by some views ─────────────── */
-.badge-info { background: #dbeafe; color: #1e40af; }
+/* ── Badge variants (extend the inline-defined family) ────────
+   Header.php's critical CSS defines .badge / .badge-primary /
+   .badge-success / .badge-danger / .badge-gray with the saturated
+   palette. These extra variants cover the "softer, larger" usage
+   that wizard / dashboard / wallet pages all reached for ad-hoc. */
+.badge-info    { background: var(--color-info-bg);    color: var(--color-info-fg); }
+.badge-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); }
+.badge-purple  { background: var(--color-purple-bg);  color: var(--color-purple-fg); }
+
+/* Soft variants — lighter, broader interior padding, friendlier in
+   info-dense table rows. */
+.badge-success-soft { background: var(--color-success-bg); color: var(--color-success-fg); }
+.badge-warning-soft { background: var(--color-warning-bg); color: var(--color-warning-fg); }
+.badge-danger-soft  { background: var(--color-danger-bg);  color: var(--color-danger-fg); }
+.badge-info-soft    { background: var(--color-info-bg);    color: var(--color-info-fg); }
+.badge-purple-soft  { background: var(--color-purple-bg);  color: var(--color-purple-fg); }
+.badge-gray-soft    { background: var(--color-gray-100);   color: var(--color-gray-700); }
+
+/* Status pill — smaller, uppercase, tighter. Use on table rows and
+   project cards where the badge sits next to denser text. Pairs
+   with .badge-*-soft variants for the color. */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .15rem .55rem;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* ── Surface — plain panel wrapper (lighter than .card) ──────
+   For dashboard strips, account-info bars, and other contexts that
+   want a subtle background panel but not the full card chrome.   */
+.surface {
+    background: #fff;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+}
+.surface--muted {
+    background: var(--color-gray-50);
+}
+.surface--accent {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: #fff;
+    border-color: transparent;
+}
+.surface--accent .surface-meta,
+.surface--accent .text-muted {
+    color: rgba(255, 255, 255, .85);
+}
+
+/* ── Flush-table card — .table inside a .card-body with no padding,
+   so the table's cell borders meet the card's edges. Widely needed
+   for wallet/admin lists where the table is the whole content. */
+.tbl-card .card-body {
+    padding: 0;
+}
+.tbl-card .table {
+    margin: 0;
+}
+.tbl-card .table th:first-child,
+.tbl-card .table td:first-child { padding-left: 1.25rem; }
+.tbl-card .table th:last-child,
+.tbl-card .table td:last-child  { padding-right: 1.25rem; }
 
 /* ── Availability editor (scheduling resource form) ───────── */
 .avail-row {

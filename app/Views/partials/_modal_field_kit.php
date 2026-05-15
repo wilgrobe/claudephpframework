@@ -65,14 +65,14 @@
 .cb-modal-header h2 { margin: 0; font-size: 1rem; font-weight: 600; }
 .cb-modal-header .close { background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
 .cb-modal-body   { padding: 1rem 1.25rem; overflow-y: auto; }
-.cb-modal-footer { padding: .75rem 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; gap: .5rem; justify-content: flex-end; background: #f9fafb; }
+.cb-modal-footer { padding: .75rem 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; gap: .5rem; justify-content: flex-end; background: var(--color-gray-50); }
 .cb-modal-help   { font-size: 12px; color: var(--text-muted); margin-top: .15rem; }
 .cb-modal .form-group { margin-bottom: .85rem; }
 
 /* Repeater fields - array-of-objects + string-list editors. */
 .cb-rep-container {
     border: 1px solid var(--border-default); border-radius: 8px;
-    padding: .55rem; background: #f9fafb;
+    padding: .55rem; background: var(--color-gray-50);
 }
 .cb-rep-items { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .55rem; counter-reset: rep-item; }
 .cb-rep-items:empty { margin-bottom: 0; }
@@ -106,7 +106,7 @@
 .cb-rep-item-body { padding: .6rem; }
 .cb-rep-item-body .form-group { margin-bottom: .55rem; }
 .cb-rep-item-body .form-group:last-child { margin-bottom: 0; }
-.cb-rep-item-body .cb-rep-container { background: #f9fafb; padding: .45rem; }
+.cb-rep-item-body .cb-rep-container { background: var(--color-gray-50); padding: .45rem; }
 .cb-rep-item.cb-strlist-item {
     display: flex; align-items: center; gap: .35rem;
     padding: .3rem .45rem; background: var(--bg-panel);

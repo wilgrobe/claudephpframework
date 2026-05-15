@@ -36,7 +36,7 @@
                 </div>
                 <div class="form-group">
                     <label for="location">Location *
-                        <span style="font-size:11px;color:#6b7280;font-weight:400">(used in views with menu('location'))</span>
+                        <span style="font-size:11px;color:var(--color-gray-500);font-weight:400">(used in views with menu('location'))</span>
                     </label>
                     <input type="text" name="location" class="form-control" required placeholder="header, footer, sidebar…" id="location">
                 </div>

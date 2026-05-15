@@ -132,26 +132,26 @@ return new class extends ModuleProvider {
                     // 100% — congratulate quickly and stay out of the way.
                     if ($pct === 100) {
                         return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;text-align:center">'
-                             . '<div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
+                             . '<div style="font-size:12px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
                              . '<div style="font-size:1.5rem;font-weight:700;color:#10b981;margin-top:.35rem">100%</div>'
-                             . '<div style="font-size:12.5px;color:#6b7280;margin-top:.15rem">Complete — nice!</div>'
+                             . '<div style="font-size:12.5px;color:var(--color-gray-500);margin-top:.15rem">Complete — nice!</div>'
                              . '</div></div>';
                     }
 
-                    $barColor = $pct >= 70 ? '#10b981' : ($pct >= 40 ? '#f59e0b' : '#dc2626');
+                    $barColor = $pct >= 70 ? 'var(--color-success)' : ($pct >= 40 ? 'var(--color-warning)' : '#dc2626');
                     $missingShort = array_slice($missing, 0, 3);
                     $remaining = count($missing) - count($missingShort);
                     $missingTxt = htmlspecialchars(implode(', ', $missingShort) . ($remaining > 0 ? " +$remaining more" : ''), ENT_QUOTES | ENT_HTML5);
 
                     return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem">'
                          . '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem">'
-                         .   '<div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
+                         .   '<div style="font-size:12px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
                          .   '<div style="font-size:1.1rem;font-weight:700;color:' . $barColor . '">' . $pct . '%</div>'
                          . '</div>'
                          . '<div style="background:#e5e7eb;height:6px;border-radius:3px;overflow:hidden">'
                          .   '<div style="background:' . $barColor . ';height:100%;width:' . $pct . '%;transition:width .3s"></div>'
                          . '</div>'
-                         . '<div style="font-size:12px;color:#6b7280;margin-top:.5rem;line-height:1.4">Add: ' . $missingTxt . '</div>'
+                         . '<div style="font-size:12px;color:var(--color-gray-500);margin-top:.5rem;line-height:1.4">Add: ' . $missingTxt . '</div>'
                          . '<a href="/profile/edit" style="display:block;text-align:center;font-size:12.5px;color:#4f46e5;text-decoration:none;margin-top:.65rem;font-weight:500">Complete profile →</a>'
                          . '</div></div>';
                 }

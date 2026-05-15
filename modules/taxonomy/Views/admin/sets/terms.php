@@ -10,12 +10,12 @@ $allowHierarchy = (int) $set['allow_hierarchy'] === 1;
 $render = function (array $nodes, int $depth = 0) use (&$render) {
     foreach ($nodes as $node) {
         $indent = $depth * 20;
-        echo '<li style="padding:.5rem 0;padding-left:' . $indent . 'px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:1rem">';
+        echo '<li style="padding:.5rem 0;padding-left:' . $indent . 'px;border-bottom:1px solid var(--color-gray-100);display:flex;align-items:center;justify-content:space-between;gap:1rem">';
         echo '<div style="flex:1;min-width:0">';
         echo '<strong>' . e($node['name']) . '</strong> ';
-        echo '<code style="font-size:11px;color:#9ca3af;margin-left:.5rem">' . e($node['slug']) . '</code>';
+        echo '<code style="font-size:11px;color:var(--color-gray-400);margin-left:.5rem">' . e($node['slug']) . '</code>';
         if (!empty($node['description'])) {
-            echo '<div style="font-size:12px;color:#6b7280;margin-top:.2rem">' . e($node['description']) . '</div>';
+            echo '<div style="font-size:12px;color:var(--color-gray-500);margin-top:.2rem">' . e($node['description']) . '</div>';
         }
         echo '</div>';
         echo '<form method="POST" action="/admin/taxonomy/terms/' . (int) $node['id'] . '/delete" data-confirm="Delete term \'' . e($node['name']) . '\'? This also deletes all its children.">';
@@ -34,7 +34,7 @@ $render = function (array $nodes, int $depth = 0) use (&$render) {
 <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
     <a href="/admin/taxonomy/sets" class="btn btn-sm btn-secondary">← Back</a>
     <h1 style="margin:0;font-size:1.5rem"><?= e($set['name']) ?></h1>
-    <span style="color:#6b7280;font-size:13px"><code><?= e($set['slug']) ?></code>
+    <span style="color:var(--color-gray-500);font-size:13px"><code><?= e($set['slug']) ?></code>
         · <?= $allowHierarchy ? 'nested' : 'flat' ?></span>
 </div>
 
@@ -44,7 +44,7 @@ $render = function (array $nodes, int $depth = 0) use (&$render) {
     <div class="card">
         <div class="card-header"><h2 style="font-size:1.125rem">Terms</h2></div>
         <?php if (empty($tree)): ?>
-        <div class="card-body" style="color:#6b7280;text-align:center;padding:2rem 1rem">
+        <div class="card-body" style="color:var(--color-gray-500);text-align:center;padding:2rem 1rem">
             No terms yet. Add one using the form on the right.
         </div>
         <?php else: ?>

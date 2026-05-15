@@ -5,13 +5,13 @@
 
 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
     <div>
-        <div style="font-size:12px;color:#6b7280">
-            <a href="/admin/system-layouts" style="color:#4f46e5;text-decoration:none">← All system layouts</a>
+        <div style="font-size:12px;color:var(--color-gray-500)">
+            <a href="/admin/system-layouts" style="color:var(--color-primary);text-decoration:none">← All system layouts</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.4rem;font-weight:700">
             <?= e(trim((string) ($layout['friendly_name'] ?? '')) ?: $name) ?>
         </h1>
-        <div style="font-size:13px;color:#6b7280;margin-top:.25rem">
+        <div style="font-size:13px;color:var(--color-gray-500);margin-top:.25rem">
             <code style="font-size:12px"><?= e($name) ?></code>
             · <?= $hasLayout ? 'Composer enabled' : 'Layout not yet saved — defaults shown' ?>
         </div>
@@ -25,7 +25,7 @@
     <div class="card" style="margin-bottom:1rem">
         <div class="card-header"><h2 style="margin:0;font-size:1rem">About this layout</h2></div>
         <div class="card-body">
-            <p style="color:#6b7280;font-size:13px;margin:0 0 .85rem 0">
+            <p style="color:var(--color-gray-500);font-size:13px;margin:0 0 .85rem 0">
                 Optional metadata that helps admins find and recognise this
                 layout on the index page. Module migrations seed reasonable
                 defaults; you can override them here.
@@ -126,7 +126,7 @@
             </div>
         </div>
         <div class="card-body">
-            <p style="color:#6b7280;font-size:13px;margin:0 0 .85rem 0">
+            <p style="color:var(--color-gray-500);font-size:13px;margin:0 0 .85rem 0">
                 Drop blocks or "page content" slots into specific cells of
                 the grid above. Multiple placements per cell stack vertically
                 by sort order. Page-content rows are filled at request time
@@ -150,7 +150,7 @@
                     <?php include BASE_PATH . '/app/Views/admin/system_layouts/_layout_row.php'; ?>
                 <?php endforeach; ?>
                 <?php if (empty($placements)): ?>
-                <tr id="placement-empty"><td colspan="8" style="text-align:center;color:#9ca3af;padding:1rem">No placements yet. Click "+ Block" or "+ Page content" to start composing.</td></tr>
+                <tr id="placement-empty"><td colspan="8" style="text-align:center;color:var(--color-gray-400);padding:1rem">No placements yet. Click "+ Block" or "+ Page content" to start composing.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>

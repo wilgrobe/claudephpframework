@@ -22,47 +22,47 @@ $qs = function (array $extra) use ($filters): string {
 .al-shell  { max-width:1200px; margin:0 auto; }
 .al-head   { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; margin-bottom:.85rem; flex-wrap:wrap; }
 .al-h1     { font-size:1.5rem; font-weight:700; margin:0; }
-.al-h1 .ct { color:#9ca3af; font-size:13px; font-weight:500; }
+.al-h1 .ct { color:var(--color-gray-400); font-size:13px; font-weight:500; }
 .al-cta    { display:flex; gap:.5rem; align-items:center; }
 .al-pill   { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:999px; font-size:11.5px; font-weight:600; }
-.al-pill-ok      { background:#ecfdf5; color:#047857; }
-.al-pill-warn    { background:#fee2e2; color:#991b1b; }
-.al-pill-unknown { background:#f3f4f6; color:#6b7280; }
+.al-pill-ok      { background:var(--color-success-bg); color:#047857; }
+.al-pill-warn    { background:var(--color-danger-bg); color:var(--color-danger-fg); }
+.al-pill-unknown { background:var(--color-gray-100); color:var(--color-gray-500); }
 .al-pill a       { color:inherit; text-decoration:none; }
 
 .al-grid { display:grid; grid-template-columns: 1fr 240px; gap:1rem; align-items:start; }
 @media (max-width: 900px) { .al-grid { grid-template-columns: 1fr; } }
 
 .al-quickdates { display:flex; gap:.3rem; flex-wrap:wrap; margin-bottom:.5rem; }
-.al-qd { padding:.25rem .6rem; border-radius:4px; background:#f3f4f6; color:#374151; font-size:11.5px; font-weight:600; text-decoration:none; }
-.al-qd:hover { background:#e5e7eb; color:#111; }
+.al-qd { padding:.25rem .6rem; border-radius:4px; background:var(--color-gray-100); color:var(--color-gray-700); font-size:11.5px; font-weight:600; text-decoration:none; }
+.al-qd:hover { background:var(--color-gray-200); color:#111; }
 
-.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem 1rem; }
-.al-filters input, .al-filters button, .al-filters .btn-secondary { padding:.5rem .65rem; border:1px solid #d1d5db; border-radius:4px; font-size:13px; font-family:inherit; }
+.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.al-filters input, .al-filters button, .al-filters .btn-secondary { padding:.5rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .al-filters .span2 { grid-column: span 2; }
 .al-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
 
-.al-sidebar h3   { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:#6b7280; margin:0 0 .5rem; font-weight:700; }
+.al-sidebar h3   { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); margin:0 0 .5rem; font-weight:700; }
 .al-sidebar .card { padding:.75rem 1rem; }
 .al-chip-list { display:flex; flex-direction:column; gap:.2rem; }
-.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background:#fff; border:1px solid #e5e7eb; font-size:12px; text-decoration:none; color:#374151; }
-.al-chip:hover { background:#f9fafb; border-color:#c4b5fd; }
-.al-chip .ct  { color:#9ca3af; font-size:10.5px; font-weight:600; }
-.al-chip.active { background:#ede9fe; border-color:#c4b5fd; color:#5b21b6; }
+.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background:#fff; border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
+.al-chip:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
+.al-chip .ct  { color:var(--color-gray-400); font-size:10.5px; font-weight:600; }
+.al-chip.active { background:var(--color-purple-bg); border-color:#c4b5fd; color:var(--color-purple-fg); }
 
-.al-table { width:100%; background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; border-collapse:collapse; }
-.al-table th, .al-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid #f3f4f6; }
-.al-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:#6b7280; font-weight:700; }
+.al-table { width:100%; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
+.al-table th, .al-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid var(--color-gray-100); }
+.al-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .al-table tr:last-child td { border-bottom:0; }
 .al-table code { font-size:11.5px; }
-.al-empty { padding:3rem 1rem; color:#9ca3af; text-align:center; }
+.al-empty { padding:3rem 1rem; color:var(--color-gray-400); text-align:center; }
 
-.al-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:#6b7280; }
-.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid #d1d5db; border-radius:4px; background:#fff; color:#374151; text-decoration:none; margin-left:.25rem; }
-.al-pager .nav span.disabled { color:#d1d5db; }
-.al-pager .nav .current { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+.al-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
+.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background:#fff; color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.al-pager .nav span.disabled { color:var(--color-gray-300); }
+.al-pager .nav .current { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
 
-.badge-superadmin { display:inline-block; padding:.05rem .35rem; border-radius:3px; background:#fef3c7; color:#92400e; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-left:.25rem; }
+.badge-superadmin { display:inline-block; padding:.05rem .35rem; border-radius:3px; background:var(--color-warning-bg); color:var(--color-warning-fg); font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-left:.25rem; }
 </style>
 
 <div class="al-shell">
@@ -81,7 +81,7 @@ $qs = function (array $extra) use ($filters): string {
                 <a class="al-pill al-pill-ok" href="/admin/audit-chain" title="No tampered rows<?= $cs['last_verified_at'] ? ' — last verified ' . htmlspecialchars($cs['last_verified_at'], ENT_QUOTES) : '' ?>">✓ chain ok</a>
             <?php endif; ?>
             <?php $csvQs = $qs([]); ?>
-            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background:#fff;border:1px solid #d1d5db;border-radius:4px;text-decoration:none;color:#374151;">⬇ Export CSV</a>
+            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background:#fff;border:1px solid var(--color-gray-300);border-radius:4px;text-decoration:none;color:var(--color-gray-700);">⬇ Export CSV</a>
         </div>
     </div>
 
@@ -94,13 +94,13 @@ $qs = function (array $extra) use ($filters): string {
         $last30 = date('Y-m-d', strtotime('-30 days'));
         $thisMonth = date('Y-m-01');
         ?>
-        <span style="color:#9ca3af;font-size:11.5px;align-self:center;margin-right:.4rem">Quick filter:</span>
+        <span style="color:var(--color-gray-400);font-size:11.5px;align-self:center;margin-right:.4rem">Quick filter:</span>
         <a class="al-qd" href="?<?= $qs(['date_from' => $last24, 'date_to' => null]) ?>">Last 24h</a>
         <a class="al-qd" href="?<?= $qs(['date_from' => $last7, 'date_to' => null]) ?>">Last 7d</a>
         <a class="al-qd" href="?<?= $qs(['date_from' => $last30, 'date_to' => null]) ?>">Last 30d</a>
         <a class="al-qd" href="?<?= $qs(['date_from' => $thisMonth, 'date_to' => null]) ?>">This month</a>
         <?php if (!empty($filters)): ?>
-            <a class="al-qd" href="/admin/audit-log" style="margin-left:.4rem;background:#fee2e2;color:#991b1b">✕ Clear all filters</a>
+            <a class="al-qd" href="/admin/audit-log" style="margin-left:.4rem;background:var(--color-danger-bg);color:var(--color-danger-fg)">✕ Clear all filters</a>
         <?php endif; ?>
     </div>
 
@@ -113,8 +113,8 @@ $qs = function (array $extra) use ($filters): string {
         <input name="date_to"       value="<?= e((string) ($filters['date_to']   ?? '')) ?>" placeholder="to YYYY-MM-DD" aria-label="to">
         <input name="q"             value="<?= e((string) ($filters['q'] ?? '')) ?>" placeholder="search action / model / notes" class="span2" aria-label="search">
         <div class="actions">
-            <button class="btn btn-primary" style="background:#4f46e5;color:#fff;border-color:#4f46e5">Filter</button>
-            <a href="/admin/audit-log" class="btn-secondary" style="text-decoration:none;color:#374151;">Clear</a>
+            <button class="btn btn-primary" style="background:var(--color-primary);color:#fff;border-color:var(--color-primary)">Filter</button>
+            <a href="/admin/audit-log" class="btn-secondary" style="text-decoration:none;color:var(--color-gray-700);">Clear</a>
         </div>
     </form>
 
@@ -137,7 +137,7 @@ $qs = function (array $extra) use ($filters): string {
                 <tbody>
                 <?php foreach ($items as $r): ?>
                     <tr>
-                        <td style="white-space:nowrap;color:#374151"><?= e(date('M j, H:i:s', strtotime((string) $r['created_at']))) ?></td>
+                        <td style="white-space:nowrap;color:var(--color-gray-700)"><?= e(date('M j, H:i:s', strtotime((string) $r['created_at']))) ?></td>
                         <td>
                             <?php if (!empty($r['actor_username'])): ?>
                                 @<?= e((string) $r['actor_username']) ?>
@@ -145,29 +145,29 @@ $qs = function (array $extra) use ($filters): string {
                                     <div style="font-size:11px;color:#b45309">emulated by @<?= e((string) $r['emulated_username']) ?></div>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <span style="color:#9ca3af">system</span>
+                                <span style="color:var(--color-gray-400)">system</span>
                             <?php endif; ?>
                             <?php if ((int) $r['superadmin_mode'] === 1): ?>
                                 <span class="badge-superadmin">superadmin</span>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="?<?= $qs(['action' => $r['action']]) ?>" style="color:#4f46e5;text-decoration:none">
-                                <code style="background:#f3f4f6;padding:.1rem .35rem;border-radius:3px"><?= e((string) $r['action']) ?></code>
+                            <a href="?<?= $qs(['action' => $r['action']]) ?>" style="color:var(--color-primary);text-decoration:none">
+                                <code style="background:var(--color-gray-100);padding:.1rem .35rem;border-radius:3px"><?= e((string) $r['action']) ?></code>
                             </a>
                         </td>
-                        <td style="font-family:monospace;font-size:11.5px;color:#374151">
+                        <td style="font-family:monospace;font-size:11.5px;color:var(--color-gray-700)">
                             <?php if ($r['model']): ?>
                                 <a href="?<?= $qs(['model' => $r['model']]) ?>" style="color:inherit;text-decoration:none"><?= e((string) $r['model']) ?></a>
                                 <?php if ($r['model_id']): ?>
-                                    <a href="?<?= $qs(['model' => $r['model'], 'model_id' => $r['model_id']]) ?>" style="color:#9ca3af;text-decoration:none"> #<?= (int) $r['model_id'] ?></a>
+                                    <a href="?<?= $qs(['model' => $r['model'], 'model_id' => $r['model_id']]) ?>" style="color:var(--color-gray-400);text-decoration:none"> #<?= (int) $r['model_id'] ?></a>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <span style="color:#9ca3af">—</span>
+                                <span style="color:var(--color-gray-400)">—</span>
                             <?php endif; ?>
                         </td>
-                        <td style="color:#9ca3af;font-family:monospace;font-size:11.5px"><?= e((string) ($r['ip_address'] ?? '')) ?></td>
-                        <td><a href="/admin/audit-log/<?= (int) $r['id'] ?>" style="font-size:11.5px;color:#4f46e5;text-decoration:none;font-weight:600">Detail →</a></td>
+                        <td style="color:var(--color-gray-400);font-family:monospace;font-size:11.5px"><?= e((string) ($r['ip_address'] ?? '')) ?></td>
+                        <td><a href="/admin/audit-log/<?= (int) $r['id'] ?>" style="font-size:11.5px;color:var(--color-primary);text-decoration:none;font-weight:600">Detail →</a></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -221,7 +221,7 @@ $qs = function (array $extra) use ($filters): string {
         <aside class="al-sidebar">
             <div class="card" style="margin-bottom:.85rem">
                 <h3>Top actions</h3>
-                <p style="color:#9ca3af;font-size:11px;margin:0 0 .5rem;line-height:1.4">Click to filter</p>
+                <p style="color:var(--color-gray-400);font-size:11px;margin:0 0 .5rem;line-height:1.4">Click to filter</p>
                 <div class="al-chip-list">
                     <?php foreach ($top_actions as $row):
                         $isActive = ($filters['action'] ?? '') === $row['action'];
@@ -234,7 +234,7 @@ $qs = function (array $extra) use ($filters): string {
                         </a>
                     <?php endforeach; ?>
                     <?php if (empty($top_actions)): ?>
-                        <div style="color:#9ca3af;font-size:11.5px;font-style:italic;text-align:center;padding:.5rem">no actions yet</div>
+                        <div style="color:var(--color-gray-400);font-size:11.5px;font-style:italic;text-align:center;padding:.5rem">no actions yet</div>
                     <?php endif; ?>
                 </div>
             </div>

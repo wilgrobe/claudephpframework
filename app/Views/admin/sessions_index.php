@@ -5,13 +5,13 @@
 <div>
     <div class="card">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
-            <h2 style="margin:0">Active sessions <span style="color:#9ca3af;font-size:13px">(<?= count($sessions) ?>)</span></h2>
+            <h2 style="margin:0">Active sessions <span style="color:var(--color-gray-400);font-size:13px">(<?= count($sessions) ?>)</span></h2>
             <?php if ($userFilter): ?>
             <a href="/admin/sessions" class="btn btn-sm btn-secondary">Clear filter</a>
             <?php endif; ?>
         </div>
         <?php if (empty($sessions)): ?>
-        <div class="card-body" style="text-align:center;color:#6b7280;padding:3rem 1rem">
+        <div class="card-body" style="text-align:center;color:var(--color-gray-500);padding:3rem 1rem">
             No active sessions match.
         </div>
         <?php else: ?>
@@ -41,9 +41,9 @@
                         <td>
                             <?php if (!empty($s['user_id'])): ?>
                             <strong><?= e((string) ($s['username'] ?: ($s['first_name'] . ' ' . $s['last_name']))) ?></strong>
-                            <div style="color:#9ca3af;font-size:11px"><?= e((string) $s['email']) ?> · id <?= (int) $s['user_id'] ?></div>
+                            <div style="color:var(--color-gray-400);font-size:11px"><?= e((string) $s['email']) ?> · id <?= (int) $s['user_id'] ?></div>
                             <?php else: ?>
-                            <span style="color:#9ca3af">guest</span>
+                            <span style="color:var(--color-gray-400)">guest</span>
                             <?php endif; ?>
                         </td>
                         <td style="font-family:monospace;font-size:12px"><?= e((string) ($s['ip_address'] ?? '')) ?></td>
@@ -71,13 +71,13 @@
         <div class="card-header"><strong>Users with most sessions</strong></div>
         <div class="card-body" style="padding:.5rem 0">
             <?php if (empty($topUsers)): ?>
-            <div style="padding:.75rem 1rem;color:#9ca3af;font-size:13px">No active authenticated sessions.</div>
+            <div style="padding:.75rem 1rem;color:var(--color-gray-400);font-size:13px">No active authenticated sessions.</div>
             <?php else: ?>
             <?php foreach ($topUsers as $u): ?>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;border-bottom:1px solid #f3f4f6">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;border-bottom:1px solid var(--color-gray-100)">
                 <a href="/admin/sessions?user_id=<?= (int) $u['id'] ?>" style="color:inherit;text-decoration:none">
                     <strong><?= e((string) ($u['username'] ?: $u['email'])) ?></strong>
-                    <div style="font-size:11px;color:#9ca3af"><?= (int) $u['session_count'] ?> session<?= (int) $u['session_count'] === 1 ? '' : 's' ?></div>
+                    <div style="font-size:11px;color:var(--color-gray-400)"><?= (int) $u['session_count'] ?> session<?= (int) $u['session_count'] === 1 ? '' : 's' ?></div>
                 </a>
                 <form method="post" action="/admin/sessions/user/<?= (int) $u['id'] ?>/terminate-all" style="display:inline" onsubmit="return confirm('Kick ALL of <?= e((string) ($u['username'] ?: $u['email'])) ?>\'s sessions?')">
                     <?= csrf_field() ?>

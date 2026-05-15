@@ -91,7 +91,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .meta-drawer > summary::-webkit-details-marker { display: none; }
 .meta-drawer > summary::before { content: '▸'; color: var(--text-muted); transition: transform .15s; }
 .meta-drawer[open] > summary::before { transform: rotate(90deg); }
-.meta-drawer > summary:hover { background: #f9fafb; }
+.meta-drawer > summary:hover { background: var(--color-gray-50); }
 .meta-drawer-body { padding: 0 1rem 1rem; border-top: 1px solid var(--border-subtle); }
 
 /* Auto-growing body textarea — the JS resizes it on input. */
@@ -112,7 +112,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                color: var(--text-muted); letter-spacing: .05em; margin: .65rem .25rem .25rem; }
 .palette-tile {
     display: flex; flex-direction: column; align-items: flex-start;
-    background: #f9fafb; border: 1px solid var(--border-subtle); border-radius: 6px;
+    background: var(--color-gray-50); border: 1px solid var(--border-subtle); border-radius: 6px;
     padding: .5rem .65rem; margin-bottom: .25rem; cursor: grab;
     font-size: 12.5px; transition: background .12s, border-color .12s;
 }
@@ -154,7 +154,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 
 /* Each cell still owns its own dashed border + drop affordance. */
 .composer-cell {
-    background: #f9fafb; border: 1.5px dashed var(--border-strong); border-radius: 6px;
+    background: var(--color-gray-50); border: 1.5px dashed var(--border-strong); border-radius: 6px;
     padding: .55rem .5rem .35rem; min-height: 80px;
     display: flex; flex-direction: column;
     transition: background .15s, border-color .15s;
@@ -186,7 +186,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                         text-transform: uppercase; letter-spacing: .03em; flex-shrink: 0; }
 .placement-tile-x     { background: none; border: none; color: #dc2626; font-size: 14px;
                         cursor: pointer; padding: 0 .25rem; line-height: 1; flex-shrink: 0; }
-.placement-tile-x:hover { color: #991b1b; }
+.placement-tile-x:hover { color: var(--color-danger-fg); }
 
 /* Modal */
 .cb-modal-backdrop {
@@ -204,7 +204,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .cb-modal-header h2 { margin: 0; font-size: 1rem; font-weight: 600; }
 .cb-modal-header .close { background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
 .cb-modal-body   { padding: 1rem 1.25rem; overflow-y: auto; }
-.cb-modal-footer { padding: .75rem 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; gap: .5rem; justify-content: flex-end; background: #f9fafb; }
+.cb-modal-footer { padding: .75rem 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; gap: .5rem; justify-content: flex-end; background: var(--color-gray-50); }
 .cb-modal-help   { font-size: 12px; color: var(--text-muted); margin-top: .15rem; }
 .cb-modal .form-group { margin-bottom: .85rem; }
 
@@ -215,7 +215,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
    pricing table contains a string_list of features). */
 .cb-rep-container {
     border: 1px solid var(--border-default); border-radius: 8px;
-    padding: .55rem; background: #f9fafb;
+    padding: .55rem; background: var(--color-gray-50);
 }
 .cb-rep-items { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .55rem; counter-reset: rep-item; }
 .cb-rep-items:empty { margin-bottom: 0; }
@@ -250,7 +250,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .cb-rep-item-body .form-group { margin-bottom: .55rem; }
 .cb-rep-item-body .form-group:last-child { margin-bottom: 0; }
 /* Nested repeaters get a slightly tighter look so the visual hierarchy stays clear. */
-.cb-rep-item-body .cb-rep-container { background: #f9fafb; padding: .45rem; }
+.cb-rep-item-body .cb-rep-container { background: var(--color-gray-50); padding: .45rem; }
 /* String-list items: single-line layout with the input flush to the actions. */
 .cb-rep-item.cb-strlist-item {
     display: flex; align-items: center; gap: .35rem;
@@ -328,12 +328,12 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                     <input type="number" name="sort_order" class="form-control" value="<?= (int) ($page['sort_order'] ?? 0)?>" id="sort_order">
                 </div>
                 <div style="display:flex;align-items:flex-end;gap:.85rem;flex-wrap:wrap">
-                    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;font-weight:400;font-size:13px;color:#374151;text-transform:none;letter-spacing:0">
+                    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;font-weight:400;font-size:13px;color:var(--color-gray-700);text-transform:none;letter-spacing:0">
                         <input type="hidden" name="is_public" value="0">
                         <input type="checkbox" name="is_public" value="1" <?= ($page['is_public'] ?? 1) ? 'checked' : '' ?>>
                         Public
                     </label>
-                    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;font-weight:400;font-size:13px;color:#374151;text-transform:none;letter-spacing:0">
+                    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;font-weight:400;font-size:13px;color:var(--color-gray-700);text-transform:none;letter-spacing:0">
                         <input type="hidden" name="featured" value="0">
                         <input type="checkbox" name="featured" value="1" <?= !empty($page['featured']) ? 'checked' : '' ?>>
                         ⭐ Featured
@@ -550,7 +550,7 @@ let   __modalCol  = -1;     // col index,        used in 'cell' mode
    Row mode appends full-bleed + content-padding fields. */
 const __commonStyleSchema = [
     { key: 'bg_color',   label: 'Background color', type: 'text',
-      help: 'Hex (#fef3c7), rgb()/rgba(), hsl()/hsla(), or a CSS named color. Anything else is ignored.' },
+      help: 'Hex (var(--color-warning-bg)), rgb()/rgba(), hsl()/hsla(), or a CSS named color. Anything else is ignored.' },
     { key: 'bg_image',   label: 'Background image URL', type: 'text',
       help: 'http(s) or root-relative. Other URL schemes are dropped.' },
     { key: 'padding_px', label: 'Padding (px)', type: 'number' },

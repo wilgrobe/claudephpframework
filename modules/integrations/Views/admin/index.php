@@ -4,7 +4,7 @@
 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
     <div>
         <h1 style="margin:0;font-size:1.3rem;font-weight:700">Integrations</h1>
-        <p style="margin:.35rem 0 0;color:#6b7280;font-size:13.5px;max-width:720px;line-height:1.5">
+        <p style="margin:.35rem 0 0;color:var(--color-gray-500);font-size:13.5px;max-width:720px;line-height:1.5">
             Status dashboard for third-party services. All credentials live in <code>.env</code>.
             To change configuration, edit the file directly, save, and reload the app.
             See <code>.env.example</code> for every supported provider and its required vars.
@@ -20,22 +20,22 @@
     <div class="card-header" style="padding:.85rem 1.25rem">
         <div>
             <h2 style="margin:0;font-size:1rem"><?= e($row['label']) ?></h2>
-            <div style="font-size:12.5px;color:#6b7280;margin-top:.15rem">
+            <div style="font-size:12.5px;color:var(--color-gray-500);margin-top:.15rem">
                 <?= $row['configured']
-                    ? '<span style="color:#10b981">● Active</span> — at least one provider is configured.'
-                    : '<span style="color:#9ca3af">● Idle</span> — no providers configured.' ?>
+                    ? '<span style="color:var(--color-success)">● Active</span> — at least one provider is configured.'
+                    : '<span style="color:var(--color-gray-400)">● Idle</span> — no providers configured.' ?>
             </div>
         </div>
     </div>
     <div>
         <?php foreach ($row['providers'] as $prov): ?>
-        <div style="display:flex;gap:1rem;align-items:center;padding:.75rem 1.25rem;border-top:1px solid #f3f4f6">
+        <div style="display:flex;gap:1rem;align-items:center;padding:.75rem 1.25rem;border-top:1px solid var(--color-gray-100)">
             <div style="flex:1;min-width:0">
-                <div style="font-weight:500;font-size:13.5px;color:#111827"><?= e($prov['label']) ?></div>
-                <div style="font-size:12px;color:#6b7280;margin-top:.2rem">
+                <div style="font-weight:500;font-size:13.5px;color:var(--color-gray-900)"><?= e($prov['label']) ?></div>
+                <div style="font-size:12px;color:var(--color-gray-500);margin-top:.2rem">
                     <?= $prov['configured']
-                        ? '<span style="color:#10b981">✓ Configured</span>'
-                        : '<span style="color:#9ca3af">Not configured</span>' ?>
+                        ? '<span style="color:var(--color-success)">✓ Configured</span>'
+                        : '<span style="color:var(--color-gray-400)">Not configured</span>' ?>
                     · Required: <?php foreach ($prov['required'] as $i => $v): ?><code style="font-size:11.5px"><?= e($v) ?></code><?= $i < count($prov['required']) - 1 ? ', ' : '' ?><?php endforeach; ?>
                 </div>
             </div>
@@ -55,9 +55,9 @@
                 <?php else: ?>
                 <span class="badge badge-gray" style="font-size:11px">● Not configured</span>
                 <?php endif; ?>
-                <span style="font-size:12px;color:#6b7280">provider: <code><?= e($row['provider']) ?></code></span>
+                <span style="font-size:12px;color:var(--color-gray-500)">provider: <code><?= e($row['provider']) ?></code></span>
             </div>
-            <div style="font-size:12.5px;color:#6b7280;margin-top:.3rem;line-height:1.5">
+            <div style="font-size:12.5px;color:var(--color-gray-500);margin-top:.3rem;line-height:1.5">
                 Driver env var: <code><?= e($row['driver_var']) ?></code>
                 <?php if (!empty($row['required'])): ?>
                 · Required for current provider:
@@ -94,19 +94,19 @@ document.querySelectorAll('.test-integration').forEach(btn => {
         btn.textContent = 'Testing…';
         result.style.display = 'block';
         result.textContent = 'Running probe…';
-        result.style.color = '#6b7280';
+        result.style.color = 'var(--color-gray-500)';
 
         try {
             const res = await csrfPost('/admin/integrations/test', { type: btn.dataset.type });
             if (res && res.success) {
-                result.style.color = '#065f46';
+                result.style.color = 'var(--color-success-fg)';
                 result.textContent = '✓ ' + (res.message || 'Test succeeded.');
             } else {
-                result.style.color = '#991b1b';
+                result.style.color = 'var(--color-danger-fg)';
                 result.textContent = '✗ ' + (res?.message || res?.error || 'Test failed.');
             }
         } catch (e) {
-            result.style.color = '#991b1b';
+            result.style.color = 'var(--color-danger-fg)';
             result.textContent = 'Test request failed. Check browser console.';
             console.error(e);
         } finally {

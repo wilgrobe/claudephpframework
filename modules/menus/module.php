@@ -56,7 +56,7 @@ return new class extends ModuleProvider {
                     if ($menuId <= 0) {
                         $auth = \Core\Auth\Auth::getInstance();
                         return $auth->hasRole(['super-admin','admin'])
-                            ? '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:#92400e;background:#fef3c7;border-radius:6px;font-size:13px">Menu block: pick a menu in this block\'s settings.</div></div>'
+                            ? '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:var(--color-warning-fg);background:var(--color-warning-bg);border-radius:6px;font-size:13px">Menu block: pick a menu in this block\'s settings.</div></div>'
                             : '';
                     }
 

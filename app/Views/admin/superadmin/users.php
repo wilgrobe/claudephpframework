@@ -12,7 +12,7 @@
 <div class="card">
     <div class="card-header">
         <h2>User List</h2>
-        <span style="color:#6b7280;font-size:13px"><?= number_format($users['total']) ?> total</span>
+        <span style="color:var(--color-gray-500);font-size:13px"><?= number_format($users['total']) ?> total</span>
     </div>
     <div class="table-responsive">
         <table class="table">
@@ -22,9 +22,9 @@
             <tr>
                 <td>
                     <div style="font-weight:500"><?= e(($u['first_name']??'').' '.($u['last_name']??'')) ?></div>
-                    <div style="font-size:12px;color:#6b7280"><?= e($u['email']) ?></div>
+                    <div style="font-size:12px;color:var(--color-gray-500)"><?= e($u['email']) ?></div>
                 </td>
-                <td style="font-size:12px;color:#6b7280"><?= e($u['roles'] ?? '—') ?></td>
+                <td style="font-size:12px;color:var(--color-gray-500)"><?= e($u['roles'] ?? '—') ?></td>
                 <td>
                     <?php if ($u['is_superadmin']): ?>
                     <span class="badge badge-danger">SA</span>
@@ -36,7 +36,7 @@
                     <?php endif; ?>
                 </td>
                 <td><?= $u['is_active'] ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>' ?></td>
-                <td style="font-size:12px;color:#6b7280"><?= $u['last_login_at'] ? date('M j Y', strtotime($u['last_login_at'])) : 'Never' ?></td>
+                <td style="font-size:12px;color:var(--color-gray-500)"><?= $u['last_login_at'] ? date('M j Y', strtotime($u['last_login_at'])) : 'Never' ?></td>
                 <td>
                     <div style="display:flex;gap:.3rem">
                         <a href="/admin/users/<?= $u['id'] ?>" class="btn btn-xs btn-secondary">View</a>

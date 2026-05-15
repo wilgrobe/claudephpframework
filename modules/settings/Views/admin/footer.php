@@ -2,12 +2,12 @@
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 <?php include __DIR__ . '/_nav.php'; ?>
 
-<div style="font-size:12px;color:#6b7280;margin-bottom:.25rem">
-    <a href="/admin/settings/layout" style="color:#4f46e5;text-decoration:none">← Layout</a>
+<div style="font-size:12px;color:var(--color-gray-500);margin-bottom:.25rem">
+    <a href="/admin/settings/layout" style="color:var(--color-primary);text-decoration:none">← Layout</a>
 </div>
 <h1 style="margin:0 0 .35rem;font-size:1.4rem">Footer</h1>
-<p style="color:#6b7280;font-size:13px;margin:0 0 1rem">
-    Footer settings now live on the unified <a href="/admin/settings/layout" style="color:#4f46e5">Layout</a> panel
+<p style="color:var(--color-gray-500);font-size:13px;margin:0 0 1rem">
+    Footer settings now live on the unified <a href="/admin/settings/layout" style="color:var(--color-primary)">Layout</a> panel
     alongside header + sidebar config. This page is a deep-link to the same settings.
 </p>
 
@@ -30,14 +30,14 @@
             </div>
 
             <!-- Branding: logo + tagline -->
-            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
-                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:#374151">Branding</div>
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Branding</div>
                 <div class="form-group">
                     <label for="footer_logo_text">Logo text</label>
                     <input type="text" name="footer_logo_text" class="form-control"
                            value="<?= e($values['footer_logo_text'] ?? '')?>"
                            placeholder="🚀 My Application" maxlength="255" id="footer_logo_text">
-                    <div style="font-size:12px;color:#6b7280;margin-top:.25rem">
+                    <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem">
                         Plain text and emoji are fine — no HTML. Leave blank to omit the logo.
                     </div>
                 </div>
@@ -50,8 +50,8 @@
             </div>
 
             <!-- Menu -->
-            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
-                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:#374151">Navigation menu</div>
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Navigation menu</div>
                 <div class="form-group">
                     <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:400">
                         <?= toggle_switch('footer_show_menu', !empty($values['footer_show_menu'])) ?>
@@ -73,22 +73,22 @@
                         <option value="<?= e($loc) ?>" <?= $loc === $current ? 'selected' : '' ?>><?= e($loc) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <div style="font-size:12px;color:#6b7280;margin-top:.25rem">
+                    <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem">
                         Which menu's items to render. Manage the items themselves under
-                        <a href="/admin/menus" style="color:#4f46e5">Menus</a>.
+                        <a href="/admin/menus" style="color:var(--color-primary)">Menus</a>.
                     </div>
                 </div>
             </div>
 
             <!-- Legal / attribution -->
-            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
-                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:#374151">Legal &amp; attribution</div>
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+                <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Legal &amp; attribution</div>
                 <div class="form-group">
                     <label for="footer_copyright">Copyright</label>
                     <input type="text" name="footer_copyright" class="form-control"
                            value="<?= e($values['footer_copyright'] ?? '')?>"
                            placeholder="© {{year}} My Company" maxlength="500" id="footer_copyright">
-                    <div style="font-size:12px;color:#6b7280;margin-top:.25rem">
+                    <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem">
                         Use <code>{{year}}</code> to insert the current year at render time so this
                         never goes stale.
                     </div>

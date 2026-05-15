@@ -5,11 +5,11 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
     <div>
-        <div style="font-size:12px;color:#6b7280">
-            <a href="/admin" style="color:#4f46e5;text-decoration:none">← Admin</a>
+        <div style="font-size:12px;color:var(--color-gray-500)">
+            <a href="/admin" style="color:var(--color-primary);text-decoration:none">← Admin</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.3rem;font-weight:700">Email suppressions</h1>
-        <p style="margin:.25rem 0 0;color:#6b7280;font-size:13.5px">
+        <p style="margin:.25rem 0 0;color:var(--color-gray-500);font-size:13.5px">
             Addresses + categories that won't receive email. Each row blocks
             that (email, category) pair from sending. The wildcard category
             <code>all</code> blocks every category — used for hard bounces
@@ -27,17 +27,17 @@
     <div class="card-body" style="display:flex;gap:.75rem;flex-wrap:wrap;padding:1rem">
         <?php
         $cards = [
-            ['Total',         (int) ($stats['total']      ?? 0), '#374151'],
-            ['User opt-outs', (int) ($stats['user_unsub'] ?? 0), '#3b82f6'],
-            ['Hard bounces',  (int) ($stats['bounces']    ?? 0), '#ef4444'],
-            ['Complaints',    (int) ($stats['complaints'] ?? 0), '#f59e0b'],
+            ['Total',         (int) ($stats['total']      ?? 0), 'var(--color-gray-700)'],
+            ['User opt-outs', (int) ($stats['user_unsub'] ?? 0), 'var(--color-info)'],
+            ['Hard bounces',  (int) ($stats['bounces']    ?? 0), 'var(--color-danger)'],
+            ['Complaints',    (int) ($stats['complaints'] ?? 0), 'var(--color-warning)'],
             ['Admin manual',  (int) ($stats['manual']     ?? 0), '#8b5cf6'],
             ['Wildcard (all)',(int) ($stats['wildcard']   ?? 0), '#dc2626'],
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
             <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
-                <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
+                <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
         <?php endforeach; ?>
@@ -51,11 +51,11 @@
         <form method="POST" action="/admin/email-suppressions" style="display:grid;grid-template-columns:1fr 200px 1fr auto;gap:.5rem;align-items:end">
             <?= csrf_field() ?>
             <label>
-                <span style="display:block;font-size:11.5px;color:#6b7280;margin-bottom:.15rem">Email</span>
+                <span style="display:block;font-size:11.5px;color:var(--color-gray-500);margin-bottom:.15rem">Email</span>
                 <input type="email" name="email" required style="width:100%" placeholder="user@example.com">
             </label>
             <label>
-                <span style="display:block;font-size:11.5px;color:#6b7280;margin-bottom:.15rem">Category</span>
+                <span style="display:block;font-size:11.5px;color:var(--color-gray-500);margin-bottom:.15rem">Category</span>
                 <select name="category_slug" required style="width:100%">
                     <option value="all">all (wildcard)</option>
                     <?php foreach ($categories as $c): ?>
@@ -64,7 +64,7 @@
                 </select>
             </label>
             <label for="q">
-                <span style="display:block;font-size:11.5px;color:#6b7280;margin-bottom:.15rem">Notes (optional)</span>
+                <span style="display:block;font-size:11.5px;color:var(--color-gray-500);margin-bottom:.15rem">Notes (optional)</span>
                 <input type="text" name="notes" style="width:100%" placeholder="Why this was added">
             </label>
             <button type="submit" class="btn btn-primary" style="font-size:13px">Add</button>
@@ -74,12 +74,12 @@
 
 <!-- Search + list -->
 <form method="GET" action="/admin/email-suppressions" style="margin-bottom:.75rem">
-    <input type="search" name="q" value="<?= e($q) ?>" placeholder="Search by email..." style="width:300px;padding:.4rem .65rem;border:1px solid #d1d5db;border-radius:6px;font-size:13px" aria-label="Search by email..." id="q">
+    <input type="search" name="q" value="<?= e($q) ?>" placeholder="Search by email..." style="width:300px;padding:.4rem .65rem;border:1px solid var(--color-gray-300);border-radius:6px;font-size:13px" aria-label="Search by email..." id="q">
 </form>
 
 <div class="card">
     <table class="table" style="width:100%;font-size:13px;margin:0">
-        <thead style="background:#f9fafb">
+        <thead style="background:var(--color-gray-50)">
             <tr>
                 <th style="text-align:left;padding:.5rem .75rem">Email</th>
                 <th style="text-align:left;padding:.5rem .75rem">Category</th>
@@ -92,27 +92,27 @@
         </thead>
         <tbody>
             <?php if (empty($rows)): ?>
-                <tr><td colspan="7" style="padding:1.5rem;text-align:center;color:#6b7280">No suppressions match.</td></tr>
+                <tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--color-gray-500)">No suppressions match.</td></tr>
             <?php else: foreach ($rows as $r):
                 $reasonColors = [
-                    'user_unsubscribe' => '#3b82f6',
-                    'hard_bounce'      => '#ef4444',
-                    'complaint'        => '#f59e0b',
+                    'user_unsubscribe' => 'var(--color-info)',
+                    'hard_bounce'      => 'var(--color-danger)',
+                    'complaint'        => 'var(--color-warning)',
                     'manual_admin'     => '#8b5cf6',
-                    'api'              => '#6b7280',
+                    'api'              => 'var(--color-gray-500)',
                     'spam_report'      => '#dc2626',
                 ];
-                $color = $reasonColors[$r['reason']] ?? '#6b7280';
+                $color = $reasonColors[$r['reason']] ?? 'var(--color-gray-500)';
             ?>
-                <tr style="border-top:1px solid #f3f4f6">
+                <tr style="border-top:1px solid var(--color-gray-100)">
                     <td style="padding:.5rem .75rem;font-family:ui-monospace,monospace;font-size:12px"><?= e($r['email']) ?></td>
                     <td style="padding:.5rem .75rem"><?= e($r['category_slug']) ?></td>
                     <td style="padding:.5rem .75rem">
                         <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
                     </td>
-                    <td style="padding:.5rem .75rem;color:#6b7280;font-size:12px;white-space:nowrap"><?= e(date('M j, Y', strtotime((string) $r['created_at']))) ?></td>
-                    <td style="padding:.5rem .75rem;color:#6b7280"><?= e($r['user_username'] ?? '—') ?></td>
-                    <td style="padding:.5rem .75rem;color:#9ca3af;font-size:11.5px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($r['notes'] ?? '') ?></td>
+                    <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px;white-space:nowrap"><?= e(date('M j, Y', strtotime((string) $r['created_at']))) ?></td>
+                    <td style="padding:.5rem .75rem;color:var(--color-gray-500)"><?= e($r['user_username'] ?? '—') ?></td>
+                    <td style="padding:.5rem .75rem;color:var(--color-gray-400);font-size:11.5px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($r['notes'] ?? '') ?></td>
                     <td style="padding:.5rem .75rem;text-align:right">
                         <form method="POST" action="/admin/email-suppressions/<?= (int) $r['id'] ?>/delete"
                               data-confirm="Remove this suppression? The address will be eligible for sending again."

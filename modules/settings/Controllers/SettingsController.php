@@ -211,13 +211,13 @@ class SettingsController
     ];
 
     public const COLOR_DEFAULTS = [
-        'color_primary'      => '#4f46e5',
-        'color_primary_dark' => '#3730a3',
+        'color_primary'      => 'var(--color-primary)',
+        'color_primary_dark' => 'var(--color-primary-dark)',
         'color_secondary'    => '#0ea5e9',
-        'color_success'      => '#10b981',
-        'color_danger'       => '#ef4444',
-        'color_warning'      => '#f59e0b',
-        'color_info'         => '#3b82f6',
+        'color_success'      => 'var(--color-success)',
+        'color_danger'       => 'var(--color-danger)',
+        'color_warning'      => 'var(--color-warning)',
+        'color_info'         => 'var(--color-info)',
     ];
 
     private SettingsService $settings;

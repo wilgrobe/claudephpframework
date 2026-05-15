@@ -42,28 +42,13 @@
     echo app(\Core\Services\ThemeService::class)->renderFontLinks();
     ?>
     <style>
+    /* Critical inline CSS for above-the-fold chrome (layout / sidebar /
+       topbar / card / btn / alert / badge / table / form). The full
+       design token map lives in public/assets/css/app.css :root — do
+       NOT redefine those here. Theme-aware tokens (--bg-page,
+       --text-default, --border-default, --accent-*, --chrome-sidebar-*)
+       come from Core\Services\ThemeService::renderOverrideStyle() below. */
     *, *::before, *::after { box-sizing: border-box; }
-    :root {
-        --color-primary: #4f46e5;
-        --color-primary-dark: #3730a3;
-        --color-secondary: #0ea5e9;
-        --color-success: #10b981;
-        --color-danger: #ef4444;
-        --color-warning: #f59e0b;
-        --color-info: #3b82f6;
-        --color-gray-50: #f9fafb;
-        --color-gray-100: #f3f4f6;
-        --color-gray-200: #e5e7eb;
-        --color-gray-300: #d1d5db;
-        --color-gray-500: #6b7280;
-        --color-gray-700: #374151;
-        --color-gray-900: #111827;
-        --font: 'Inter', system-ui, sans-serif;
-        --radius: 8px;
-        --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
-        --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1);
-        --sidebar-width: 240px;
-    }
     body {
         margin: 0;
         font-family: var(--font);
@@ -73,17 +58,29 @@
         line-height: 1.6;
     }
 
-    /* Superadmin / emulation banners */
+    /* Superadmin / emulation / unverified-email banners */
     .banner-superadmin {
-        background: #7c3aed; color: #fff;
+        background: var(--color-purple); color: #fff;
         padding: .5rem 1rem; text-align: center; font-size: 13px; font-weight: 600;
         display: flex; align-items: center; justify-content: center; gap: 1rem;
     }
     .banner-emulating {
-        background: #dc2626; color: #fff;
+        background: var(--color-danger-fg); color: #fff;
         padding: .5rem 1rem; text-align: center; font-size: 13px; font-weight: 600;
         display: flex; align-items: center; justify-content: center; gap: 1rem;
         animation: pulse 2s infinite;
+    }
+    .banner-verify-email {
+        background: var(--color-warning-bg); color: var(--color-warning-fg);
+        border-bottom: 1px solid #fde68a;
+        padding: .6rem 1rem; font-size: 13.5px;
+        display: flex; align-items: center; justify-content: center; gap: .75rem; flex-wrap: wrap;
+    }
+    .banner-verify-email form { margin: 0; }
+    .banner-verify-email button {
+        background: #d97706; color: #fff; border: none;
+        padding: .3rem .75rem; border-radius: 4px;
+        font-size: 12.5px; font-weight: 600; cursor: pointer;
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.85} }
     .banner-emulating form, .banner-superadmin form { display:inline; }
@@ -151,10 +148,10 @@
         padding: .85rem 1rem; border-radius: var(--radius); margin-bottom: 1rem;
         font-size: 13.5px; display: flex; align-items: center; gap: .5rem;
     }
-    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-    .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-    .alert-warning  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .alert-info    { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+    .alert-success { background: var(--color-success-bg); color: var(--color-success-fg); border: 1px solid #6ee7b7; }
+    .alert-error   { background: var(--color-danger-bg);  color: var(--color-danger-fg);  border: 1px solid #fca5a5; }
+    .alert-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); border: 1px solid #fcd34d; }
+    .alert-info    { background: var(--color-info-bg);    color: var(--color-info-fg);    border: 1px solid #93c5fd; }
 
     /* Forms */
     .form-group { margin-bottom: 1rem; }
@@ -186,7 +183,7 @@
     .btn-secondary { background: var(--bg-panel); color: var(--color-gray-700); border-color: var(--border-strong); }
     .btn-secondary:hover { background: var(--bg-page); }
     .btn-danger    { background: var(--color-danger); color: var(--accent-contrast); border-color: var(--color-danger); }
-    .btn-danger:hover { background: #dc2626; }
+    .btn-danger:hover { background: var(--color-danger-fg); }
     .btn-success   { background: var(--color-success); color: var(--accent-contrast); border-color: var(--color-success); }
     .btn-sm { padding: .3rem .65rem; font-size: 12.5px; }
     .btn-xs { padding: .2rem .5rem; font-size: 11.5px; }
@@ -203,10 +200,10 @@
         display: inline-block; padding: .2rem .55rem; border-radius: 999px;
         font-size: 11px; font-weight: 600; line-height: 1;
     }
-    .badge-primary { background: #e0e7ff; color: #3730a3; }
-    .badge-success { background: #d1fae5; color: #065f46; }
-    .badge-danger  { background: #fee2e2; color: #991b1b; }
-    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-primary { background: var(--color-purple-bg); color: var(--color-primary-dark); }
+    .badge-success { background: var(--color-success-bg); color: var(--color-success-fg); }
+    .badge-danger  { background: var(--color-danger-bg);  color: var(--color-danger-fg); }
+    .badge-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); }
     .badge-gray    { background: var(--border-subtle); color: var(--color-gray-700); }
 
     /* Grid */
@@ -449,13 +446,11 @@ $__themeClass = match ($__themePref) {
 <!-- Unverified-email banner — shown on every authenticated page until the
      user clicks the link in their inbox. The resend POST is rate-limited
      server-side to one per 60 seconds. -->
-<div style="background:#fef3c7;color:#92400e;border-bottom:1px solid #fde68a;padding:.6rem 1rem;font-size:13.5px;display:flex;justify-content:center;align-items:center;gap:.75rem;flex-wrap:wrap">
+<div class="banner-verify-email">
     <span>📬 Your email address is not verified. Check your inbox for the verification link.</span>
-    <form method="POST" action="/auth/resend-verification" style="margin:0">
+    <form method="POST" action="/auth/resend-verification">
         <?= csrf_field() ?>
-        <button type="submit" style="background:#d97706;color:#fff;border:none;padding:.3rem .75rem;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">
-            Resend email
-        </button>
+        <button type="submit">Resend email</button>
     </form>
 </div>
 <?php endif; ?>

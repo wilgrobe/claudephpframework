@@ -2,8 +2,8 @@
 <?php include BASE_PATH . '/app/Views/layout/header.php'; ?>
 <?php include __DIR__ . '/_nav.php'; ?>
 
-<div style="font-size:12px;color:#6b7280;margin-bottom:.25rem">
-    <a href="/admin/settings/members" style="color:#4f46e5;text-decoration:none">← Members</a>
+<div style="font-size:12px;color:var(--color-gray-500);margin-bottom:.25rem">
+    <a href="/admin/settings/members" style="color:var(--color-primary);text-decoration:none">← Members</a>
 </div>
 <h1 style="margin:0 0 1rem;font-size:1.4rem">Registration &amp; Access</h1>
 
@@ -80,12 +80,12 @@
             </div>
 
             <!-- Maintenance mode -->
-            <div class="form-group" style="padding:.85rem 1rem;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;margin-bottom:1.25rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid #fcd34d;border-radius:6px;margin-bottom:1.25rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('maintenance_mode', !empty($values['maintenance_mode'])) ?>
                     Maintenance mode
                 </label>
-                <div style="font-size:12.5px;color:#92400e;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-warning-fg);margin-top:.35rem;line-height:1.5">
                     <strong>Site-wide off-switch.</strong> When on, every non-login route shows
                     a maintenance page. Only superadmins can still reach the dashboard —
                     so make sure you have superadmin access before flipping this on.
@@ -95,7 +95,7 @@
             </div>
 
         </div>
-        <div class="card-footer" style="padding:.75rem 1.25rem;background:#f9fafb;text-align:right">
+        <div class="card-footer" style="padding:.75rem 1.25rem;background:var(--color-gray-50);text-align:right">
             <a href="/admin/settings" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">Save</button>
         </div>

@@ -89,7 +89,7 @@ $__isSlot = $__type === 'content_slot';
                    maxlength="64"
                    pattern="[a-zA-Z0-9_-]+"
                    aria-label="Placement <?= $i + 1 ?> slot name">
-            <small style="display:block;color:#6b7280;font-size:11px;margin-top:.2rem">
+            <small style="display:block;color:var(--color-gray-500);font-size:11px;margin-top:.2rem">
                 Filled by the route's controller. Default: <code>primary</code>.
             </small>
         </div>
@@ -105,7 +105,7 @@ $__isSlot = $__type === 'content_slot';
             <option value="guest" <?= $__vis === 'guest' ? 'selected' : '' ?>>Guests only</option>
         </select>
         <?php if ($__isSlot): ?>
-        <small style="display:block;color:#6b7280;font-size:11px;margin-top:.2rem">
+        <small style="display:block;color:var(--color-gray-500);font-size:11px;margin-top:.2rem">
             Page content respects the controller's own auth gating.
         </small>
         <?php endif; ?>
@@ -118,7 +118,7 @@ $__isSlot = $__type === 'content_slot';
     <td style="text-align:center">
         <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:11px">
             <span class="placement-row-label"
-                  style="color:#6b7280;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                  style="color:var(--color-gray-500);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
                   title="<?= e($__isSlot ? ('slot:' . ($__slot ?: 'primary')) : $__key) ?>">
                 <?= $__isSlot ? ('slot:' . e($__slot ?: 'primary')) : (e($__key) ?: '—') ?>
             </span>

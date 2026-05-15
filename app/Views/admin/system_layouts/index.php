@@ -5,7 +5,7 @@
 
 <div style="margin-bottom:1rem">
     <h1 style="margin:0 0 .25rem 0;font-size:1.4rem;font-weight:700">System Layouts</h1>
-    <p style="color:#6b7280;font-size:13.5px;margin:0">
+    <p style="color:var(--color-gray-500);font-size:13.5px;margin:0">
         Layouts that drive system surfaces — the dashboard, admin landing
         pages, and module pages that opt in to the page-chrome system
         — through the page composer. Each layout is seeded by a migration;
@@ -13,7 +13,7 @@
         touching SQL. Block options come from the same registry that
         powers the per-page composer at <code>/admin/pages/{id}/layout</code>.
     </p>
-    <p style="color:#6b7280;font-size:12.5px;margin:.5rem 0 0 0">
+    <p style="color:var(--color-gray-500);font-size:12.5px;margin:.5rem 0 0 0">
         <strong>Page content slots</strong> (the <em>Slots</em> column) are
         placeholders the controller fills at request time. A layout with
         zero slots is pure-block (e.g. the dashboard); a layout with one
@@ -34,16 +34,16 @@
            class="form-control"
            style="flex:1 1 280px;min-width:220px;font-size:13px"
            aria-label="Filter layouts">
-    <label style="display:flex;align-items:center;gap:.4rem;font-size:13px;color:#374151;white-space:nowrap;cursor:pointer">
+    <label style="display:flex;align-items:center;gap:.4rem;font-size:13px;color:var(--color-gray-700);white-space:nowrap;cursor:pointer">
         <input type="checkbox" id="layout-filter-slots-only" style="margin:0">
         Show only layouts with content slots
     </label>
-    <span id="layout-filter-count" style="color:#6b7280;font-size:12.5px;margin-left:auto"></span>
+    <span id="layout-filter-count" style="color:var(--color-gray-500);font-size:12.5px;margin-left:auto"></span>
 </div>
 <?php endif; ?>
 
 <?php if (empty($layouts)): ?>
-<div class="card" style="padding:2rem 1.25rem;text-align:center;color:#9ca3af">
+<div class="card" style="padding:2rem 1.25rem;text-align:center;color:var(--color-gray-400)">
     No system layouts have been seeded yet. Run <code>php artisan migrate</code>
     to create the default <code>dashboard_stats</code> and <code>dashboard_main</code> layouts.
 </div>
@@ -58,7 +58,7 @@
 <div class="card layout-group-card" data-layout-group="<?= e((string) $__moduleKey) ?>" style="margin-bottom:1.25rem">
     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
         <h2 style="margin:0;font-size:1rem;text-transform:capitalize"><?= e($__moduleLabel) ?></h2>
-        <span style="color:#6b7280;font-size:12px"
+        <span style="color:var(--color-gray-500);font-size:12px"
               data-group-count-label
               data-total="<?= count($__layoutsInModule) ?>"><?= count($__layoutsInModule) ?> layout<?= count($__layoutsInModule) === 1 ? '' : 's' ?></span>
     </div>
@@ -103,13 +103,13 @@
                     <td>
                         <div style="font-weight:600"><?= e($__friendly) ?></div>
                         <?php if (!empty($row['description'])): ?>
-                        <div style="color:#6b7280;font-size:12px;margin-top:.15rem;max-width:380px">
+                        <div style="color:var(--color-gray-500);font-size:12px;margin-top:.15rem;max-width:380px">
                             <?= e($row['description']) ?>
                         </div>
                         <?php endif; ?>
                     </td>
                     <td><code style="font-size:12.5px"><?= e($row['name']) ?></code></td>
-                    <td style="color:#6b7280;font-size:12.5px"><?= e($row['category'] ?? '—') ?></td>
+                    <td style="color:var(--color-gray-500);font-size:12.5px"><?= e($row['category'] ?? '—') ?></td>
                     <td><?= (int) $row['rows'] ?></td>
                     <td><?= (int) $row['cols'] ?></td>
                     <td><?= $__blockCount ?></td>
@@ -119,10 +119,10 @@
                                 <?= $__slotCount ?>
                             </span>
                         <?php else: ?>
-                            <span style="color:#9ca3af">0</span>
+                            <span style="color:var(--color-gray-400)">0</span>
                         <?php endif; ?>
                     </td>
-                    <td style="color:#6b7280;font-size:12.5px">
+                    <td style="color:var(--color-gray-500);font-size:12.5px">
                         <?= !empty($row['updated_at']) ? date('M j, g:i A', strtotime($row['updated_at'])) : '—' ?>
                     </td>
                     <td style="white-space:nowrap">

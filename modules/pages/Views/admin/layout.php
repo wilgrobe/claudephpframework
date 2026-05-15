@@ -5,11 +5,11 @@
 
 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
     <div>
-        <div style="font-size:12px;color:#6b7280">
-            <a href="/admin/pages/<?= (int) $page['id'] ?>/edit" style="color:#4f46e5;text-decoration:none">← Back to page</a>
+        <div style="font-size:12px;color:var(--color-gray-500)">
+            <a href="/admin/pages/<?= (int) $page['id'] ?>/edit" style="color:var(--color-primary);text-decoration:none">← Back to page</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.4rem;font-weight:700">Layout: <?= e($page['title']) ?></h1>
-        <div style="font-size:13px;color:#6b7280;margin-top:.25rem">
+        <div style="font-size:13px;color:var(--color-gray-500);margin-top:.25rem">
             URL: <code>/<?= e($page['slug']) ?></code> ·
             <?= $hasLayout ? 'Composer enabled' : 'No layout — page renders body content' ?>
         </div>
@@ -56,21 +56,21 @@
                     <input type="text" name="col_widths" required
                            value="<?= e(implode(',', (array) ($layout['col_widths'] ?? [65, 32])))?>"
                            class="form-control" placeholder="e.g. 65, 32" id="col_widths">
-                    <span style="font-size:12px;color:#6b7280">Should sum to roughly 100 minus the gap.</span>
+                    <span style="font-size:12px;color:var(--color-gray-500)">Should sum to roughly 100 minus the gap.</span>
                 </div>
                 <div class="form-group">
                     <label for="row_heights">Row heights (% comma-separated)</label>
                     <input type="text" name="row_heights" required
                            value="<?= e(implode(',', (array) ($layout['row_heights'] ?? [32, 65])))?>"
                            class="form-control" placeholder="e.g. 32, 65" id="row_heights">
-                    <span style="font-size:12px;color:#6b7280">Used as minimum row track sizes.</span>
+                    <span style="font-size:12px;color:var(--color-gray-500)">Used as minimum row track sizes.</span>
                 </div>
                 <div class="form-group">
                     <label for="max_width_px">Max width (px)</label>
                     <input type="number" name="max_width_px" min="320" max="4096" required
                            value="<?= (int) ($layout['max_width_px'] ?? 1280)?>"
                            class="form-control" style="max-width:160px" id="max_width_px">
-                    <span style="font-size:12px;color:#6b7280">Centred; collapses to one column under 720px.</span>
+                    <span style="font-size:12px;color:var(--color-gray-500)">Centred; collapses to one column under 720px.</span>
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@
             <button type="button" class="btn btn-sm btn-secondary" onclick="addPlacementRow()">+ Add placement</button>
         </div>
         <div class="card-body">
-            <p style="color:#6b7280;font-size:13px;margin:0 0 .85rem 0">
+            <p style="color:var(--color-gray-500);font-size:13px;margin:0 0 .85rem 0">
                 Drop blocks into specific cells of the grid above. Multiple placements per cell stack vertically by sort order.
             </p>
             <table class="table" id="placement-table" style="font-size:13px">
@@ -103,7 +103,7 @@
                     <?php include __DIR__ . '/_layout_row.php'; ?>
                 <?php endforeach; ?>
                 <?php if (empty($placements)): ?>
-                <tr id="placement-empty"><td colspan="7" style="text-align:center;color:#9ca3af;padding:1rem">No placements yet. Click "+ Add placement" to drop a block into the grid.</td></tr>
+                <tr id="placement-empty"><td colspan="7" style="text-align:center;color:var(--color-gray-400);padding:1rem">No placements yet. Click "+ Add placement" to drop a block into the grid.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>

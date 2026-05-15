@@ -20,11 +20,11 @@
             <label style="display:block;margin-top:.5rem">File (CSV, TSV, or JSON)
                 <input type="file" name="file" required>
             </label>
-            <p style="color:#9ca3af;font-size:12px">
+            <p style="color:var(--color-gray-400);font-size:12px">
                 After upload you'll map columns to fields before anything is written.
             </p>
         </div>
-        <div class="card-footer" style="padding:.5rem 1rem;text-align:right;background:#f9fafb">
+        <div class="card-footer" style="padding:.5rem 1rem;text-align:right;background:var(--color-gray-50)">
             <button type="submit" class="btn btn-primary">Upload</button>
         </div>
     </form>
@@ -34,13 +34,13 @@
     <div class="card-header"><strong>Export</strong></div>
     <div class="card-body">
         <?php if (empty($handlers)): ?>
-        <div style="color:#9ca3af">No exportable types registered.</div>
+        <div style="color:var(--color-gray-400)">No exportable types registered.</div>
         <?php else: ?>
         <ul style="list-style:none;padding:0;margin:0">
             <?php foreach ($handlers as $t => $h): ?>
             <li style="padding:.25rem 0">
                 <a href="/admin/export/<?= e($t) ?>.csv"><?= e((string) $h['label']) ?></a>
-                <span style="color:#9ca3af;font-size:12px;margin-left:.25rem">CSV</span>
+                <span style="color:var(--color-gray-400);font-size:12px;margin-left:.25rem">CSV</span>
             </li>
             <?php endforeach; ?>
         </ul>
@@ -52,7 +52,7 @@
 <div class="card" style="margin-top:1rem">
     <div class="card-header"><strong>Recent imports</strong></div>
     <?php if (empty($imports)): ?>
-    <div class="card-body" style="color:#9ca3af;text-align:center;padding:2rem 1rem">No imports yet.</div>
+    <div class="card-body" style="color:var(--color-gray-400);text-align:center;padding:2rem 1rem">No imports yet.</div>
     <?php else: ?>
     <table class="table">
         <thead><tr><th>When</th><th>Entity</th><th>Status</th><th>Rows</th><th>Processed</th><th></th></tr></thead>

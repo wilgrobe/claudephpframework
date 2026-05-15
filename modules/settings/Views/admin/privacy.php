@@ -3,7 +3,7 @@
 <?php include __DIR__ . '/_nav.php'; ?>
 
 <h1 style="margin:0 0 1rem;font-size:1.4rem">Privacy &amp; Compliance</h1>
-<p style="color:#6b7280;font-size:13.5px;margin:0 0 1.25rem;max-width:560px">
+<p style="color:var(--color-gray-500);font-size:13.5px;margin:0 0 1.25rem;max-width:560px">
     Master toggles for the regulatory modules. Detailed configuration —
     banner copy, opt-out form text, retention schedules — lives on each
     module's dedicated admin page; the links below jump straight there.
@@ -51,7 +51,7 @@
             </div>
 
         </div>
-        <div class="card-body" style="background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save Privacy</button>
         </div>
     </form>
@@ -61,21 +61,21 @@
 <div class="card" style="margin-top:1rem">
     <div class="card-header"><h3 style="margin:0;font-size:.95rem">Compliance tools</h3></div>
     <div class="card-body" style="display:grid;gap:.5rem;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr))">
-        <a href="/admin/gdpr" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/gdpr" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>GDPR / DSAR queue</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Export + erasure requests, with SLA tracking.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Export + erasure requests, with SLA tracking.</div>
         </a>
-        <a href="/admin/policies" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/policies" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Policies</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">ToS / Privacy Policy versioning + acceptance log.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">ToS / Privacy Policy versioning + acceptance log.</div>
         </a>
-        <a href="/admin/retention" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/retention" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Data retention</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">Per-table retention rules + dry-run + sweep.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Per-table retention rules + dry-run + sweep.</div>
         </a>
-        <a href="/admin/audit-log" style="padding:.75rem;border:1px solid #e5e7eb;border-radius:6px;color:inherit;text-decoration:none">
+        <a href="/admin/audit-log" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Audit log</strong>
-            <div style="color:#6b7280;font-size:12.5px;margin-top:.2rem">HMAC-chained event log of admin + user actions.</div>
+            <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">HMAC-chained event log of admin + user actions.</div>
         </a>
     </div>
 </div>

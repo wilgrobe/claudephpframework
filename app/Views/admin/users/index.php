@@ -25,7 +25,7 @@
                         <span class="avatar"><?= e(strtoupper(substr($u['first_name']??'?',0,1))) ?></span>
                         <div>
                             <div style="font-weight:500"><?= e(($u['first_name']??'').' '.($u['last_name']??'')) ?></div>
-                            <div style="font-size:12px;color:#6b7280"><?= e($u['email']) ?></div>
+                            <div style="font-size:12px;color:var(--color-gray-500)"><?= e($u['email']) ?></div>
                         </div>
                     </div>
                     <?php if ($u['is_superadmin']): ?><span class="badge badge-danger" style="margin-top:.25rem">Superadmin</span><?php endif; ?>
@@ -42,7 +42,7 @@
                     <span class="badge badge-danger">Inactive</span>
                     <?php endif; ?>
                 </td>
-                <td style="color:#6b7280;font-size:13px">
+                <td style="color:var(--color-gray-500);font-size:13px">
                     <?= $u['last_login_at'] ? date('M j, Y', strtotime($u['last_login_at'])) : 'Never' ?>
                 </td>
                 <td>
