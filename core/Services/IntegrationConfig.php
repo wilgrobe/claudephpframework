@@ -62,6 +62,13 @@ class IntegrationConfig
             'label'          => 'SMS',
             'driver_var'     => 'SMS_DRIVER',
             'default_driver' => 'auto',
+            // Provider entries gain optional metadata fields used by the
+            // wizard's step-5 integration coaching:
+            //   signup_url  — where to register; per-affiliate URL via
+            //                 ${PROVIDER}_AFFILIATE_URL env override
+            //   free_tier   — short human label for the free starter offer
+            //   docs_url    — direct link to the provider's API docs
+            //   recommended — single-pick "this is the default" flag
             'providers' => [
                 'auto' => [
                     'label'    => 'Auto (log in dev, real in prod)',
@@ -73,20 +80,56 @@ class IntegrationConfig
                     'required' => [],
                     'optional' => [],
                 ],
+                'textmagic' => [
+                    'label'       => 'TextMagic',
+                    'required'    => ['SMS_TEXTMAGIC_USERNAME', 'SMS_TEXTMAGIC_API_KEY'],
+                    'optional'    => ['SMS_TEXTMAGIC_FROM'],
+                    'signup_url'  => 'https://www.textmagic.com/',
+                    'affiliate_env' => 'TEXTMAGIC_AFFILIATE_URL',
+                    'docs_url'    => 'https://www.textmagic.com/docs/api/',
+                    'free_tier'   => '~10 free SMS, no credit card required',
+                    'recommended' => true,
+                ],
+                'telnyx' => [
+                    'label'      => 'Telnyx',
+                    'required'   => ['SMS_TELNYX_API_KEY', 'SMS_TELNYX_FROM'],
+                    'optional'   => [],
+                    'signup_url' => 'https://telnyx.com/sign-up',
+                    'docs_url'   => 'https://developers.telnyx.com/docs/messaging',
+                    'free_tier'  => '$20 trial credit, no credit card required',
+                ],
+                'textspot' => [
+                    'label'      => 'TextSpot',
+                    'required'   => ['SMS_TEXTSPOT_API_KEY', 'SMS_TEXTSPOT_FROM'],
+                    'optional'   => [],
+                    'signup_url' => 'https://textspot.io/',
+                    'affiliate_env' => 'TEXTSPOT_AFFILIATE_URL',
+                    'docs_url'   => 'https://textspot.io/resources/sms-api/',
+                    'free_tier'  => 'Free trial available',
+                ],
                 'twilio' => [
-                    'label'    => 'Twilio',
-                    'required' => ['SMS_TWILIO_ACCOUNT_SID', 'SMS_TWILIO_AUTH_TOKEN', 'SMS_TWILIO_FROM_NUMBER'],
-                    'optional' => [],
+                    'label'      => 'Twilio',
+                    'required'   => ['SMS_TWILIO_ACCOUNT_SID', 'SMS_TWILIO_AUTH_TOKEN', 'SMS_TWILIO_FROM_NUMBER'],
+                    'optional'   => [],
+                    'signup_url' => 'https://www.twilio.com/try-twilio',
+                    'docs_url'   => 'https://www.twilio.com/docs/sms',
+                    'free_tier'  => '$15 trial credit',
                 ],
                 'vonage' => [
-                    'label'    => 'Vonage',
-                    'required' => ['SMS_VONAGE_API_KEY', 'SMS_VONAGE_API_SECRET', 'SMS_VONAGE_FROM'],
-                    'optional' => [],
+                    'label'      => 'Vonage',
+                    'required'   => ['SMS_VONAGE_API_KEY', 'SMS_VONAGE_API_SECRET', 'SMS_VONAGE_FROM'],
+                    'optional'   => [],
+                    'signup_url' => 'https://www.vonage.com/communications-apis/sms/',
+                    'docs_url'   => 'https://developer.vonage.com/en/messaging/sms/overview',
+                    'free_tier'  => '€2 trial credit',
                 ],
                 'aws_sns' => [
-                    'label'    => 'AWS SNS',
-                    'required' => ['SMS_AWS_REGION', 'SMS_AWS_ACCESS_KEY', 'SMS_AWS_SECRET_KEY'],
-                    'optional' => ['SMS_AWS_TOPIC_ARN'],
+                    'label'      => 'AWS SNS',
+                    'required'   => ['SMS_AWS_REGION', 'SMS_AWS_ACCESS_KEY', 'SMS_AWS_SECRET_KEY'],
+                    'optional'   => ['SMS_AWS_TOPIC_ARN'],
+                    'signup_url' => 'https://aws.amazon.com/sns/',
+                    'docs_url'   => 'https://docs.aws.amazon.com/sns/latest/dg/sns-mobile-phone-number-as-subscriber.html',
+                    'free_tier'  => '100 SMS/mo Always Free (US only)',
                 ],
                 'none' => ['label' => 'Disabled', 'required' => [], 'optional' => []],
             ],
@@ -480,6 +523,39 @@ class IntegrationConfig
         $out = [];
         foreach (self::DEFS as $type => $def) {
             $out[] = self::describe($type);
+        }
+        return $out;
+    }
+
+    /**
+     * Per-provider metadata for the wizard's integration coaching UI.
+     * Returns the raw `providers` map for `$type` enriched with the
+     * resolved `signup_url` (env-overridden when `affiliate_env` is
+     * declared on the provider entry — operators paste their tracked
+     * affiliate URL into .env so it stays out of the public repos).
+     *
+     * Returns ['providers' => [provider_key => row]] where each row
+     * has at least: label / required / optional / signup_url (if set)
+     * / docs_url (if set) / free_tier (if set) / recommended (bool).
+     *
+     * For the wizard's "where do I sign up?" CTA cards.
+     *
+     * @return array<string, array<string,mixed>>
+     */
+    public static function providerMeta(string $type): array
+    {
+        $def = self::DEFS[$type] ?? null;
+        if (!$def || empty($def['providers'])) return [];
+
+        $out = [];
+        foreach ($def['providers'] as $pKey => $pDef) {
+            $row = $pDef;
+            // Resolve signup_url with optional env override (affiliate URL).
+            if (!empty($pDef['affiliate_env'])) {
+                $envUrl = trim((string) (self::env($pDef['affiliate_env']) ?? ''));
+                if ($envUrl !== '') $row['signup_url'] = $envUrl;
+            }
+            $out[$pKey] = $row;
         }
         return $out;
     }

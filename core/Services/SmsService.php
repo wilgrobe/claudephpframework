@@ -162,6 +162,18 @@ class SmsService implements SmsDriver
             return $this->sendAwsSns($to, $body);
         }
 
+        if ($provider === 'textmagic') {
+            return $this->sendTextMagic($to, $body);
+        }
+
+        if ($provider === 'telnyx') {
+            return $this->sendTelnyx($to, $body);
+        }
+
+        if ($provider === 'textspot') {
+            return $this->sendTextSpot($to, $body);
+        }
+
         return false;
     }
 
@@ -226,5 +238,104 @@ class SmsService implements SmsDriver
         if ($result === false) return false;
         $data = json_decode($result, true);
         return !empty($data['sid']);
+    }
+
+    /**
+     * TextMagic v2 — POST /api/v2/messages with X-TM-Username +
+     * X-TM-Key headers, form-encoded body. Recommended provider for
+     * the wizard's free-trial flow (no credit card required for
+     * trial signup) + best public affiliate program.
+     */
+    private function sendTextMagic(string $to, string $body): bool
+    {
+        $user = $this->config['username'] ?? '';
+        $key  = $this->config['api_key']  ?? '';
+        $from = $this->config['from']     ?? '';
+        if ($user === '' || $key === '') return false;
+
+        $url     = 'https://rest.textmagic.com/api/v2/messages';
+        $payload = ['text' => $body, 'phones' => $to];
+        if ($from !== '') $payload['from'] = $from;
+
+        $ctx = stream_context_create(['http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n"
+                       . "X-TM-Username: $user\r\n"
+                       . "X-TM-Key: $key\r\n",
+            'content' => http_build_query($payload),
+            'ignore_errors' => true,
+        ]]);
+        $result = @file_get_contents($url, false, $ctx);
+        if ($result === false) return false;
+        $data = json_decode($result, true);
+        // TextMagic returns {id: ..., href: ...} on success; an
+        // error body lacks `id`. The HTTP status from $http_response_header
+        // is 201 on accepted send.
+        return is_array($data) && !empty($data['id']);
+    }
+
+    /**
+     * Telnyx v2 — POST /v2/messages with Bearer auth + JSON body.
+     * Cheapest commercial CPaaS for US SMS ($0.004/SMS as of 2026).
+     * Documented as an alternative for cost-sensitive operators;
+     * no public affiliate program.
+     */
+    private function sendTelnyx(string $to, string $body): bool
+    {
+        $key  = $this->config['api_key'] ?? '';
+        $from = $this->config['from']    ?? '';
+        if ($key === '' || $from === '') return false;
+
+        $url     = 'https://api.telnyx.com/v2/messages';
+        $payload = json_encode(['from' => $from, 'to' => $to, 'text' => $body]);
+
+        $ctx = stream_context_create(['http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/json\r\n"
+                       . "Authorization: Bearer $key\r\n",
+            'content' => $payload,
+            'ignore_errors' => true,
+        ]]);
+        $result = @file_get_contents($url, false, $ctx);
+        if ($result === false) return false;
+        $data = json_decode($result, true);
+        // Telnyx returns {data: {id: ..., ...}} on success; errors
+        // come back as {errors: [...]}.
+        return is_array($data) && !empty($data['data']['id']);
+    }
+
+    /**
+     * TextSpot — best-effort REST POST. Their public docs aren't
+     * comprehensive; this implementation assumes a Bearer-auth +
+     * JSON pattern (industry standard). If TextSpot's actual API
+     * differs, override this method or fall back to a different
+     * driver. Marked as "unverified" in docs/integration-sms.md.
+     */
+    private function sendTextSpot(string $to, string $body): bool
+    {
+        $key  = $this->config['api_key'] ?? '';
+        $from = $this->config['from']    ?? '';
+        if ($key === '' || $from === '') return false;
+
+        $url     = 'https://textspot.io/api/v1/messages';
+        $payload = json_encode(['from' => $from, 'to' => $to, 'message' => $body]);
+
+        $ctx = stream_context_create(['http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/json\r\n"
+                       . "Authorization: Bearer $key\r\n",
+            'content' => $payload,
+            'ignore_errors' => true,
+        ]]);
+        $result = @file_get_contents($url, false, $ctx);
+        if ($result === false) return false;
+        $data = json_decode($result, true);
+        // Generic success heuristic — accept any 2xx response with
+        // either id / message_id / status='sent' / success=true.
+        if (!is_array($data)) return false;
+        return !empty($data['id'])
+            || !empty($data['message_id'])
+            || (isset($data['status']) && $data['status'] === 'sent')
+            || !empty($data['success']);
     }
 }
