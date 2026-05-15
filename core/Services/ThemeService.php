@@ -30,26 +30,27 @@ class ThemeService
      */
     public const TOKEN_DEFINITIONS = [
         // ── Brand (legacy flat keys) — same in dark; brand colors stay constant ──
+        // color_secondary removed (no consumer); add it back with a wired call
+        // site if the secondary palette starts driving something.
         'color_primary'      => ['css' => 'color-primary',      'default' => '#4f46e5', 'default_dark' => '#6366f1', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary',       'legacy' => true],
         'color_primary_dark' => ['css' => 'color-primary-dark', 'default' => '#3730a3', 'default_dark' => '#4f46e5', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary (dark)','legacy' => true],
-        'color_secondary'    => ['css' => 'color-secondary',    'default' => '#0ea5e9', 'default_dark' => '#38bdf8', 'validator' => 'color', 'group' => 'brand', 'label' => 'Secondary',     'legacy' => true],
         'color_success'      => ['css' => 'color-success',      'default' => '#10b981', 'default_dark' => '#34d399', 'validator' => 'color', 'group' => 'brand', 'label' => 'Success',       'legacy' => true],
         'color_danger'       => ['css' => 'color-danger',       'default' => '#ef4444', 'default_dark' => '#f87171', 'validator' => 'color', 'group' => 'brand', 'label' => 'Danger',        'legacy' => true],
         'color_warning'      => ['css' => 'color-warning',      'default' => '#f59e0b', 'default_dark' => '#fbbf24', 'validator' => 'color', 'group' => 'brand', 'label' => 'Warning',       'legacy' => true],
         'color_info'         => ['css' => 'color-info',         'default' => '#3b82f6', 'default_dark' => '#60a5fa', 'validator' => 'color', 'group' => 'brand', 'label' => 'Info',          'legacy' => true],
 
         // ── Surfaces — flip from light to dark ──
-        'theme.color.bg.page'    => ['css' => 'bg-page',    'default' => '#f9fafb', 'default_dark' => '#0b1220',           'validator' => 'color', 'group' => 'surfaces', 'label' => 'Page background'],
-        'theme.color.bg.panel'   => ['css' => 'bg-panel',   'default' => '#ffffff', 'default_dark' => '#111827',           'validator' => 'color', 'group' => 'surfaces', 'label' => 'Panel / card background'],
-        'theme.color.bg.block'   => ['css' => 'bg-block',   'default' => '#ffffff', 'default_dark' => '#1f2937',           'validator' => 'color', 'group' => 'surfaces', 'label' => 'Block background (page composer)'],
-        'theme.color.bg.cell'    => ['css' => 'bg-cell',    'default' => '#f9fafb', 'default_dark' => '#1f2937',           'validator' => 'color', 'group' => 'surfaces', 'label' => 'Cell background (page composer)'],
-        'theme.color.bg.overlay' => ['css' => 'bg-overlay', 'default' => 'rgba(17,24,39,.5)', 'default_dark' => 'rgba(0,0,0,.6)', 'validator' => 'color', 'group' => 'surfaces', 'label' => 'Modal / overlay backdrop'],
+        // bg.block / bg.cell / bg.overlay removed (no consumer in chrome or
+        // page composer; aspirational tokens from an earlier composer design).
+        'theme.color.bg.page'    => ['css' => 'bg-page',    'default' => '#f9fafb', 'default_dark' => '#0b1220', 'validator' => 'color', 'group' => 'surfaces', 'label' => 'Page background'],
+        'theme.color.bg.panel'   => ['css' => 'bg-panel',   'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'surfaces', 'label' => 'Panel / card background'],
 
         // ── Text — invert ──
+        // text.inverse removed (no consumer; accent-contrast covers
+        // "text on primary" which is the only inverse-on-dark case).
         'theme.color.text.default' => ['css' => 'text-default', 'default' => '#111827', 'default_dark' => '#f9fafb', 'validator' => 'color', 'group' => 'text', 'label' => 'Body text'],
         'theme.color.text.muted'   => ['css' => 'text-muted',   'default' => '#6b7280', 'default_dark' => '#9ca3af', 'validator' => 'color', 'group' => 'text', 'label' => 'Muted / secondary text'],
         'theme.color.text.subtle'  => ['css' => 'text-subtle',  'default' => '#9ca3af', 'default_dark' => '#6b7280', 'validator' => 'color', 'group' => 'text', 'label' => 'Subtle / tertiary text'],
-        'theme.color.text.inverse' => ['css' => 'text-inverse', 'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'text', 'label' => 'Text on dark backgrounds'],
 
         // ── Borders ──
         'theme.color.border.default' => ['css' => 'border-default', 'default' => '#e5e7eb', 'default_dark' => '#374151', 'validator' => 'color', 'group' => 'borders', 'label' => 'Default border'],
@@ -72,40 +73,19 @@ class ThemeService
         'theme.color.chrome.footer_bg'    => ['css' => 'chrome-footer-bg',    'default' => '#1e1b4b', 'default_dark' => '#1e1b4b', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Footer background'],
         'theme.color.chrome.footer_text'  => ['css' => 'chrome-footer-text',  'default' => '#c7d2fe', 'default_dark' => '#c7d2fe', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Footer text'],
 
-        // ── Radii (mode-agnostic) ──
-        'theme.radius.sm'   => ['css' => 'radius-sm',   'default' => '4px',   'validator' => 'length', 'group' => 'radius', 'label' => 'Small radius'],
-        'theme.radius.md'   => ['css' => 'radius-md',   'default' => '8px',   'validator' => 'length', 'group' => 'radius', 'label' => 'Medium radius (default)'],
+        // ── Radius ──
+        // radius.sm/md/full removed (no consumer). Only --radius-lg is
+        // referenced (in BrandingRenderer's `border-radius:var(--radius-lg)`).
         'theme.radius.lg'   => ['css' => 'radius-lg',   'default' => '12px',  'validator' => 'length', 'group' => 'radius', 'label' => 'Large radius'],
-        'theme.radius.full' => ['css' => 'radius-full', 'default' => '999px', 'validator' => 'length', 'group' => 'radius', 'label' => 'Pill radius'],
 
-        // ── Border width ──
-        'theme.border.width.default' => ['css' => 'border-width-default', 'default' => '1px', 'validator' => 'length', 'group' => 'border_width', 'label' => 'Default border width'],
-
-        // ── Layout ──
-        'theme.layout.max_width.full'   => ['css' => 'max-width-full',   'default' => '1400px', 'validator' => 'length', 'group' => 'layout', 'label' => 'Full-width max'],
-        'theme.layout.max_width.medium' => ['css' => 'max-width-medium', 'default' => '960px',  'validator' => 'length', 'group' => 'layout', 'label' => 'Medium max-width'],
-        'theme.layout.max_width.narrow' => ['css' => 'max-width-narrow', 'default' => '640px',  'validator' => 'length', 'group' => 'layout', 'label' => 'Narrow max-width (forms, prose)'],
-        'theme.layout.gutter'           => ['css' => 'gutter',           'default' => '1rem',   'validator' => 'length', 'group' => 'layout', 'label' => 'Outer gutter / page padding'],
-
-        // ── Typography sizes ──
-        'theme.font.size.h1'    => ['css' => 'font-size-h1',    'default' => '1.75rem', 'validator' => 'length', 'group' => 'font_size', 'label' => 'Heading 1'],
-        'theme.font.size.h2'    => ['css' => 'font-size-h2',    'default' => '1.5rem',  'validator' => 'length', 'group' => 'font_size', 'label' => 'Heading 2'],
-        'theme.font.size.h3'    => ['css' => 'font-size-h3',    'default' => '1.25rem', 'validator' => 'length', 'group' => 'font_size', 'label' => 'Heading 3'],
-        'theme.font.size.body'  => ['css' => 'font-size-body',  'default' => '14px',    'validator' => 'length', 'group' => 'font_size', 'label' => 'Body'],
-        'theme.font.size.small' => ['css' => 'font-size-small', 'default' => '13px',    'validator' => 'length', 'group' => 'font_size', 'label' => 'Small'],
-        'theme.font.size.tiny'  => ['css' => 'font-size-tiny',  'default' => '11px',    'validator' => 'length', 'group' => 'font_size', 'label' => 'Tiny / metadata'],
-
-        // Font family slots. Each one resolves to a CSS font-family value;
-        // the admin picks from FONT_LIBRARY via a <datalist> or types a
-        // custom string. ThemeService::renderFontLinks() emits the matching
-        // Google Fonts <link> tags for any of these that resolve to a
-        // FONT_LIBRARY entry; non-matching custom values get no auto-link
-        // and rely on the admin's custom_links textarea (or the framework
-        // system fallbacks built into the family string itself).
-        'theme.font.family.heading' => ['css' => 'font-family-heading', 'default' => "'Inter', system-ui, sans-serif",       'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Headings'],
-        'theme.font.family.body'    => ['css' => 'font-family-body',    'default' => "'Inter', system-ui, sans-serif",       'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Body / paragraph'],
-        'theme.font.family.mono'    => ['css' => 'font-family-mono',    'default' => 'ui-monospace, Menlo, Consolas, monospace', 'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Code / monospace'],
-        'theme.font.family.button'  => ['css' => 'font-family-button',  'default' => "'Inter', system-ui, sans-serif",       'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Buttons'],
+        // Removed groups (no consumers):
+        //   border_width (border-width-default)
+        //   layout (max-width-full/medium/narrow + gutter)
+        //   font_size (font-size-h1/h2/h3/body/small/tiny)
+        // Plus 3 of the 4 font_family tokens: only body has a consumer
+        // (aliased to --font in renderOverrideStyle for the chrome's
+        // hardcoded `var(--font)` ramp).
+        'theme.font.family.body' => ['css' => 'font-family-body', 'default' => "'Inter', system-ui, sans-serif", 'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Body / paragraph'],
     ];
 
     /**
@@ -155,9 +135,6 @@ class ThemeService
         'accents'       => 'Accents',
         'chrome'        => 'Chrome (sidebar + footer)',
         'radius'        => 'Corner radii',
-        'border_width'  => 'Border widths',
-        'layout'        => 'Layout dimensions',
-        'font_size'     => 'Font sizes',
         'font_family'   => 'Fonts',
     ];
 
