@@ -191,6 +191,12 @@ $router->post('/auth/resend-verification',  'AuthController@resendVerification',
 $router->get('/auth/oauth/{provider}',              'AuthController@oauthRedirect');
 $router->get('/auth/oauth/{provider}/callback',     'AuthController@oauthCallback');
 
+// Broadcast (WebSocket) channel auth handshake — Pusher/Soketi/Ably
+// clients POST here with socket_id + channel_name before subscribing
+// to private-/presence- channels. Public channels skip this.
+$router->post('/broadcast/auth',                    'BroadcastAuthController@authenticate',
+    [CsrfMiddleware::class, AuthMiddleware::class]);
+
 // Superadmin mode toggle & emulation
 $router->post('/admin/superadmin/toggle-mode',      'AuthController@toggleSuperadminMode', [CsrfMiddleware::class, AuthMiddleware::class]);
 $router->post('/admin/users/{id}/emulate',          'AuthController@startEmulate',         [CsrfMiddleware::class, AuthMiddleware::class]);

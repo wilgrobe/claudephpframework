@@ -93,7 +93,24 @@ class IntegrationController
                 return ['ok' => true, 'message' => 'No automated probe for AI yet — use the feature that depends on it.'];
 
             case 'broadcast':
-                return ['ok' => true, 'message' => 'No automated probe for broadcasting yet.'];
+                $bcast = new \Core\Services\BroadcastService();
+                if (!$bcast->isEnabled()) {
+                    return ['ok' => false, 'message' => 'No broadcasting provider configured.'];
+                }
+                // Publish a heartbeat event to a probe channel. Any subscriber
+                // listening on 'admin.probe' for 'integration.test' will see
+                // it; if no one's listening, the provider still accepts the
+                // request, which is what we're testing.
+                $ok = $bcast->trigger('admin.probe', 'integration.test', [
+                    'triggered_by' => $this->auth->user()['email'] ?? 'unknown',
+                    'ts'           => time(),
+                ]);
+                return [
+                    'ok'      => $ok,
+                    'message' => $ok
+                        ? "Broadcast accepted by {$bcast->provider()}. Subscribe to channel 'admin.probe' and listen for 'integration.test' to verify end-to-end delivery."
+                        : "Broadcast rejected by {$bcast->provider()}. Check the PHP error log for the underlying response.",
+                ];
 
             case 'oauth':
                 return ['ok' => true, 'message' => 'OAuth providers must be tested by completing a real sign-in flow.'];
