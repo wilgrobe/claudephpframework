@@ -36,9 +36,15 @@
     const cfg = window.BROADCAST_CONFIG;
     if (!cfg || !cfg.provider || cfg.provider === 'none' || !cfg.user_id) return;
 
-    /** Refresh + update the bell badge after a notification arrives. */
-    function refreshBellBadge() {
-        fetch('/notifications/count', { credentials: 'same-origin' })
+    /**
+     * Refresh a specific bell badge by fetching its count endpoint.
+     * Finds the bell by the anchor `href` substring (so we don't depend
+     * on a class name; whichever .notif-bell links to /notifications
+     * is the notifications bell, /messages is the messaging bell).
+     * Creates/updates/removes the .notif-count span based on the count.
+     */
+    function refreshBellBadge(countUrl, anchorHrefMatch) {
+        fetch(countUrl, { credentials: 'same-origin' })
             .then(r => r.text())
             .then(text => {
                 // XSSI prefix per the framework's Response::json convention.
@@ -46,7 +52,8 @@
                 let data;
                 try { data = JSON.parse(json); } catch (_) { return; }
                 const count = typeof data === 'number' ? data : (data?.count ?? 0);
-                const bell  = document.querySelector('.notif-bell');
+                const link  = document.querySelector('.notif-bell a[href*="' + anchorHrefMatch + '"]');
+                const bell  = link?.closest('.notif-bell');
                 if (!bell) return;
                 let badge = bell.querySelector('.notif-count');
                 if (count <= 0) {
@@ -63,12 +70,17 @@
             .catch(() => { /* network blip — bell badge re-syncs on next page load */ });
     }
 
-    /** Bind the default `notification.created` handler on a channel.
-     *  Re-fetches the count + fires a custom event app code can listen on. */
+    /** Default handlers on user.{id} — notification.created updates the
+     *  notifications bell; message.created updates the messaging bell.
+     *  Both fire app-level custom events for additional UI hooks. */
     function bindNotificationHandler(channel) {
         channel.bind('notification.created', function (data) {
-            refreshBellBadge();
+            refreshBellBadge('/notifications/count', '/notifications');
             window.dispatchEvent(new CustomEvent('broadcast:notification', { detail: data }));
+        });
+        channel.bind('message.created', function (data) {
+            refreshBellBadge('/messages/count', '/messages');
+            window.dispatchEvent(new CustomEvent('broadcast:message', { detail: data }));
         });
     }
 
