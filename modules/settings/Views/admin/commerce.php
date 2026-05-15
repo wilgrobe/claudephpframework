@@ -51,31 +51,6 @@
                 <small style="color:var(--color-gray-500)">Used when a product doesn't specify its own. Multi-currency stores set per-product.</small>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
-                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
-                    <?= toggle_switch('store.tax_inclusive_pricing', !empty($values['store.tax_inclusive_pricing']) && $values['store.tax_inclusive_pricing'] !== 'false') ?>
-                    Tax-inclusive pricing (display + checkout)
-                </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
-                    EU/UK convention. Prices include VAT — tax line on the cart is
-                    informational, not additive. Off = US convention (tax added at
-                    checkout). Tax rates are configured at
-                    <a href="/admin/store/tax" style="color:#4338ca;text-decoration:underline">/admin/store/tax</a>.
-                </div>
-            </div>
-
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
-                <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
-                    <?= toggle_switch('store.guest_checkout_enabled', !empty($values['store.guest_checkout_enabled']) && $values['store.guest_checkout_enabled'] !== 'false') ?>
-                    Allow guest checkout
-                </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
-                    Buyers can complete checkout without creating an account. Off
-                    forces sign-up before the cart can be paid. On is friendlier
-                    for one-time purchases; off is better for repeat-order tracking.
-                </div>
-            </div>
-
             <div class="form-group">
                 <label for="store.low_stock_threshold">Low-stock threshold</label>
                 <input id="store.low_stock_threshold" name="store.low_stock_threshold" type="number" min="0" max="9999" class="form-control"

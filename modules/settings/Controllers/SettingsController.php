@@ -90,12 +90,9 @@ class SettingsController
         // Reviews
         'store.reviews_enabled'           => 'boolean',
         'store.reviews_badge_in_listing'  => 'boolean',
-        // Currency + tax + checkout defaults — stubs for now; populate
-        // via the form as the store grows. setting() reads return null
+        // Currency + low-stock threshold. setting() reads return null
         // for unset keys so adding rows here is non-breaking.
         'store.currency_default'          => 'string',
-        'store.tax_inclusive_pricing'     => 'boolean',
-        'store.guest_checkout_enabled'    => 'boolean',
         'store.low_stock_threshold'       => 'integer',
     ];
 
