@@ -19,28 +19,20 @@ use Core\Services\SettingsService;
  */
 class SettingsController
 {
-    private const FOOTER_KEYS = [
-        'footer_enabled'       => 'boolean',
-        'footer_logo_text'     => 'string',
-        'footer_tagline'       => 'string',
-        'footer_copyright'     => 'string',
-        'footer_powered_by'    => 'string',
-        'footer_show_menu'     => 'boolean',
-        'footer_menu_location' => 'string',
-    ];
-
     // ── New-shell panel key sets ────────────────────────────────────────
     //
-    // The hub introduced 2026-05-01 splits settings into 9 panels driven
+    // The hub introduced 2026-05-01 splits settings into panels driven
     // by the partial in Views/admin/_nav.php. Each new panel below has
     // its own key map that the controller uses both to render the form
     // (which inputs to show, with which type widget) and to gate the
     // save (which keys to accept from POST).
     //
-    // The pre-shell pages (FOOTER_KEYS, GROUP_KEYS, ACCESS_KEYS,
-    // SECURITY_KEYS, APPEARANCE_KEYS, COLOR_DEFAULTS) are kept as-is —
-    // their controllers remain the source of truth for those domains.
-    // The new panels deliberately don't overlap.
+    // The pre-shell pages (GROUP_KEYS, ACCESS_KEYS, SECURITY_KEYS,
+    // APPEARANCE_KEYS, COLOR_DEFAULTS) are kept as-is — their controllers
+    // remain the source of truth for those domains. The new panels
+    // deliberately don't overlap. Footer settings used to live in their
+    // own FOOTER_KEYS const + /admin/settings/footer page; they're now
+    // managed via LAYOUT_KEYS and the legacy page redirects to /layout.
 
     private const GENERAL_KEYS = [
         'site_name'           => 'string',
@@ -176,11 +168,18 @@ class SettingsController
         'coppa_block_message'    => 'string',
     ];
 
+    // Keys that the Appearance panel writes (used by managedSiteKeys() to
+    // hide them from the generic /admin/settings grid). The panel saves
+    // every theme.* token from ThemeService::TOKEN_DEFINITIONS plus a
+    // few legacy flat brand keys. Keep this list in sync with the brand
+    // entries in TOKEN_DEFINITIONS (color_secondary was removed alongside
+    // the dead-token cleanup; layout_orientation now lives on the Layout
+    // panel — kept here too because the Appearance panel still surfaces
+    // the picker as a convenience).
     private const APPEARANCE_KEYS = [
         'layout_orientation' => 'string',
         'color_primary'      => 'string',
         'color_primary_dark' => 'string',
-        'color_secondary'    => 'string',
         'color_success'      => 'string',
         'color_danger'       => 'string',
         'color_warning'      => 'string',
@@ -190,7 +189,6 @@ class SettingsController
     public const COLOR_DEFAULTS = [
         'color_primary'      => 'var(--color-primary)',
         'color_primary_dark' => 'var(--color-primary-dark)',
-        'color_secondary'    => '#0ea5e9',
         'color_success'      => 'var(--color-success)',
         'color_danger'       => 'var(--color-danger)',
         'color_warning'      => 'var(--color-warning)',
@@ -226,7 +224,6 @@ class SettingsController
     private static function managedSiteKeys(): array
     {
         $local = array_merge(
-            array_keys(self::FOOTER_KEYS),
             array_keys(self::GROUP_KEYS),
             array_keys(self::SECURITY_KEYS),
             array_keys(self::ACCESS_KEYS),
@@ -402,41 +399,16 @@ class SettingsController
         return Response::redirect("/admin/settings/other?scope=$scope")->withFlash('success', 'Setting deleted.');
     }
 
+    /**
+     * Legacy /admin/settings/footer redirect. Footer settings now live on
+     * the unified /admin/settings/layout panel; this stub keeps old
+     * bookmarks + the legacy index.php "Footer →" button working. The
+     * matching POST handler is gone (no form is rendered anymore), so a
+     * POST here also redirects.
+     */
     public function footer(Request $request): Response
     {
-        if (!$this->auth->isSuperAdmin()) return $this->denied();
-
-        $values = [];
-        foreach (array_keys(self::FOOTER_KEYS) as $key) {
-            $values[$key] = $this->settings->get($key, null, 'site');
-        }
-
-        $locations = Database::getInstance()->fetchAll(
-            "SELECT DISTINCT location FROM menus WHERE is_active = 1 ORDER BY location"
-        );
-
-        return Response::view('settings::admin.footer', [
-            'values'    => $values,
-            'locations' => array_column($locations, 'location'),
-            'user'      => $this->auth->user(),
-        ]);
-    }
-
-    public function saveFooter(Request $request): Response
-    {
-        if (!$this->auth->isSuperAdmin()) return $this->denied();
-
-        foreach (self::FOOTER_KEYS as $key => $type) {
-            if ($type === 'boolean') {
-                $value = $request->post($key) ? 'true' : 'false';
-            } else {
-                $value = (string) $request->post($key, '');
-            }
-            $this->settings->set($key, $value, 'site', null, $type);
-        }
-
-        $this->auth->auditLog('settings.footer.save', null, null, null, ['scope' => 'site']);
-        return Response::redirect('/admin/settings/footer')->withFlash('success', 'Footer settings saved.');
+        return Response::redirect('/admin/settings/layout');
     }
 
     public function groups(Request $request): Response

@@ -7,8 +7,8 @@
     <a href="/admin/settings/appearance" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
         🎨 Appearance &rarr;
     </a>
-    <a href="/admin/settings/footer" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
-        📐 Footer &rarr;
+    <a href="/admin/settings/layout" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+        📐 Layout &rarr;
     </a>
     <a href="/admin/settings/groups" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
         👥 Group Policy &rarr;
@@ -34,7 +34,7 @@
 ?>
 <?php if ($scope === 'site' && !empty($managedKeys)): ?>
 <div style="padding:.75rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:1rem;font-size:13px;color:#4338ca;line-height:1.5">
-    <strong>Note:</strong> Keys managed on a dedicated page (Appearance, Footer, Group Policy, Security &amp; Privacy, Registration &amp; Access) are hidden from this grid so there's one source of truth. Edit them on their own page. The grid below is for ad-hoc or custom site settings.
+    <strong>Note:</strong> Keys managed on a dedicated page (Appearance, Layout, Group Policy, Security &amp; Privacy, Registration &amp; Access) are hidden from this grid so there's one source of truth. Edit them on their own page. The grid below is for ad-hoc or custom site settings.
 </div>
 <?php endif; ?>
 

@@ -12,9 +12,13 @@ $router->post('/admin/settings',            'Modules\Settings\Controllers\Settin
     [CsrfMiddleware::class, AuthMiddleware::class, RequireSuperadmin::class]);
 $router->post('/admin/settings/delete',     'Modules\Settings\Controllers\SettingsController@delete',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireSuperadmin::class]);
+// Legacy /admin/settings/footer redirects to /admin/settings/layout.
+// Kept routed so old bookmarks + the legacy index.php "Footer →" button
+// don't 404; the POST goes to the same redirect (no form to submit
+// anymore — the layout panel owns these keys now).
 $router->get ('/admin/settings/footer',     'Modules\Settings\Controllers\SettingsController@footer',
     [AuthMiddleware::class, RequireSuperadmin::class]);
-$router->post('/admin/settings/footer',     'Modules\Settings\Controllers\SettingsController@saveFooter',
+$router->post('/admin/settings/footer',     'Modules\Settings\Controllers\SettingsController@footer',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireSuperadmin::class]);
 $router->get ('/admin/settings/groups',     'Modules\Settings\Controllers\SettingsController@groups',
     [AuthMiddleware::class, RequireSuperadmin::class]);
