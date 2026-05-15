@@ -32,6 +32,21 @@ if (function_exists('ini_parse_quantity')) {
 // Autoload (helpers.php is loaded via Composer's "files" autoload)
 require BASE_PATH . '/vendor/autoload.php';
 
+// Tenant resolution MUST run before the DB session handler is wired,
+// because that handler calls Database::getInstance() which caches a
+// PDO against $_ENV['DB_DATABASE'] AT THAT MOMENT. If we let the
+// resolver fire later (in core/bootstrap.php) the cached PDO would
+// already point at the central DB and every tenant request would
+// silently read/write central. The conditional invocation matches
+// what bootstrap.php does when the resolver class is absent;
+// bootstrap.php's later call is now a no-op for tenant requests
+// but stays for installs that load bootstrap directly (CLI tools).
+if (PHP_SAPI !== 'cli'
+    && class_exists(\App\Tenancy\TenantResolver::class)
+    && method_exists(\App\Tenancy\TenantResolver::class, 'resolve')) {
+    \App\Tenancy\TenantResolver::resolve();
+}
+
 // Session config
 $cfg = config('app.session');
 ini_set('session.cookie_lifetime', $cfg['lifetime'] * 60);
@@ -82,7 +97,59 @@ $imgSrc = "'self' data: https:" . (config('app.env') !== 'production' ? ' http:'
 // embeds are introduced — keep the list narrow rather than allowing
 // `https:` blanket so a compromised page can't phone home to anything.
 $frameSrc = "'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com";
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src $imgSrc; frame-src $frameSrc; form-action 'self'; base-uri 'self';");
+// font-src: 'self' + Google Fonts CDN + the configured S3/MinIO origin so
+// tenant-uploaded custom fonts (builder.branding.custom_font_url) can load.
+// CSP source-lists are origin-only, so derive scheme://host[:port] from
+// S3_PUBLIC_URL — a full URL with a path (e.g. http://localhost:9000/bucket)
+// would not match.
+$s3Origin = '';
+$s3Public = (string)($_ENV['S3_PUBLIC_URL'] ?? '');
+if ($s3Public !== '') {
+    $parts = parse_url($s3Public);
+    if (!empty($parts['scheme']) && !empty($parts['host'])) {
+        $s3Origin = $parts['scheme'] . '://' . $parts['host']
+            . (!empty($parts['port']) ? ':' . $parts['port'] : '');
+    }
+}
+$fontSrc = "'self' https://fonts.gstatic.com" . ($s3Origin !== '' ? " $s3Origin" : '');
+// form-action: where forms may submit, including across redirect chains.
+// Add a payment provider's checkout domain here when its keys are
+// configured, so a 302 from our same-origin POST to the hosted checkout
+// page isn't blocked by the browser. Stripe uses checkout.stripe.com.
+$formAction = "'self'";
+if (($_ENV['STRIPE_SECRET_KEY'] ?? '') !== '') {
+    $formAction .= ' https://checkout.stripe.com https://billing.stripe.com';
+}
+// Broadcast CSP extensions — open script-src + connect-src for the
+// active provider's CDN + WebSocket endpoints. Skip entirely when
+// BROADCAST_PROVIDER is unset/none so non-broadcasting sites stay
+// on the tightest possible policy.
+$bcastProvider = strtolower((string) ($_ENV['BROADCAST_PROVIDER'] ?? 'none'));
+$scriptExtras  = '';
+$connectExtras = '';
+if ($bcastProvider === 'pusher' || $bcastProvider === 'soketi') {
+    $scriptExtras  = ' https://js.pusher.com';
+    // Pusher / Soketi WebSocket endpoints. Pusher routes wss://ws-{cluster}.pusher.com
+    // + sockjs fallbacks at sockjs-*.pusher.com. Soketi self-hosted uses
+    // BROADCAST_HOST, which we derive an origin from when set.
+    $connectExtras = ' https://*.pusher.com wss://*.pusher.com';
+    $bcastHost = trim((string) ($_ENV['BROADCAST_HOST'] ?? ''));
+    if ($bcastHost !== '') {
+        if (!preg_match('#^https?://#i', $bcastHost)) {
+            $bcastHost = 'https://' . $bcastHost;
+        }
+        $parts = parse_url($bcastHost);
+        if (!empty($parts['host'])) {
+            $host = $parts['host'] . (!empty($parts['port']) ? ':' . $parts['port'] : '');
+            $connectExtras .= " https://$host wss://$host";
+        }
+    }
+} elseif ($bcastProvider === 'ably') {
+    $scriptExtras  = ' https://cdn.ably.com';
+    $connectExtras = ' https://*.ably.io wss://*.ably.io';
+}
+$connectSrc = "'self'" . $connectExtras;
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com$scriptExtras; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src $fontSrc; img-src $imgSrc; frame-src $frameSrc; form-action $formAction; connect-src $connectSrc; base-uri 'self';");
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 

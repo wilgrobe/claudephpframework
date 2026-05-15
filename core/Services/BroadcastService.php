@@ -68,6 +68,41 @@ class BroadcastService
     }
 
     /**
+     * Browser-safe subset of the broadcast config for client-side
+     * SDK initialization. Deliberately excludes secrets — only the
+     * fields a client legitimately needs to connect: provider name,
+     * public key, cluster, host override. The Ably api_key is also
+     * client-safe ONLY when the app intends every browser tab to
+     * authenticate as the key holder (which is the case for public
+     * channels); apps that want per-user tokens should switch to
+     * fetching tokens from /broadcast/auth instead.
+     *
+     * Returns an empty array when broadcasting isn't configured —
+     * callers can `if (empty($cfg)) skip the script emit entirely`.
+     *
+     * @return array{provider:string,key?:string,cluster?:string,host?:string,api_key?:string}
+     */
+    public function clientConfig(): array
+    {
+        if (!$this->isEnabled()) return [];
+        $out = ['provider' => $this->provider];
+        if ($this->provider === 'pusher' || $this->provider === 'soketi') {
+            $out['key']     = (string) ($this->config['key']     ?? '');
+            $out['cluster'] = (string) ($this->config['cluster'] ?? 'mt1');
+            $host           = (string) ($this->config['host']    ?? '');
+            if ($host !== '') $out['host'] = $host;
+        } elseif ($this->provider === 'ably') {
+            // Ably's api key has a public name portion. For public-channel
+            // subscriptions clients can use the full key directly; for
+            // private/presence the client should request a token from
+            // /broadcast/auth instead (TODO: split here when token auth
+            // becomes the primary flow).
+            $out['api_key'] = (string) ($this->config['api_key'] ?? '');
+        }
+        return $out;
+    }
+
+    /**
      * Publish $event on $channel with $data payload. Returns true if
      * the provider accepted the request, false otherwise (including
      * the "not configured" case, so callers can wrap unconditionally).

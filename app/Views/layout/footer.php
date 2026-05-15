@@ -9,9 +9,9 @@
 // for the current policy version. Safe to include on every page; the
 // partial returns early when the banner shouldn't display.
 //
-// Gated on cookieconsent.banner-ui submodule (default-on for installs
-// without project_submodules; deliberately off for sites running an
-// external CMP that handles the banner UI themselves).
+// Gated on cookieconsent.banner-ui submodule (default-on without
+// project_submodules; deliberately off for sites running an external
+// CMP that handles the banner UI themselves).
 $__cc = BASE_PATH . '/modules/cookieconsent/Views/banner.php';
 if (file_exists($__cc)
     && (!class_exists(\Core\Module\SubmoduleRegistry::class)
@@ -20,6 +20,35 @@ if (file_exists($__cc)
 }
 ?>
 
+<?php
+// ── Real-time broadcasting (WebSocket subscriber) ────────────────
+// Emits window.BROADCAST_CONFIG + loads the matching SDK + broadcast.js
+// only when the current page meets all three conditions:
+//   1. a user is signed in (broadcasts target user.{id} by default)
+//   2. broadcasting is configured (BROADCAST_PROVIDER != none)
+//   3. the broadcast module returned a non-empty client config
+//
+// Public CDN URLs for the SDKs are pinned to major versions; bump the
+// pin (and re-verify CSP) when the framework upgrades broadcast deps.
+$__bcastAuth = \Core\Auth\Auth::getInstance();
+if ($__bcastAuth->check()) {
+    $__bcastCfg = (new \Core\Services\BroadcastService())->clientConfig();
+    if (!empty($__bcastCfg)) {
+        $__bcastCfg['user_id'] = (int) $__bcastAuth->id();
+        ?>
+        <script>
+        window.BROADCAST_CONFIG = <?= json_encode($__bcastCfg, JSON_UNESCAPED_SLASHES) ?>;
+        </script>
+        <?php if ($__bcastCfg['provider'] === 'pusher' || $__bcastCfg['provider'] === 'soketi'): ?>
+        <script src="https://js.pusher.com/8.0/pusher.min.js" defer></script>
+        <?php elseif ($__bcastCfg['provider'] === 'ably'): ?>
+        <script src="https://cdn.ably.com/lib/ably.min-1.js" defer></script>
+        <?php endif; ?>
+        <script src="<?= e(asset('/assets/js/broadcast.js')) ?>" defer></script>
+        <?php
+    }
+}
+?>
 <script src="<?= e(asset('/assets/js/app.js')) ?>"></script>
 <script>
 // Close dropdowns when clicking outside. Two distinct dropdown patterns
