@@ -23,7 +23,7 @@
 <?php else: ?>
 <div style="display:flex;flex-direction:column;gap:.5rem">
 <?php foreach ($notifications as $n): ?>
-<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background:#fff;border:1px solid <?= $n['read_at'] ? 'var(--color-gray-200)' : '#c7d2fe' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:#f5f3ff;' : '' ?>">
+<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background: var(--bg-panel, #fff);border:1px solid <?= $n['read_at'] ? 'var(--color-gray-200)' : '#c7d2fe' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:#f5f3ff;' : '' ?>">
     <?php if (!empty($n['can_delete'])): ?>
     <!-- Dismiss (×). Only rendered once the notification is read AND any
          action it carried has been resolved. Controller enforces the same

@@ -81,7 +81,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 
 /* Collapsible drawers (SEO / body / grid / advanced).
    Hide the native triangle; render our own ▸/▾ instead. */
-.meta-drawer { background: #fff; border: 1px solid var(--border-default); border-radius: 8px;
+.meta-drawer { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px;
                margin-bottom: .65rem; overflow: hidden; }
 .meta-drawer > summary {
     list-style: none; cursor: pointer; user-select: none;
@@ -105,8 +105,8 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 @media (max-width: 1100px) { .composer-pane { grid-template-columns: 1fr; } }
 
-.composer-main { background: #fff; border: 1px solid var(--border-default); border-radius: 8px; padding: 1rem; min-height: 360px; }
-.composer-palette { background: #fff; border: 1px solid var(--border-default); border-radius: 8px; padding: .65rem; max-height: 70vh; overflow-y: auto; position: sticky; top: 80px; align-self: start; }
+.composer-main { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px; padding: 1rem; min-height: 360px; }
+.composer-palette { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px; padding: .65rem; max-height: 70vh; overflow-y: auto; position: sticky; top: 80px; align-self: start; }
 .composer-palette h3 { margin: 0 0 .5rem; font-size: 13px; font-weight: 700; color: var(--text-default); }
 .palette-cat { font-size: 10.5px; font-weight: 700; text-transform: uppercase;
                color: var(--text-muted); letter-spacing: .05em; margin: .65rem .25rem .25rem; }
@@ -137,7 +137,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 .composer-row-rail button {
     width: 28px; height: 28px; padding: 0; cursor: pointer;
-    background: #fff; border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
     color: var(--text-muted); font-size: 14px; line-height: 1;
     transition: border-color .12s, color .12s, background .12s;
 }
@@ -174,7 +174,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                        text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
 .placement-tile {
     display: flex; align-items: center; justify-content: space-between;
-    background: #fff; border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
     padding: .4rem .5rem; margin-bottom: .25rem; font-size: 12.5px;
     cursor: pointer; transition: border-color .12s, box-shadow .12s;
 }
@@ -196,7 +196,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 .cb-modal-backdrop.open { display: flex; }
 .cb-modal {
-    background: #fff; border-radius: 12px; box-shadow: 0 20px 50px -10px rgba(0,0,0,.3);
+    background: var(--bg-panel, #fff); border-radius: 12px; box-shadow: 0 20px 50px -10px rgba(0,0,0,.3);
     width: 100%; max-width: 640px; max-height: 80vh; display: flex; flex-direction: column;
 }
 .cb-modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-subtle);
@@ -225,7 +225,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     font-size: 12.5px; font-style: italic; text-align: center;
 }
 .cb-rep-item {
-    background: #fff; border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
     counter-increment: rep-item;
 }
 .cb-rep-item-header {
@@ -240,7 +240,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .cb-rep-item-title::after { content: ' #' counter(rep-item); color: var(--text-subtle); font-weight: 500; }
 .cb-rep-item-actions { display: flex; gap: .25rem; }
 .cb-rep-item-actions button {
-    background: #fff; border: 1px solid var(--border-strong); border-radius: 4px;
+    background: var(--bg-panel, #fff); border: 1px solid var(--border-strong); border-radius: 4px;
     padding: .15rem .4rem; font-size: 11.5px; line-height: 1; cursor: pointer;
     color: var(--text-muted); min-width: 24px;
 }
@@ -254,7 +254,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 /* String-list items: single-line layout with the input flush to the actions. */
 .cb-rep-item.cb-strlist-item {
     display: flex; align-items: center; gap: .35rem;
-    padding: .3rem .45rem; background: #fff;
+    padding: .3rem .45rem; background: var(--bg-panel, #fff);
 }
 .cb-rep-item.cb-strlist-item input {
     flex: 1; padding: .3rem .55rem; font-size: 13px;

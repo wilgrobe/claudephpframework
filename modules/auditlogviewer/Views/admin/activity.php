@@ -29,15 +29,15 @@ $hasMore    = $total_loaded === $fetch_each * 2;  // both sources hit the cap
 .act-help   { color:var(--color-gray-500); font-size:13px; max-width:680px; line-height:1.5; margin:0 0 1rem; }
 
 .act-tabs    { display:flex; gap:.4rem; margin-bottom:.85rem; }
-.act-tab     { padding:.4rem .85rem; border-radius:6px; background:#fff; color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
+.act-tab     { padding:.4rem .85rem; border-radius:6px; background: var(--bg-panel, #fff); color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
 .act-tab:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
 .act-tab.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
 
-.act-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 200px 200px 140px; margin-bottom:.85rem; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.act-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 200px 200px 140px; margin-bottom:.85rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
 .act-filters input, .act-filters button, .act-filters .btn-secondary { padding:.45rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .act-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
 
-.act-feed    { background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
+.act-feed    { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
 .act-item    { display:grid; grid-template-columns: 36px 1fr 110px; gap:.85rem; padding:.75rem 1.1rem; border-bottom:1px solid var(--color-gray-100); align-items:start; }
 .act-item:last-child { border-bottom:0; }
 .act-icon    { font-size:18px; display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:var(--color-gray-50); border-radius:8px; }
@@ -56,7 +56,7 @@ $hasMore    = $total_loaded === $fetch_each * 2;  // both sources hit the cap
 
 .act-empty   { padding:3rem 1rem; text-align:center; color:var(--color-gray-400); font-size:14px; font-style:italic; }
 .act-pager   { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
-.act-pager .nav a, .act-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background:#fff; color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.act-pager .nav a, .act-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, #fff); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
 .act-pager .nav span.disabled { color:var(--color-gray-300); }
 
 .act-day-header { padding:.5rem 1.1rem; background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--color-gray-500); font-weight:700; border-bottom:1px solid var(--color-gray-100); }

@@ -45,11 +45,35 @@
 body {
     margin: 0;
     font-family: var(--font);
-    background: var(--color-gray-50);
-    color: var(--color-gray-900);
+    background: var(--bg-page, var(--color-gray-50));
+    color: var(--text-default, var(--color-gray-900));
     font-size: 14px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+}
+
+/* ── Dark-mode form-input fallback ────────────────────────────
+   Any input/select/textarea that doesn't set an explicit
+   background inherits the surface color in dark mode. This
+   catches view-local conventions like wizard's `.field input`
+   that don't go through `.form-row` or `.form-control`. Light
+   mode keeps the browser default (white) since we don't override.
+   The body.theme-dark variant is for manual toggle.            */
+@media (prefers-color-scheme: dark) {
+    input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=reset]):not([type=color]):not([type=range]):not([type=file]):not([type=image]),
+    select,
+    textarea {
+        background-color: var(--bg-panel);
+        color: var(--text-default);
+        border-color: var(--border-strong);
+    }
+}
+body.theme-dark input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=reset]):not([type=color]):not([type=range]):not([type=file]):not([type=image]),
+body.theme-dark select,
+body.theme-dark textarea {
+    background-color: var(--bg-panel);
+    color: var(--text-default);
+    border-color: var(--border-strong);
 }
 a { color: var(--color-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -133,6 +157,21 @@ textarea:focus-visible {
     border-radius: 4px;
 }
 
+/* ── Reduced motion ─────────────────────────────────────────
+   Critical for users with vestibular disorders. Disables alert
+   slide-down, banner-emulating pulse, button-hover transitions,
+   dropdown opens, modal animations, and any other motion. The
+   !important is intentional — view-local transitions should also
+   honor user preference.                                       */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* ── Skip link for accessibility ────────────────────────────── */
 .skip-link {
     position: absolute;
@@ -165,12 +204,33 @@ textarea:focus-visible {
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     .topbar { padding: .6rem 1rem; }
     .content { padding: 1rem; }
+    .shell { padding: 1.25rem 1rem; }
     table { font-size: 12px; }
     .table th, .table td { padding: .5rem .65rem; }
+    /* Tables that aren't wrapped in .table-responsive: clip + scroll. */
+    .card-body > table, .tbl-card > table, .tbl-card table { display: block; overflow-x: auto; }
+    /* Mobile-friendly button rows: stack when there's no room. */
+    .form-actions { flex-direction: column; align-items: stretch; }
+    .form-actions > .btn { width: 100%; justify-content: center; }
+    .form-actions > .spacer { display: none; }
+}
+@media (max-width: 640px) {
+    /* Tighter table cells on small phones. */
+    .table th, .table td { padding: .4rem .55rem; font-size: 11.5px; }
+    /* Wizard progress-bar pill labels fall off; numbers remain. */
+    /* Already handled in _progress.php via .prog-step-label { display: none } */
+    /* Card headers wrap when an action button sits next to the title. */
+    .card-header { flex-wrap: wrap; gap: .5rem; }
+    /* Modal bodies need full width on small screens. */
+    .modal { width: 100%; max-width: 100%; border-radius: 0; }
 }
 @media (max-width: 480px) {
     .btn { font-size: 13px; }
     .card-header { flex-wrap: wrap; gap: .5rem; }
+    /* Topbar nav becomes a horizontal scroll strip on very narrow. */
+    .topbar { gap: .5rem; }
+    .topbar-nav { overflow-x: auto; flex-wrap: nowrap; }
+    .topbar-nav > a, .topbar-nav .topbar-dd-toggle { white-space: nowrap; }
 }
 
 /* ── Shared components ───────────────────────────────────────
@@ -185,10 +245,10 @@ textarea:focus-visible {
 
 /* Cards */
 .card {
-    background: #fff;
+    background: var(--bg-panel, #fff);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--border-default, var(--color-gray-200));
 }
 .card-header {
     padding: 1rem 1.25rem;
@@ -217,10 +277,10 @@ textarea:focus-visible {
 }
 .form-control {
     width: 100%; padding: .55rem .75rem;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--border-strong, var(--color-gray-300));
     border-radius: 6px; font-size: 14px;
     font-family: var(--font);
-    background: #fff; color: var(--color-gray-900);
+    background: var(--bg-panel, #fff); color: var(--text-default, var(--color-gray-900));
     transition: border-color .15s, box-shadow .15s;
 }
 .form-control:focus {
@@ -252,7 +312,7 @@ select.form-control {
 }
 .btn-primary   { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
 .btn-primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
-.btn-secondary { background: #fff; color: var(--color-gray-700); border-color: var(--color-gray-300); }
+.btn-secondary { background: var(--bg-panel, #fff); color: var(--text-default, var(--color-gray-700)); border-color: var(--border-strong, var(--color-gray-300)); }
 .btn-secondary:hover { background: var(--color-gray-50); }
 .btn-danger    { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
 .btn-danger:hover { background: var(--color-danger-fg); }
@@ -339,9 +399,11 @@ select.form-control {
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Inline meta line — replaces the `style="color:#6b7280;font-size:12px"`
-   pattern that appears 50+ times across admin/wizard views.            */
+   pattern that appears 50+ times across admin/wizard views. Uses
+   --text-muted in dark mode (via ThemeService) and falls back to
+   --color-gray-500 on standalone surfaces.                            */
 .muted-meta {
-    color: var(--color-gray-500);
+    color: var(--text-muted, var(--color-gray-500));
     font-size: 12px;
     line-height: 1.5;
 }

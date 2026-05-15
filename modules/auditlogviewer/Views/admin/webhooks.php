@@ -27,18 +27,18 @@ $totalPages = max(1, (int) ceil($total_loaded / max(1, $per_page)));
 .wh-help   { color:var(--color-gray-500); font-size:13px; max-width:720px; line-height:1.5; margin:0 0 1rem; }
 
 .wh-tabs   { display:flex; gap:.4rem; margin-bottom:.85rem; }
-.wh-tab    { padding:.4rem .85rem; border-radius:6px; background:#fff; color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
+.wh-tab    { padding:.4rem .85rem; border-radius:6px; background: var(--bg-panel, #fff); color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
 .wh-tab.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
 .wh-tab:hover { border-color:#c4b5fd; }
 
 .wh-grid   { display:grid; grid-template-columns: 1fr 240px; gap:1rem; align-items:start; }
 @media (max-width: 900px) { .wh-grid { grid-template-columns: 1fr; } }
 
-.wh-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 160px 160px 140px; margin-bottom:.85rem; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.wh-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 160px 160px 140px; margin-bottom:.85rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
 .wh-filters input, .wh-filters button, .wh-filters .btn-secondary { padding:.45rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .wh-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
 
-.wh-table { width:100%; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
+.wh-table { width:100%; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
 .wh-table th, .wh-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid var(--color-gray-100); }
 .wh-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .wh-table tr:last-child td { border-bottom:0; }
@@ -54,14 +54,14 @@ $totalPages = max(1, (int) ceil($total_loaded / max(1, $per_page)));
 .wh-sidebar h3 { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); margin:0 0 .5rem; font-weight:700; }
 .wh-sidebar .card { padding:.75rem 1rem; }
 .wh-chip-list { display:flex; flex-direction:column; gap:.2rem; }
-.wh-chip { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background:#fff; border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
+.wh-chip { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
 .wh-chip:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
 .wh-chip .ct { color:var(--color-gray-400); font-size:10.5px; font-weight:600; }
 .wh-chip.active { background:var(--color-purple-bg); border-color:#c4b5fd; color:var(--color-purple-fg); }
 
 .wh-empty { padding:3rem 1rem; color:var(--color-gray-400); text-align:center; font-style:italic; }
 .wh-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
-.wh-pager .nav a, .wh-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background:#fff; color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.wh-pager .nav a, .wh-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, #fff); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
 .wh-pager .nav span.disabled { color:var(--color-gray-300); }
 </style>
 

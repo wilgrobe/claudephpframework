@@ -32,5 +32,6 @@
 
     <div class="auth-footer"><a href="/login">← Back to sign in</a></div>
 </div>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>

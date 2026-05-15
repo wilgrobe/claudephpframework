@@ -12,7 +12,7 @@
         </p>
         <input type="text" value="<?= e((string) $justMinted['token']) ?>"
                readonly onclick="this.select()" aria-label="API token (read-only — copy now, will not be shown again)"
-               style="width:100%;font-family:monospace;padding:.5rem;background:#fff;border:1px solid var(--color-gray-300);border-radius:4px">
+               style="width:100%;font-family:monospace;padding:.5rem;background: var(--bg-panel, #fff);border:1px solid var(--color-gray-300);border-radius:4px">
     </div>
 </div>
 <?php endif; ?>

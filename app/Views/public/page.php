@@ -68,7 +68,7 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     <style>
     /* Scoped hero/body styles — only included on authed renders so the
        guest standalone shell keeps using its own definitions below. */
-    .page-hero { background: #fff; border-bottom: 1px solid var(--color-gray-200); padding: 2rem 1.5rem; text-align: center; margin-bottom: 1rem; border-radius: 8px; }
+    .page-hero { background: var(--bg-panel, #fff); border-bottom: 1px solid var(--color-gray-200); padding: 2rem 1.5rem; text-align: center; margin-bottom: 1rem; border-radius: 8px; }
     .page-hero h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
     .page-body { max-width: <?= ($page['layout'] ?? 'default') === 'wide' ? '1100px' : '760px' ?>; margin: 1.5rem auto; padding: 0 1.5rem; line-height: 1.8; font-size: 15px; }
     .page-body h2 { font-size: 1.3rem; margin-top: 1.75rem; }

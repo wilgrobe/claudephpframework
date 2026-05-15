@@ -37,7 +37,7 @@ $qs = function (array $extra) use ($filters): string {
 .al-qd { padding:.25rem .6rem; border-radius:4px; background:var(--color-gray-100); color:var(--color-gray-700); font-size:11.5px; font-weight:600; text-decoration:none; }
 .al-qd:hover { background:var(--color-gray-200); color:#111; }
 
-.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
 .al-filters input, .al-filters button, .al-filters .btn-secondary { padding:.5rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .al-filters .span2 { grid-column: span 2; }
 .al-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
@@ -45,12 +45,12 @@ $qs = function (array $extra) use ($filters): string {
 .al-sidebar h3   { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); margin:0 0 .5rem; font-weight:700; }
 .al-sidebar .card { padding:.75rem 1rem; }
 .al-chip-list { display:flex; flex-direction:column; gap:.2rem; }
-.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background:#fff; border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
+.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
 .al-chip:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
 .al-chip .ct  { color:var(--color-gray-400); font-size:10.5px; font-weight:600; }
 .al-chip.active { background:var(--color-purple-bg); border-color:#c4b5fd; color:var(--color-purple-fg); }
 
-.al-table { width:100%; background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
+.al-table { width:100%; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
 .al-table th, .al-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid var(--color-gray-100); }
 .al-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .al-table tr:last-child td { border-bottom:0; }
@@ -58,7 +58,7 @@ $qs = function (array $extra) use ($filters): string {
 .al-empty { padding:3rem 1rem; color:var(--color-gray-400); text-align:center; }
 
 .al-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
-.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background:#fff; color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, #fff); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
 .al-pager .nav span.disabled { color:var(--color-gray-300); }
 .al-pager .nav .current { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
 
@@ -81,7 +81,7 @@ $qs = function (array $extra) use ($filters): string {
                 <a class="al-pill al-pill-ok" href="/admin/audit-chain" title="No tampered rows<?= $cs['last_verified_at'] ? ' — last verified ' . htmlspecialchars($cs['last_verified_at'], ENT_QUOTES) : '' ?>">✓ chain ok</a>
             <?php endif; ?>
             <?php $csvQs = $qs([]); ?>
-            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background:#fff;border:1px solid var(--color-gray-300);border-radius:4px;text-decoration:none;color:var(--color-gray-700);">⬇ Export CSV</a>
+            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background: var(--bg-panel, #fff);border:1px solid var(--color-gray-300);border-radius:4px;text-decoration:none;color:var(--color-gray-700);">⬇ Export CSV</a>
         </div>
     </div>
 

@@ -47,12 +47,12 @@ $fmt = function ($v): string {
 .al-show-nav a { color:var(--color-primary); text-decoration:none; font-weight:600; }
 .al-show-nav a:hover { text-decoration:underline; }
 
-.al-meta-card { background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
+.al-meta-card { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
 .al-meta-grid { display:grid; gap:.4rem 1rem; grid-template-columns:140px 1fr; font-size:13px; }
 .al-meta-grid dt { color:var(--color-gray-500); font-weight:500; }
 .al-meta-grid dd { margin:0; word-break:break-word; }
 
-.al-diff-section { background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
+.al-diff-section { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
 .al-diff-section h2 { margin:0; padding:.7rem 1rem; background:#fafafa; font-size:13px; font-weight:700; color:var(--color-gray-700); border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; }
 .al-diff-section .legend span { font-size:10.5px; padding:.1rem .4rem; border-radius:3px; margin-left:.3rem; font-weight:600; }
 .al-diff-section .legend .added    { background:var(--color-success-bg); color:#047857; }

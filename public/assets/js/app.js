@@ -81,3 +81,37 @@ async function dismissNotification(btn) {
     }
     row.remove();
 }
+
+/**
+ * A11y: auto-wire aria-describedby on .form-row inputs that have a
+ * sibling <small> hint or .error message. Without this, screen readers
+ * announce the input label but not the supplementary text. Runs at
+ * DOMContentLoaded; idempotent — safe to call again after dynamic
+ * insertions if needed.
+ */
+function wireFormRowAria() {
+    let counter = 0;
+    document.querySelectorAll('.form-row').forEach((row) => {
+        const input = row.querySelector('input, select, textarea');
+        if (!input) return;
+        const hint  = row.querySelector(':scope > small');
+        const error = row.querySelector(':scope > .error, :scope > .form-error');
+        const ids = [];
+        for (const el of [error, hint]) {  // error first so it reads before hint
+            if (!el) continue;
+            if (!el.id) el.id = 'fra-' + (++counter);
+            ids.push(el.id);
+        }
+        if (ids.length === 0) return;
+        const existing = (input.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+        const merged = Array.from(new Set([...existing, ...ids]));
+        input.setAttribute('aria-describedby', merged.join(' '));
+        if (error) input.setAttribute('aria-invalid', 'true');
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireFormRowAria);
+} else {
+    wireFormRowAria();
+}

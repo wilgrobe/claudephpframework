@@ -2,7 +2,7 @@
 <html><head><meta charset="UTF-8">
 <style>
 body{margin:0;font-family:'Helvetica Neue',Arial,sans-serif;background:#f4f4f5;padding:2rem 1rem}
-.card{background:#fff;max-width:480px;margin:0 auto;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.card{background: var(--bg-panel, #fff);max-width:480px;margin:0 auto;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
 .header{background:var(--color-primary);padding:1.5rem;text-align:center;color:#fff}
 .header h1{margin:0;font-size:1.2rem;font-weight:700}
 .body{padding:2rem;text-align:center}

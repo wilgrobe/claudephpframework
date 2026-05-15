@@ -30,7 +30,7 @@
             </div>
 
             <!-- Branding: logo + tagline -->
-            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background: var(--bg-panel, #fff)">
                 <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Branding</div>
                 <div class="form-group">
                     <label for="footer_logo_text">Logo text</label>
@@ -50,7 +50,7 @@
             </div>
 
             <!-- Menu -->
-            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background: var(--bg-panel, #fff)">
                 <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Navigation menu</div>
                 <div class="form-group">
                     <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:400">
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Legal / attribution -->
-            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background:#fff">
+            <div style="border:1px solid var(--color-gray-200);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;background: var(--bg-panel, #fff)">
                 <div style="font-weight:600;font-size:13px;margin-bottom:.75rem;color:var(--color-gray-700)">Legal &amp; attribution</div>
                 <div class="form-group">
                     <label for="footer_copyright">Copyright</label>

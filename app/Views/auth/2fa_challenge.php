@@ -31,7 +31,7 @@
         font-family: var(--font);
         transition: border-color .15s, box-shadow .15s;
         caret-color: var(--color-primary);
-        outline: none; background: #fff; color: var(--color-gray-900);
+        outline: none; background: var(--bg-panel, #fff); color: var(--color-gray-900);
     }
     .otp-inputs input:focus {
         border-color: var(--color-primary);
@@ -225,5 +225,6 @@ document.getElementById('totp-code').addEventListener('input', function () {
 })();
 <?php endif; ?>
 </script>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>

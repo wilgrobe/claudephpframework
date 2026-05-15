@@ -39,7 +39,7 @@
             <form method="POST" action="/profile/2fa/enable">
                 <?= csrf_field() ?>
                 <input type="hidden" name="method" value="email">
-                <button type="submit" style="width:100%;background:#fff;border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
+                <button type="submit" style="width:100%;background: var(--bg-panel, #fff);border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
                     <div style="font-size:1.5rem;margin-bottom:.5rem">📧</div>
                     <div style="font-weight:600;font-size:14px">Email OTP</div>
                     <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem;line-height:1.4">Receive a one-time code by email each time you sign in.</div>
@@ -50,7 +50,7 @@
             <form method="POST" action="/profile/2fa/enable">
                 <?= csrf_field() ?>
                 <input type="hidden" name="method" value="sms">
-                <button type="submit" style="width:100%;background:#fff;border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s" onmouseover="this.style.borderColor='var(--color-success)'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
+                <button type="submit" style="width:100%;background: var(--bg-panel, #fff);border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s" onmouseover="this.style.borderColor='var(--color-success)'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
                     <div style="font-size:1.5rem;margin-bottom:.5rem">📱</div>
                     <div style="font-weight:600;font-size:14px">SMS OTP</div>
                     <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem;line-height:1.4">Receive a one-time code via text message.</div>
@@ -62,7 +62,7 @@
 
             <!-- Google Authenticator / TOTP -->
             <a href="/profile/2fa/setup?method=totp" style="text-decoration:none">
-                <div style="background:#fff;border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='#7c3aed'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
+                <div style="background: var(--bg-panel, #fff);border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='#7c3aed'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
                     <div style="font-size:1.5rem;margin-bottom:.5rem">🔐</div>
                     <div style="font-weight:600;font-size:14px">Authenticator App (TOTP)</div>
                     <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem;line-height:1.4">Use Google Authenticator, Microsoft Authenticator, or Authy.</div>

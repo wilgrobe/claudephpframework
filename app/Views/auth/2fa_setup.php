@@ -21,9 +21,9 @@
                     If you don't already have one, install one of these:
                 </div>
                 <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
-                    <span style="background:#fff;border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">📱 Google Authenticator</span>
-                    <span style="background:#fff;border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">🪟 Microsoft Authenticator</span>
-                    <span style="background:#fff;border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">🔐 Authy</span>
+                    <span style="background: var(--bg-panel, #fff);border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">📱 Google Authenticator</span>
+                    <span style="background: var(--bg-panel, #fff);border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">🪟 Microsoft Authenticator</span>
+                    <span style="background: var(--bg-panel, #fff);border:1px solid var(--color-gray-200);border-radius:6px;padding:.3rem .65rem;font-size:12.5px;font-weight:500">🔐 Authy</span>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
                          broken CDN would show a visual placeholder. -->
                     <div id="totp-qr"
                          data-uri="<?= e($totpData['provisioning_uri']) ?>"
-                         style="display:inline-block;padding:6px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);border-radius:8px;min-width:200px;min-height:200px"></div>
+                         style="display:inline-block;padding:6px;background: var(--bg-panel, #fff);box-shadow:0 2px 8px rgba(0,0,0,.12);border-radius:8px;min-width:200px;min-height:200px"></div>
                     <noscript>
                         <div style="font-size:12.5px;color:#b91c1c;margin-top:.5rem">
                             QR rendering requires JavaScript. Enable JS, or enter the secret manually below.

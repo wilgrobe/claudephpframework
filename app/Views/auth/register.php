@@ -44,7 +44,7 @@
     padding: .25rem .55rem;
     font-size: 12px;
     border: 1px solid var(--color-gray-300);
-    background: #fff;
+    background: var(--bg-panel, #fff);
     border-radius: 4px;
     cursor: pointer;
     color: var(--color-gray-900);
@@ -278,5 +278,6 @@
 })();
 </script>
 
+<script src="/assets/js/app.js"></script>
 </body>
 </html>

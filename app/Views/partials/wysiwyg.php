@@ -52,7 +52,7 @@ $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
     </label>
 </div>
 
-<div id="<?= $__wy_wrap ?>" style="border:1px solid var(--color-gray-300);border-radius:6px;background:#fff;overflow:hidden">
+<div id="<?= $__wy_wrap ?>" style="border:1px solid var(--color-gray-300);border-radius:6px;background: var(--bg-panel, #fff);overflow:hidden">
     <div id="<?= $__wy_bar ?>" style="display:flex;flex-wrap:wrap;gap:.2rem;padding:.35rem .5rem;border-bottom:1px solid var(--color-gray-200);background:var(--color-gray-50)">
         <button type="button" class="wy-btn" data-cmd="bold"      title="Bold (Ctrl+B)"><b>B</b></button>
         <button type="button" class="wy-btn" data-cmd="italic"    title="Italic (Ctrl+I)"><i>I</i></button>
@@ -86,7 +86,7 @@ $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
    If this partial is included more than once the block duplicates, but
    the rules are identical so there's no conflict. */
 .wy-btn {
-    background: #fff; border: 1px solid var(--color-gray-200); border-radius: 4px;
+    background: var(--bg-panel, #fff); border: 1px solid var(--color-gray-200); border-radius: 4px;
     padding: .25rem .55rem; font-size: 12.5px; cursor: pointer;
     color: var(--color-gray-700); line-height: 1.2; min-width: 28px;
 }

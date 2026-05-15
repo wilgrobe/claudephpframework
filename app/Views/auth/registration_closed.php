@@ -17,5 +17,6 @@
     </div>
     <a href="/login" class="btn btn-primary">← Back to sign in</a>
 </div>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>

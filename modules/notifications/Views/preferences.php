@@ -10,7 +10,7 @@ include BASE_PATH . '/app/Views/layout/header.php';
 .np-h1     { font-size:1.4rem; font-weight:700; margin:0 0 .25rem; }
 .np-help   { color:var(--color-gray-500); font-size:13px; line-height:1.5; margin:0 0 1.5rem; }
 
-.np-group  { background:#fff; border:1px solid var(--color-gray-200); border-radius:8px; margin-bottom:1rem; overflow:hidden; }
+.np-group  { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; margin-bottom:1rem; overflow:hidden; }
 .np-group h2 { margin:0; padding:.7rem 1rem; background:#fafafa; border-bottom:1px solid var(--color-gray-200); font-size:13px; font-weight:700; color:var(--color-gray-700); text-transform:uppercase; letter-spacing:.05em; }
 
 .np-row    { display:grid; grid-template-columns: 1fr 90px 90px; gap:.85rem; padding:.7rem 1rem; align-items:center; border-bottom:1px solid var(--color-gray-100); font-size:13.5px; }
@@ -27,7 +27,7 @@ include BASE_PATH . '/app/Views/layout/header.php';
 .np-actions { display:flex; gap:.5rem; justify-content:flex-end; margin-top:1rem; }
 .btn-primary { background:var(--color-primary); color:#fff; border:1px solid var(--color-primary); padding:.5rem 1rem; border-radius:6px; font-weight:600; cursor:pointer; }
 .btn-primary:hover { background:var(--color-primary-dark); }
-.btn-secondary { background:#fff; color:var(--color-gray-700); border:1px solid var(--color-gray-300); padding:.5rem 1rem; border-radius:6px; font-weight:600; text-decoration:none; }
+.btn-secondary { background: var(--bg-panel, #fff); color:var(--color-gray-700); border:1px solid var(--color-gray-300); padding:.5rem 1rem; border-radius:6px; font-weight:600; text-decoration:none; }
 </style>
 
 <div class="np-shell">
