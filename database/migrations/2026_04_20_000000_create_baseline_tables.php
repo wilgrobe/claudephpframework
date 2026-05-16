@@ -60,6 +60,8 @@ CREATE TABLE users (
     last_name                 VARCHAR(100),
     avatar                    VARCHAR(500),
     bio                       TEXT,
+    theme_preference          ENUM('system','light','dark') NOT NULL DEFAULT 'system'
+                              COMMENT 'Per-user UI theme override; system=match browser',
     is_active                 TINYINT(1) DEFAULT 1,
     is_superadmin             TINYINT(1) DEFAULT 0,
     two_factor_enabled        TINYINT(1) DEFAULT 0,
@@ -561,6 +563,128 @@ CREATE TABLE login_attempts (
 );
 
 -- ============================================================
+-- QUEUE — async job inbox
+-- ============================================================
+CREATE TABLE jobs (
+    id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    queue        VARCHAR(64)  NOT NULL DEFAULT 'default',
+    `class`      VARCHAR(191) NOT NULL,
+    payload      JSON NOT NULL,
+    `status`     ENUM('pending','running','completed','failed') NOT NULL DEFAULT 'pending',
+    attempts     INT UNSIGNED NOT NULL DEFAULT 0,
+    max_attempts INT UNSIGNED NOT NULL DEFAULT 3,
+    available_at DATETIME NOT NULL,
+    reserved_at  DATETIME NULL,
+    reserved_by  VARCHAR(64) NULL,
+    last_error   TEXT,
+    completed_at DATETIME NULL,
+    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ready       (`status`, queue, available_at),
+    INDEX idx_reserved_by (reserved_by)
+);
+
+-- ============================================================
+-- SCHEDULED TASKS — cron-like recurring jobs
+-- ============================================================
+CREATE TABLE scheduled_tasks (
+    id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`              VARCHAR(120) NOT NULL UNIQUE,
+    `class`             VARCHAR(191) NOT NULL,
+    payload             JSON NOT NULL,
+    schedule_expression VARCHAR(120) NOT NULL,
+    queue               VARCHAR(64)  NOT NULL DEFAULT 'default',
+    enabled             TINYINT(1)   NOT NULL DEFAULT 1,
+    next_run_at         DATETIME NULL,
+    last_run_at         DATETIME NULL,
+    last_run_status     VARCHAR(32) NULL,
+    created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_due (enabled, next_run_at)
+);
+
+-- ============================================================
+-- PAYMENTS — unified gateway audit log (Stripe / PayPal / etc.)
+-- ============================================================
+CREATE TABLE payments (
+    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    gateway       VARCHAR(32) NOT NULL,
+    operation     VARCHAR(32) NOT NULL,
+    user_id       INT UNSIGNED NULL,
+    gateway_id    VARCHAR(191) NOT NULL DEFAULT '',
+    customer_ref  VARCHAR(191) NULL,
+    source_ref    VARCHAR(191) NULL,
+    amount_cents  INT UNSIGNED NULL,
+    currency      VARCHAR(8) NULL,
+    ok            TINYINT(1) NOT NULL DEFAULT 0,
+    `status`      VARCHAR(64) NOT NULL DEFAULT '',
+    `error`       VARCHAR(500) NULL,
+    request_json  JSON NULL,
+    response_json JSON NULL,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_gateway_id (gateway, gateway_id),
+    INDEX idx_user       (user_id, created_at),
+    INDEX idx_failed     (ok, created_at)
+);
+
+-- ============================================================
+-- MODULE STATUS — per-install module enable/disable + state
+-- ============================================================
+CREATE TABLE module_status (
+    module_name  VARCHAR(64) NOT NULL PRIMARY KEY,
+    state        ENUM('active','disabled_dependency','disabled_admin','disabled_unlicensed')
+                 NOT NULL DEFAULT 'active',
+    missing_deps JSON NULL,
+    notice       TEXT NULL,
+    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_module_state (state)
+);
+
+-- ============================================================
+-- SYSTEM LAYOUTS — page-composer surfaces that aren't `pages` rows
+-- (dashboard, /account/data, /search, etc). Same shape as page_layouts
+-- but keyed by a string name.
+-- ============================================================
+CREATE TABLE system_layouts (
+    `name`        VARCHAR(64) NOT NULL PRIMARY KEY,
+    friendly_name VARCHAR(255) NULL,
+    module        VARCHAR(64)  NULL,
+    category      VARCHAR(64)  NULL,
+    `description` TEXT NULL,
+    chromed_url   VARCHAR(255) NULL,
+    `rows`        TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    cols          TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    col_widths    JSON NOT NULL,
+    row_heights   JSON NOT NULL,
+    gap_pct       TINYINT UNSIGNED NOT NULL DEFAULT 3,
+    max_width_px  SMALLINT UNSIGNED NOT NULL DEFAULT 1280,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_system_layouts_module_category (module, category),
+    CONSTRAINT chk_system_layouts_rows  CHECK (`rows` BETWEEN 1 AND 6),
+    CONSTRAINT chk_system_layouts_cols  CHECK (cols BETWEEN 1 AND 4),
+    CONSTRAINT chk_system_layouts_gap   CHECK (gap_pct BETWEEN 0 AND 20),
+    CONSTRAINT chk_system_layouts_width CHECK (max_width_px BETWEEN 320 AND 4096)
+);
+
+CREATE TABLE system_block_placements (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    system_name    VARCHAR(64) NOT NULL,
+    row_index      TINYINT UNSIGNED NOT NULL,
+    col_index      TINYINT UNSIGNED NOT NULL,
+    sort_order     SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    block_key      VARCHAR(128) NOT NULL,
+    placement_type ENUM('block','content_slot') NOT NULL DEFAULT 'block',
+    slot_name      VARCHAR(64) NULL,
+    settings       JSON NULL,
+    visible_to     ENUM('any','auth','guest') NOT NULL DEFAULT 'any',
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_system_block_placements_layout
+        FOREIGN KEY (system_name) REFERENCES system_layouts(`name`) ON DELETE CASCADE,
+    INDEX idx_sysblock_cell (system_name, row_index, col_index, sort_order),
+    INDEX idx_sysblock_key  (block_key)
+);
+
+-- ============================================================
 -- SEED DATA
 -- ============================================================
 
@@ -744,6 +868,43 @@ INSERT INTO faqs (category_id, question, answer, sort_order, is_public) VALUES
 (2, 'How do I reset my password?',      'Click "Forgot Password" on the login page to receive a reset link.',                    1, 1),
 (2, 'Can I belong to multiple groups?', 'Yes! You can be a member of multiple groups and have different roles in each.',        2, 1);
 
+-- ============================================================
+-- SCHEDULED TASKS — recurring cron-driven jobs
+-- ============================================================
+INSERT INTO scheduled_tasks (`name`, `class`, payload, schedule_expression, queue, enabled) VALUES
+('retry-messages',
+ 'Core\\\\Queue\\\\Jobs\\\\CallCommandJob',
+ '{"args": ["20"], "command": "retry-messages"}',
+ '* * * * *',  'default', 1),
+('search-reindex-nightly',
+ 'Core\\\\Queue\\\\Jobs\\\\CallCommandJob',
+ '{"args": ["all"], "command": "search:reindex"}',
+ '0 3 * * *',  'default', 1);
+
+-- ============================================================
+-- SYSTEM LAYOUTS — built-in admin surfaces (dashboard + /search)
+-- ============================================================
+INSERT INTO system_layouts (`name`, friendly_name, module, category, `description`, chromed_url, `rows`, cols, col_widths, row_heights, gap_pct, max_width_px) VALUES
+('dashboard_stats', NULL, NULL, NULL, NULL, NULL, 1, 4, '[24, 24, 24, 24]', '[100]', 1, 1280),
+('dashboard_main',  NULL, NULL, NULL, NULL, NULL, 1, 2, '[70, 27]',         '[100]', 3, 1280),
+('search',
+ 'Site search results', 'core', 'Public',
+ 'Wraps /search. Drop a "Can''t find it? Contact us" CTA below the results, or a featured/popular-searches sidebar.',
+ '/search', 1, 1, '[99]', '[99]', 0, 1024);
+
+INSERT INTO system_block_placements (system_name, row_index, col_index, sort_order, block_key, placement_type, slot_name, visible_to) VALUES
+-- dashboard_stats — 4 metric tiles across the top
+('dashboard_stats', 0, 0, 0, 'groups.my_groups_count',     'block', NULL, 'auth'),
+('dashboard_stats', 0, 1, 0, 'notifications.unread_count', 'block', NULL, 'auth'),
+('dashboard_stats', 0, 2, 0, 'groups.total_users_count',   'block', NULL, 'auth'),
+('dashboard_stats', 0, 3, 0, 'groups.total_count',         'block', NULL, 'auth'),
+-- dashboard_main — main feed + right sidebar
+('dashboard_main',  0, 0, 0, 'content.dashboard_feed',     'block', NULL, 'auth'),
+('dashboard_main',  0, 1, 0, 'groups.my_groups_list',      'block', NULL, 'auth'),
+('dashboard_main',  0, 1, 1, 'notifications.recent_list',  'block', NULL, 'auth'),
+-- search — content slot
+('search',          0, 0, 0, '__slot__',                   'content_slot', 'primary', 'any');
+
 SET FOREIGN_KEY_CHECKS = 1;
 SQL;
     }
@@ -752,6 +913,16 @@ SQL;
     {
         return <<<'SQL'
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- System layout composer surfaces
+DROP TABLE IF EXISTS system_block_placements;
+DROP TABLE IF EXISTS system_layouts;
+
+-- Misc framework tables added after the original baseline
+DROP TABLE IF EXISTS module_status;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS scheduled_tasks;
+DROP TABLE IF EXISTS jobs;
 
 DROP TABLE IF EXISTS login_attempts;
 DROP TABLE IF EXISTS email_verifications;
