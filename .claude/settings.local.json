@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vendor/bin/phpunit --filter CorePremium)",
+      "Bash(vendor/bin/phpunit --testsuite Unit)",
+      "Bash(php *)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__new_page",
+      "Bash(git *)",
+      "Bash(vendor/bin/phpunit -c C:/www/claudephpframeworkpremium/phpunit.xml)",
+      "Bash(powershell *)",
+      "Bash(Get-ChildItem *)"
+    ],
+    "additionalDirectories": [
+      "C:\\www\\claudephpframeworkpremium"
+    ]
+  }
+}

@@ -300,7 +300,32 @@ class Router
             if (!method_exists($controller, $method)) {
                 return new Response("Method [$method] not found on [$className].", 500);
             }
-            return $controller->$method($request);
+            // Phase 43.195a C1 — dispatch with route-parameter spread.
+            // Pre-fix: `$controller->$method($request)` passed only the
+            // Request. Controllers declaring extra typed positional
+            // params (e.g. `show(Request $r, string $token)`) TypeError'd
+            // on every call — production-broken endpoints across
+            // unsubscribe / GDPR / policies / retention / loginanomaly
+            // / auditchain. Phase 43.193a fixed 5 GDPR admin methods
+            // by normalising signatures to `(Request): Response`, but
+            // the codebase has ~16 other methods still on the
+            // multi-arg shape.
+            //
+            // Fix: reflect on the method, and when it declares more
+            // than one parameter, build the arg list from Request +
+            // positional route params via $request->param(N). Methods
+            // already using the (Request) + param(0)-inside convention
+            // keep working (one-arg path unchanged).
+            $reflMethod = new \ReflectionMethod($controller, $method);
+            $paramCount = $reflMethod->getNumberOfParameters();
+            if ($paramCount <= 1) {
+                return $controller->$method($request);
+            }
+            $args = [$request];
+            for ($i = 1; $i < $paramCount; $i++) {
+                $args[] = $request->param($i - 1);
+            }
+            return $reflMethod->invokeArgs($controller, $args);
         }
 
         return new Response('Invalid route handler.', 500);

@@ -125,6 +125,15 @@ class Auth
         $allowed = ['google','microsoft','apple','facebook','linkedin'];
         if (!in_array($provider, $allowed, true)) return false;
 
+        // Phase 43.195a C2 — refuse empty providerId. Belt-and-suspenders
+        // beside AuthController::oauthCallback's empty-code check: if any
+        // upstream path lets an empty $providerId through (cancelled
+        // OAuth, custom provider returning blank id, etc.), it would
+        // match a `user_oauth` row whose `provider_id` is the empty
+        // string (which exists in some legacy installs from pre-43.195a
+        // buggy callbacks) and log THAT user in. Reject early.
+        if ($providerId === '') return false;
+
         // Try existing OAuth link
         $oauth = $this->db->fetchOne(
             "SELECT user_id FROM user_oauth WHERE provider = ? AND provider_id = ?",

@@ -204,6 +204,55 @@ class DatabaseQueue
         return $affected === 1;
     }
 
+    /**
+     * Phase 43.195a C3 — release jobs stuck at status='running' because
+     * the worker crashed mid-handle() (PHP fatal / OOM / SIGKILL / deploy
+     * mid-batch). Without this they'd sit invisible to reserve() forever
+     * (which filters on status='pending').
+     *
+     * attempts is NOT reset — the worker that picked the job already
+     * bumped it on reserve(); releasing preserves that count so a
+     * flapping job still hits max_attempts and lands at 'failed' for
+     * triage rather than retrying forever.
+     *
+     * Originally shipped in claudephpbuilder Phase 43.100 as the helper
+     * behind `php artisan queue:recover-stale`; mirroring upstream to
+     * the framework so future merges can't drop it.
+     *
+     * NB: framework status enum has 'pending'/'running'/'completed'/
+     * 'failed' — no 'reserved'. reserve() sets status='running'.
+     *
+     * Returns released row count.
+     */
+    public function recoverStaleReserved(int $minutesIdle = 10): int
+    {
+        $minutesIdle = max(1, $minutesIdle);
+        return $this->db->update('jobs',
+            [
+                'status'       => 'pending',
+                'reserved_by'  => null,
+                'reserved_at'  => null,
+                'available_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ],
+            "status = 'running' AND reserved_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)",
+            [$minutesIdle]
+        );
+    }
+
+    /**
+     * Phase 43.195a C3 — preview-only counterpart to recoverStaleReserved.
+     * Same WHERE as the recovery so the count matches what gets released.
+     */
+    public function countStaleReserved(int $minutesIdle = 10): int
+    {
+        $minutesIdle = max(1, $minutesIdle);
+        $row = $this->db->fetchOne(
+            "SELECT COUNT(*) AS n FROM jobs WHERE status = 'running' AND reserved_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)",
+            [$minutesIdle]
+        );
+        return (int) ($row['n'] ?? 0);
+    }
+
     // ── internals ─────────────────────────────────────────────────────────
 
     /** Errors can be huge (stack traces); cap at TEXT-safe size. */
