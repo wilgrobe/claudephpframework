@@ -171,13 +171,21 @@ class Auth
                 }
                 $user = $this->db->fetchOne("SELECT * FROM users WHERE id = ?", [$userId]);
             }
-            // Link provider — encrypt the access token at rest
-            $this->db->insert('user_oauth', [
-                'user_id'     => $user['id'],
-                'provider'    => $provider,
-                'provider_id' => $providerId,
-                'token'       => $providerData['token'] ? $this->encryptToken($providerData['token']) : null,
-            ]);
+            // Phase 43.195b H5 — UPSERT instead of bare INSERT to refresh
+            // the encrypted token on every login and avoid a UNIQUE-
+            // constraint fatal on re-link. See builder Auth.php's
+            // matching comment for the full rationale.
+            $encryptedToken = $providerData['token']
+                ? $this->encryptToken($providerData['token'])
+                : null;
+            $stmt = $this->db->pdo()->prepare("
+                INSERT INTO user_oauth (user_id, provider, provider_id, token, created_at)
+                VALUES (?, ?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE
+                    user_id = VALUES(user_id),
+                    token   = VALUES(token)
+            ");
+            $stmt->execute([$user['id'], $provider, $providerId, $encryptedToken]);
         }
 
         if (!$user || !$user['is_active']) return false;

@@ -177,6 +177,23 @@ class MailService implements MailDriver
     {
         $driver = strtolower($this->config['driver'] ?? 'smtp');
 
+        // Phase 43.195b H2 — strip CRLF from every header-bound field at
+        // the bottleneck. Pre-fix only Subject + from_name were sanitised
+        // (Phase 43.187c S4), but $to (sourced from users.email — could
+        // contain `\r\nBcc: attacker@evil` if a future signup flow lands
+        // a non-normalised email) was NOT sanitised, and from_address
+        // was missed too. The bare mail() path is the only driver
+        // currently affected — PHPMailer's SMTP path escapes internally
+        // — but defense-in-depth + future-proofing wins by sanitising
+        // here before any driver branch.
+        //
+        // `_address` fields strip newlines entirely (a legit email
+        // never contains them). `_name` fields + Subject collapse
+        // newlines to spaces (a name CAN legitimately wrap in rare
+        // formats; full-strip would be too aggressive).
+        $to      = preg_replace('/[\r\n]+/', '',  $to);
+        $subject = preg_replace('/[\r\n]+/', ' ', $subject);
+
         if ($driver === 'smtp') {
             return $this->sendSmtp($to, $subject, $html, $text);
         }
@@ -184,8 +201,10 @@ class MailService implements MailDriver
             return $this->sendToLog($to, $subject, $html, $text);
         }
 
+        $fromName    = preg_replace('/[\r\n]+/', ' ', (string) $this->config['from_name']);
+        $fromAddress = preg_replace('/[\r\n]+/', '',  (string) $this->config['from_address']);
         $headers  = "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\n";
-        $headers .= "From: " . $this->config['from_name'] . " <" . $this->config['from_address'] . ">\r\n";
+        $headers .= "From: $fromName <$fromAddress>\r\n";
         return mail($to, $subject, $html, $headers);
     }
 
