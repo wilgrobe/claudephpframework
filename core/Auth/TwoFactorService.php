@@ -123,13 +123,20 @@ class TwoFactorService
 
     /**
      * Disable 2FA entirely for a user.
+     *
+     * Phase 43.194c V1 — CAS guard on `two_factor_enabled=1`. Pre-fix
+     * the UPDATE always fired, even if 2FA was already disabled.
+     * Together with the regenerate CAS above this makes both mutating
+     * paths optimistic-lock against the same column — concurrent
+     * disable+regenerate, or duplicate disable submissions from a
+     * double-clicked form, no longer race against each other.
      */
     public function disable(int $userId): void
     {
         $this->db->query(
             "UPDATE users SET two_factor_enabled = 0, two_factor_method = NULL,
              two_factor_secret = NULL, two_factor_confirmed = 0,
-             two_factor_recovery_codes = NULL WHERE id = ?",
+             two_factor_recovery_codes = NULL WHERE id = ? AND two_factor_enabled = 1",
             [$userId]
         );
         // Clean up any pending challenges
@@ -286,15 +293,32 @@ class TwoFactorService
 
     /**
      * Regenerate recovery codes for a user (e.g. after they've used too many).
-     * Returns the new plain-text codes.
+     * Returns the new plain-text codes — or an empty array if 2FA has been
+     * disabled concurrently (race-loser path).
+     *
+     * Phase 43.194c R1 — CAS guard on `two_factor_enabled=1`. Pre-fix the
+     * UPDATE blindly wrote new codes regardless of the current 2FA state.
+     * Race: user clicks "Regenerate codes" + "Disable 2FA" in two tabs
+     * within the same second. Disable lands first → row now has
+     * `two_factor_enabled=0` + nulled secret + nulled recovery codes.
+     * Regenerate lands second → row gets a fresh recovery-codes JSON
+     * blob attached to a row whose 2FA is OFF. Codes are unreachable
+     * (verify path checks enabled flag first) but they ARE persisted —
+     * leaks: a database dump shows recovery codes for a "disabled" user.
+     * Pair with the disable() CAS below: only one of {disable,regenerate}
+     * mutates the row per race.
      */
     public function regenerateRecoveryCodes(int $userId): array
     {
         $codes = $this->generateRecoveryCodes();
-        $this->db->query(
-            "UPDATE users SET two_factor_recovery_codes = ? WHERE id = ?",
-            [json_encode($codes['hashed']), $userId]
+        $stmt = $this->db->pdo()->prepare(
+            "UPDATE users SET two_factor_recovery_codes = ? WHERE id = ? AND two_factor_enabled = 1"
         );
+        $stmt->execute([json_encode($codes['hashed']), $userId]);
+        if ($stmt->rowCount() === 0) {
+            // 2FA was disabled concurrently OR user_id doesn't exist.
+            return [];
+        }
         return $codes['plain'];
     }
 
