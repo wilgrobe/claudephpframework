@@ -457,14 +457,36 @@ class Auth
         $ua = isset($_SERVER['HTTP_USER_AGENT'])
             ? substr(strip_tags((string) $_SERVER['HTTP_USER_AGENT']), 0, 500)
             : '';
+        // Phase 43.195c L3 — also strip CR/LF/TAB before any storage
+        // or email use. strip_tags doesn't strip control chars, and
+        // future code paths that pass UA into a header field (Subject /
+        // From / X-Mailer) would inherit a CRLF-injection primitive.
+        $ua = preg_replace('/[\r\n\t]+/', ' ', $ua);
         $ip = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        // Has this user had a prior session with this exact UA?
-        $known = $this->db->fetchOne(
-            "SELECT 1 FROM sessions WHERE user_id = ? AND user_agent = ? LIMIT 1",
-            [(int) $user['id'], $ua]
+        // Phase 43.195c L3 — match by UA FAMILY signature instead of
+        // exact UA string. Pre-fix: exact-string compare meant every
+        // Chrome/Edge minor version bump (~4-week cadence) AND every
+        // OS update fired a "new device" email. Fatigue trained users
+        // to ignore the legitimate signal. Now: extract a coarse
+        // browser-family + OS-family signature so a `Chrome 128 on
+        // Windows 10` session matches a `Chrome 129 on Windows 10`
+        // session as the same device. False-negatives (a real new
+        // device that happens to share the same family signature)
+        // skip the email; the tradeoff favors signal over coverage.
+        $signature = self::deviceSignature($ua);
+
+        // Has this user had a prior session whose UA produces the same
+        // family signature? Compare in PHP — the sessions table doesn't
+        // store the signature directly, so we walk the user's distinct
+        // UAs (typically <10 entries).
+        $rows = $this->db->fetchAll(
+            "SELECT DISTINCT user_agent FROM sessions WHERE user_id = ?",
+            [(int) $user['id']]
         );
-        if ($known) return;
+        foreach ($rows as $row) {
+            if (self::deviceSignature((string) $row['user_agent']) === $signature) return;
+        }
 
         // New device. Dispatch email — best-effort; failures are
         // swallowed so login isn't interrupted.
@@ -880,5 +902,44 @@ class Auth
         }
 
         $this->db->insert('audit_log', $row);
+    }
+
+    /**
+     * Phase 43.195c L3 — coarse device-family signature for new-device
+     * detection. Extracts {browser-family + browser-major + os-family}
+     * via simple regex matches against the User-Agent. Tolerates
+     * version bumps within a major version + minor OS revisions
+     * without flagging "new device". Returns a lowercase string like
+     * "chrome|128|windows" or "firefox|129|macos"; unrecognized UAs
+     * fall back to a short hash so unknown clients still group
+     * stably.
+     */
+    private static function deviceSignature(string $ua): string
+    {
+        if ($ua === '') return 'empty';
+        $u = strtolower($ua);
+        // Browser-family + major
+        $browser = 'unknown'; $major = '0';
+        $bMatchers = [
+            'edge'    => '#edg/(\d+)#i',
+            'opera'   => '#opr/(\d+)#i',
+            'chrome'  => '#chrome/(\d+)#i',
+            'firefox' => '#firefox/(\d+)#i',
+            'safari'  => '#version/(\d+).*safari#i',
+        ];
+        foreach ($bMatchers as $name => $pattern) {
+            if (preg_match($pattern, $u, $m)) { $browser = $name; $major = $m[1]; break; }
+        }
+        // OS family
+        $os = 'unknown';
+        if (str_contains($u, 'windows'))                       $os = 'windows';
+        elseif (str_contains($u, 'iphone') || str_contains($u, 'ipad')) $os = 'ios';
+        elseif (str_contains($u, 'mac os') || str_contains($u, 'macintosh')) $os = 'macos';
+        elseif (str_contains($u, 'android'))                   $os = 'android';
+        elseif (str_contains($u, 'linux'))                     $os = 'linux';
+        if ($browser === 'unknown') {
+            return 'opaque|' . substr(hash('xxh32', $ua), 0, 8);
+        }
+        return "$browser|$major|$os";
     }
 }

@@ -173,6 +173,21 @@ class FileUploadService
             $ext = $allowedMimes[$mimeType];
         }
 
+        // Phase 43.195c M4 — refuse empty extension. The ThemeEditor
+        // font-upload caller registers `'application/octet-stream' => ''`
+        // (empty ext) in its allowedMimes map; combined with a request
+        // whose `name` has no dot, $clientExt resolves to '' and the
+        // ambiguous-mime branch above happily uses it — producing a
+        // saved filename ending in a trailing dot (`<hex>.`). Some
+        // server configs (IIS, certain Apache handler chains) treat
+        // trailing-dot files inconsistently; explicit refusal is the
+        // right shape. Callers should declare a real extension per
+        // allowed MIME or extend the ambiguousMimes-with-empty-ext
+        // policy deliberately.
+        if ($ext === '') {
+            throw new \RuntimeException('Upload refused: file extension required.');
+        }
+
         $filename = bin2hex(random_bytes(16)) . '.' . $ext;
         $relKey   = trim($subfolder, '/') . '/' . $filename;
 
