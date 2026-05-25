@@ -113,9 +113,21 @@ class Worker
             if (class_exists($class) && is_subclass_of($class, Job::class)) {
                 try {
                     $this->jobInstanceCache[$class] = new $class();
-                } catch (\Throwable) {
-                    // Constructor refused a no-arg call; fall through to default.
+                } catch (\Throwable $e) {
+                    // Phase 43.198b H1 — surface the silent fallback.
+                    // Pre-fix: a job whose constructor required args
+                    // would silently fall through to the static 60/300/
+                    // 900s defaults — operators tuning a custom
+                    // backoff() (e.g. 2^attempt × 60 for an external
+                    // API with rate limits) saw their config quietly
+                    // ignored. Also fires when the job class was
+                    // removed from disk between push + run. error_log
+                    // surfaces both cases so operators can spot the
+                    // misconfiguration.
+                    error_log("[Worker] cannot instantiate $class for backoff(); using static defaults: " . $e->getMessage());
                 }
+            } elseif (!class_exists($class)) {
+                error_log("[Worker] backoff lookup: class $class does not exist (deployed-then-deleted?); using static defaults");
             }
         }
 

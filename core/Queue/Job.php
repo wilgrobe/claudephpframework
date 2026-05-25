@@ -64,7 +64,33 @@ abstract class Job
         $ref = new \ReflectionObject($this);
         $out = [];
         foreach ($ref->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-            $out[$p->getName()] = $p->getValue($this);
+            $value = $p->getValue($this);
+            // Phase 43.198b H2 — refuse non-JSON-encodable property
+            // values at push time. Pre-fix toPayload returned anything;
+            // json_encode at storage time returned false + emitted a
+            // warning that vanished with display_errors=0 in prod, so
+            // `payload` became the string "false" → next runOne()
+            // decoded to `false` → threw "Job payload is not a JSON
+            // object" → retry-forever loop until max_attempts. Now:
+            // throw at push time so the operator sees the bug
+            // immediately. Resource handles + closures are the obvious
+            // unsupported types; uncaught Throwables on json_encode
+            // surface separately at the call site.
+            if (is_resource($value)) {
+                throw new \RuntimeException(
+                    'Job ' . static::class . ' property $' . $p->getName() .
+                    ' is a resource (not serializable). Hold a stable identifier ' .
+                    '(file path, key, id) instead — the worker reopens the resource.'
+                );
+            }
+            if ($value instanceof \Closure) {
+                throw new \RuntimeException(
+                    'Job ' . static::class . ' property $' . $p->getName() .
+                    ' is a Closure (not serializable). Pass the closure target as ' .
+                    'a string class+method instead.'
+                );
+            }
+            $out[$p->getName()] = $value;
         }
         return $out;
     }

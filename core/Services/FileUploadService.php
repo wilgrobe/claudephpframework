@@ -326,6 +326,33 @@ class FileUploadService
      */
     private function reEncodeImage(string $src, string $dest, string $mimeType): void
     {
+        // Phase 43.198b H3 — pixel-flood DoS guard BEFORE imagecreatefrom*
+        // allocates the full RGBA buffer. Pre-fix the dimension check
+        // fired AFTER decode — a 20000×20000 PNG that's 200 KB on disk
+        // (highly compressed solid color) expanded to 1.6 GB in memory
+        // before the throw fired. PHP `memory_limit` tripped OOM +
+        // killed the request (and potentially the worker).
+        //
+        // Now: getimagesize() reads only the header (cheap — no pixel
+        // alloc); we reject before decode if either dimension exceeds
+        // 8000 OR the estimated decoded size exceeds 200 MB (4 bytes/
+        // pixel × W × H × 1.25 overhead).
+        $info = @getimagesize($src);
+        if ($info === false) {
+            throw new \RuntimeException('File could not be decoded as a valid image (header unreadable).');
+        }
+        [$preW, $preH] = $info;
+        $preW = (int) $preW; $preH = (int) $preH;
+        if ($preW > 8000 || $preH > 8000) {
+            throw new \RuntimeException("Image dimensions ({$preW}×{$preH}) exceed the maximum allowed (8000×8000).");
+        }
+        $estimatedBytes = (int) ($preW * $preH * 4 * 1.25);
+        if ($estimatedBytes > 200 * 1024 * 1024) {
+            throw new \RuntimeException(
+                "Image too large to safely decode (estimated " . (int) round($estimatedBytes / 1024 / 1024) . " MB)."
+            );
+        }
+
         $image = match ($mimeType) {
             'image/jpeg' => @imagecreatefromjpeg($src),
             'image/png'  => @imagecreatefrompng($src),
