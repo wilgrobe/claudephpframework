@@ -84,6 +84,70 @@ class Response
     }
 
     /**
+     * Phase 43.197a C4 — central download response builder with
+     * Content-Disposition CRLF sanitization. Pre-fix every download
+     * site hand-rolled `str_replace('"', '', $name)` which strips
+     * quotes but NOT CRLF. A filename like
+     * `evil.zip"\r\nSet-Cookie: x=y\r\n\r\n<html>...` injects
+     * arbitrary headers + response body via Response::send's raw
+     * `header("$name: $value")` loop. PHP's bare `header()` rejects
+     * CRLF since 5.1.2 but the audit identified 7+ sites where
+     * user-controlled filenames reach Response constructor without
+     * intermediate sanitization.
+     *
+     * This helper:
+     *   1. Strips control chars (0x00-0x1f, 0x7f) + raw quotes +
+     *      backslashes + slashes from the filename (preserves the
+     *      base name; never lets traversal sneak through).
+     *   2. Trims + caps at 200 chars (filesystems vary; 200 is safe).
+     *   3. Falls back to $fallback when result is empty.
+     *   4. Emits both `filename="..."` (legacy ASCII fallback) and
+     *      `filename*=UTF-8''<percent-encoded>` (RFC 6266) so unicode
+     *      filenames survive the round-trip.
+     *
+     * @param string $body         The response body (may be large; caller
+     *                             handles streaming via direct echo+exit
+     *                             when memory matters per Phase 43.192b).
+     * @param string $filename     User-controlled candidate filename
+     * @param string $contentType  MIME type; defaults to application/octet-stream
+     * @param string $fallback     Used when filename sanitizes to empty
+     */
+    public static function file(string $body, string $filename, string $contentType = 'application/octet-stream', string $fallback = 'download'): self
+    {
+        $safe = self::safeFilename($filename, $fallback);
+        $asciiSafe = preg_replace('/[^A-Za-z0-9._-]/', '_', $safe) ?? $fallback;
+        if ($asciiSafe === '') $asciiSafe = $fallback;
+        $cd = sprintf(
+            'attachment; filename="%s"; filename*=UTF-8\'\'%s',
+            $asciiSafe,
+            rawurlencode($safe),
+        );
+        return new self($body, 200, [
+            'Content-Type'        => $contentType,
+            'Content-Disposition' => $cd,
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control'       => 'no-store',
+        ]);
+    }
+
+    /**
+     * Phase 43.197a C4 — defensive filename sanitization. Strips
+     * everything that could either inject headers (CRLF, control
+     * chars) or escape the basename (slashes, backslashes, quotes).
+     * Preserves user-friendly chars (letters, digits, dot, dash,
+     * underscore, space, common unicode).
+     */
+    public static function safeFilename(string $name, string $fallback = 'download'): string
+    {
+        // Strip control chars (incl CR/LF/TAB) + raw double-quote +
+        // backslash + forward-slash. Keep unicode + spaces.
+        $clean = preg_replace('/[\x00-\x1f\x7f"\\\\\/]/', '', $name) ?? '';
+        $clean = trim($clean);
+        if ($clean === '' || $clean === '.' || $clean === '..') return $fallback;
+        return mb_substr($clean, 0, 200);
+    }
+
+    /**
      * Like view() but allows caching for public, non-sensitive pages.
      */
     public static function publicView(string $view, array $data = [], int $maxAge = 300): self
