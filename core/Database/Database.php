@@ -200,9 +200,72 @@ class Database
 
     // ── Transactions ──────────────────────────────────────────────────────────
 
-    public function beginTransaction(): void  { $this->pdo->beginTransaction(); }
-    public function commit(): void            { $this->pdo->commit(); }
-    public function rollback(): void          { $this->pdo->rollBack(); }
+    /**
+     * Phase 43.196b H3 — savepoint-based nested-transaction support.
+     *
+     * Pre-fix: `beginTransaction()` blindly called `PDO::beginTransaction()`.
+     * If already inside a transaction, PDO throws (or, on some drivers,
+     * silently no-ops). Real failure mode: a block-render callback (or
+     * other inner code path) inside a wrapping transaction calls
+     * `beginTransaction()` itself. PDO throws → caller's catch flagged
+     * the inner work as failed → outer code might roll back assuming
+     * the inner tried/failed, OR the inner caller catches its own
+     * throw and assumes "no tx open" → inner's rollback unwinds the
+     * OUTER tx silently (the actual Phase 16 bug shape that prompted
+     * the per-ledger inTransaction guards).
+     *
+     * Now: at depth 0, real BEGIN. At depth N>0, SAVEPOINT sp_N.
+     * Commit pops the savepoint (RELEASE) or commits the outer real
+     * tx. Rollback rolls back to the savepoint (or full rollback on
+     * outer). Caller code uses the same beginTransaction/commit/
+     * rollback API regardless of nesting.
+     */
+    private int $txDepth = 0;
+
+    public function beginTransaction(): void
+    {
+        if ($this->txDepth === 0) {
+            $this->pdo->beginTransaction();
+        } else {
+            // SAVEPOINT identifier must be a bare word — `sp_N` is safe.
+            $this->pdo->exec('SAVEPOINT sp_' . $this->txDepth);
+        }
+        $this->txDepth++;
+    }
+
+    public function commit(): void
+    {
+        if ($this->txDepth <= 0) {
+            throw new \RuntimeException('Database::commit called outside a transaction');
+        }
+        $this->txDepth--;
+        if ($this->txDepth === 0) {
+            $this->pdo->commit();
+        } else {
+            $this->pdo->exec('RELEASE SAVEPOINT sp_' . $this->txDepth);
+        }
+    }
+
+    public function rollback(): void
+    {
+        if ($this->txDepth <= 0) {
+            // Tolerate over-rollback by no-op'ing — matches PDO's
+            // historical behaviour and avoids cascading the failure.
+            return;
+        }
+        $this->txDepth--;
+        if ($this->txDepth === 0) {
+            $this->pdo->rollBack();
+        } else {
+            $this->pdo->exec('ROLLBACK TO SAVEPOINT sp_' . $this->txDepth);
+        }
+    }
+
+    /** True if any transaction (real or savepoint-nested) is open. */
+    public function inTransaction(): bool
+    {
+        return $this->txDepth > 0 || $this->pdo->inTransaction();
+    }
 
     public function transaction(callable $fn): mixed
     {

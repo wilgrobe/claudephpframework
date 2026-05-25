@@ -109,6 +109,24 @@ class Container implements ContainerInterface
         return isset($this->bindings[$id]) || isset($this->instances[$id]) || class_exists($id);
     }
 
+    /**
+     * Phase 43.196b H1 — strict counterpart to PSR-11 has().
+     * Returns true ONLY when the id has been explicitly registered
+     * (bound or instantiated). class_exists is NOT consulted.
+     *
+     * Use this for defensive "is this service registered?" checks
+     * where a downstream get() would fail to autowire on partial
+     * installs (premium module absent, framework-only fork, etc.).
+     * has() is wrong for those guards because class_exists is true
+     * for every concrete class on the autoloader — the guard passes
+     * but get() then throws. bound() short-circuits cleanly so the
+     * caller's null-fallback branch fires.
+     */
+    public function bound(string $id): bool
+    {
+        return isset($this->bindings[$id]) || isset($this->instances[$id]);
+    }
+
     /** PSR-11 get(): resolve $id, autowiring as needed. */
     public function get(string $id): mixed
     {

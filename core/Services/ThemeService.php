@@ -359,7 +359,17 @@ class ThemeService
      */
     private function cssEscape(string $v): string
     {
-        return str_replace(['<', '>', '}'], '', $v);
+        // Phase 43.196b H2 — defense-in-depth. Pre-fix this stripped
+        // ONLY `<>}` and relied on per-token validators rejecting `;`
+        // and `{`. If any validator has a gap (or a new token type is
+        // added without rejecting those chars), the cssEscape layer
+        // was a no-op. Now also strip `;` (statement separator —
+        // breaks out of any declaration) + CR/LF/TAB + `/*` (comment
+        // opener can escape into adjacent rules). Keep `"`/`(`/`)`
+        // since `url(...)` + quoted strings are legit in many token
+        // types. The cleaner long-term shape is one allowlist
+        // validator per token; this is the cheap belt-and-suspenders.
+        return str_replace(['<', '>', '}', '{', ';', "\r", "\n", "\t", '/*'], '', $v);
     }
 
     public function validate(string $value, string $type): bool
