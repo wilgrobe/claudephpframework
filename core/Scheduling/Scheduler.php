@@ -37,7 +37,7 @@ class Scheduler
         $now ??= new \DateTimeImmutable();
 
         $due = $this->db->fetchAll("
-            SELECT id, name, class, payload, schedule_expression, queue
+            SELECT id, name, class, payload, schedule_expression, queue, next_run_at
               FROM scheduled_tasks
              WHERE enabled = 1
                AND (next_run_at IS NULL OR next_run_at <= ?)
@@ -46,10 +46,41 @@ class Scheduler
 
         $enqueuedJobIds = [];
         $names          = [];
+        $skipped        = 0;
 
         foreach ($due as $task) {
             $payload = json_decode((string) $task['payload'], true);
             if (!is_array($payload)) $payload = [];
+
+            // Phase 43.200a C1 — CAS guard against parallel ticks.
+            // Pre-fix two concurrent `schedule:run` invocations (cron
+            // + manual operator run, HA worker overlap, slow tick that
+            // overlaps the next cron) both SELECTed the same due rows
+            // + both enqueued the job. Every scheduled task — system
+            // health probes, retry-messages, search reindex,
+            // marketing:dispatch-scheduled itself — was vulnerable.
+            // Phase 43.189a fixed the marketing sub-scheduler; this
+            // closes the core framework scheduler same shape.
+            //
+            // Pre-CAS the next_run_at advance BEFORE pushing the job.
+            // If the CAS rowCount=0, another tick already claimed this
+            // row — skip without enqueueing. Status string for the
+            // post-work UPDATE later in this iteration becomes a no-op
+            // since the row was already updated by the CAS.
+            $nextRunAt = $this->computeNextRunAt((string) $task['schedule_expression'], $now);
+            $cas = $this->db->update('scheduled_tasks',
+                [
+                    'last_run_at'     => $now->format('Y-m-d H:i:s'),
+                    'next_run_at'     => $nextRunAt?->format('Y-m-d H:i:s'),
+                    'last_run_status' => 'claiming',
+                ],
+                'id = ? AND (next_run_at <=> ?)',
+                [(int) $task['id'], $task['next_run_at']]
+            );
+            if ($cas === 0) {
+                $skipped++;
+                continue;
+            }
 
             try {
                 $jobId = $this->queue->pushRaw(
@@ -64,16 +95,10 @@ class Scheduler
                 $status = 'error: ' . $e->getMessage();
             }
 
-            // Whether or not the enqueue succeeded, we advance next_run_at —
-            // otherwise a broken rule would fire on every tick forever.
-            $nextRunAt = $this->computeNextRunAt((string) $task['schedule_expression'], $now);
-
+            // Update last_run_status with the actual outcome. next_run_at
+            // was already advanced atomically by the CAS above.
             $this->db->update('scheduled_tasks',
-                [
-                    'last_run_at'     => $now->format('Y-m-d H:i:s'),
-                    'last_run_status' => substr($status, 0, 32),
-                    'next_run_at'     => $nextRunAt?->format('Y-m-d H:i:s'),
-                ],
+                ['last_run_status' => substr($status, 0, 32)],
                 'id = ?', [(int) $task['id']]
             );
         }

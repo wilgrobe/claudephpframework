@@ -227,16 +227,29 @@ class DatabaseQueue
     public function recoverStaleReserved(int $minutesIdle = 10): int
     {
         $minutesIdle = max(1, $minutesIdle);
-        return $this->db->update('jobs',
-            [
-                'status'       => 'pending',
-                'reserved_by'  => null,
-                'reserved_at'  => null,
-                'available_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            ],
-            "status = 'running' AND reserved_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)",
-            [$minutesIdle]
+        // Phase 43.200b H4 — decrement attempts when releasing a stale-
+        // reserved row. Pre-fix the worker that picked up the row
+        // already bumped attempts on reserve() but never actually ran
+        // handle() (killed by SIGTERM / OOM / deploy mid-batch). After
+        // 10 min the recovery sweep released the row but its attempts
+        // counter was now at 1 of 3 without ever executing once. Two
+        // unlucky deploys in 30 min could burn the whole retry budget
+        // on a job that never ran. Now: subtract 1 from attempts
+        // (clamped at 0) since the prior bump was a phantom.
+        // Skip the decrement if rows.attempts is already 0 — defensive
+        // for any future code path that doesn't bump on reserve.
+        $stmt = $this->db->pdo()->prepare(
+            "UPDATE jobs
+                SET status       = 'pending',
+                    reserved_by  = NULL,
+                    reserved_at  = NULL,
+                    available_at = NOW(),
+                    attempts     = GREATEST(0, attempts - 1)
+              WHERE status = 'running'
+                AND reserved_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)"
         );
+        $stmt->execute([$minutesIdle]);
+        return $stmt->rowCount();
     }
 
     /**

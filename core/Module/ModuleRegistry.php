@@ -294,7 +294,20 @@ class ModuleRegistry
             }
         }
 
-        $provider->register($this->container);
+        // Phase 43.200b H2 — try/catch around register(). Pre-fix one
+        // module's register() throwing (FK to missing service, malformed
+        // singleton binding, syntax error in autoloaded class) aborted
+        // the entire discover() loop — every subsequent module silently
+        // didn't register, AND the request 500'd with a stack trace.
+        // After Phase 43.64 expanded the tenant superset to 52
+        // providers, the blast radius widened. Now: log + skip the
+        // bad module; downstream modules continue. resolveDependencies()
+        // already uses this pattern for persistAndNotify().
+        try {
+            $provider->register($this->container);
+        } catch (\Throwable $e) {
+            error_log("[ModuleRegistry] '$name' register() threw: " . $e->getMessage() . ' — module skipped, other modules continue');
+        }
     }
 
     /**
