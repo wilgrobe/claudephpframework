@@ -594,11 +594,18 @@ class Auth
 
     private function loadUser(int $userId): void
     {
+        // Phase 43.199a C3 — filter on is_active + deleted_at. Pre-fix
+        // attempt() required is_active=1 to LOGIN, but session-boot's
+        // loadUser had NO such filter — a deactivated/suspended user
+        // kept full access to every session that started before
+        // deactivation until their PHP session expired. The downstream
+        // logout() fall-through tears the session down cleanly when
+        // the row vanishes; deactivated user behaves the same.
         $this->user = $this->db->fetchOne(
             "SELECT id, username, email, first_name, last_name, avatar, bio,
                     is_active, is_superadmin,
                     email_verified_at, phone, last_login_at, created_at
-             FROM users WHERE id = ?",
+             FROM users WHERE id = ? AND is_active = 1",
             [$userId]
         );
         if (!$this->user) { $this->logout(); return; }

@@ -231,6 +231,22 @@ class Markdown
     {
         $u = trim($url);
         if ($u === '') return 'about:blank';
+        // Phase 43.199c M1 — explicit colon-before-slash reject. Pre-fix
+        // the `[a-z0-9._-]+(/|$)` branch accepted `data.foo/bar;...`
+        // (data.foo matches the class, then /). Tighter check below
+        // rejects anything containing a colon before the first slash —
+        // that's the canonical scheme indicator. Note: legitimate
+        // relative paths never have `:` before `/`. Fragment + mailto
+        // + http(s) handled by their own explicit branches above.
+        $firstColon = strpos($u, ':');
+        $firstSlash = strpos($u, '/');
+        if ($firstColon !== false && ($firstSlash === false || $firstColon < $firstSlash)) {
+            // Scheme-shaped — must match one of the explicit allowlist
+            // branches OR it gets rejected.
+            if (!preg_match('#^(https?://|mailto:)#i', $u)) {
+                return 'about:blank';
+            }
+        }
         if (preg_match('#^(https?://|mailto:|/|\#|[a-z0-9._-]+(/|$))#i', $u)) {
             return $u;
         }
