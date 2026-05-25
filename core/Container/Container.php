@@ -138,27 +138,47 @@ class Container implements ContainerInterface
      * (keyed by parameter name). Used by make('Foo', ['id' => 42]) to pass
      * runtime-only args without binding them.
      */
+    /** @var array<string, bool> Currently-resolving abstracts (cycle detection). */
+    private array $resolving = [];
+
     public function make(string $abstract, array $parameters = []): mixed
     {
         if (isset($this->instances[$abstract])) {
             return $this->instances[$abstract];
         }
 
-        $concrete = $this->bindings[$abstract] ?? $abstract;
-
-        if ($concrete instanceof Closure) {
-            $object = $concrete($this, $parameters);
-        } elseif (is_string($concrete)) {
-            $object = $this->build($concrete, $parameters);
-        } else {
-            throw new ContainerException("Unresolvable binding for [$abstract]");
+        // Phase 43.198a C1 — cycle detection. Pre-fix two services
+        // type-hinting each other (A's ctor needs B, B's ctor needs A)
+        // recursed via resolveDependency → make(B) → build(B) →
+        // make(A) → ... until PHP hit its call-stack limit + segfaulted
+        // the worker. Same for a singleton() factory that calls
+        // $c->get(self) inside its body. Now: track in-flight resolves
+        // + throw a clear ContainerException naming the cycle chain.
+        if (isset($this->resolving[$abstract])) {
+            $chain = implode(' → ', array_keys($this->resolving)) . " → $abstract";
+            throw new ContainerException("Circular dependency detected resolving [$abstract] — chain: $chain");
         }
+        $this->resolving[$abstract] = true;
 
-        if (($this->shared[$abstract] ?? false) === true) {
-            $this->instances[$abstract] = $object;
+        try {
+            $concrete = $this->bindings[$abstract] ?? $abstract;
+
+            if ($concrete instanceof Closure) {
+                $object = $concrete($this, $parameters);
+            } elseif (is_string($concrete)) {
+                $object = $this->build($concrete, $parameters);
+            } else {
+                throw new ContainerException("Unresolvable binding for [$abstract]");
+            }
+
+            if (($this->shared[$abstract] ?? false) === true) {
+                $this->instances[$abstract] = $object;
+            }
+
+            return $object;
+        } finally {
+            unset($this->resolving[$abstract]);
         }
-
-        return $object;
     }
 
     /** Instantiate $concrete, autowiring constructor dependencies. */
