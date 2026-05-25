@@ -191,16 +191,38 @@ class NotificationService
      */
     public function setPreferences(int $userId, array $prefs): void
     {
+        // Phase 43.197c M3 — collapse the 30+ individual UPSERTs into a
+        // single multi-row INSERT inside one transaction. Pre-fix each
+        // (type, channel) pair issued its own round trip with no
+        // transaction; PHP timeout mid-loop → half-saved prefs;
+        // two-tab concurrent saves → coherent-per-row but inconsistent
+        // across types. Now: atomic + one round trip.
+        $values = [];
+        $params = [];
         foreach (self::TYPES as $type => $meta) {
             foreach ($meta['channels'] as $ch) {
                 $on = !empty($prefs[$type][$ch]);
-                $this->db->query(
-                    "INSERT INTO notification_preferences (user_id, type, channel, enabled)
-                     VALUES (?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
-                    [$userId, $type, $ch, $on ? 1 : 0]
-                );
+                $values[] = '(?, ?, ?, ?)';
+                $params[] = $userId;
+                $params[] = $type;
+                $params[] = $ch;
+                $params[] = $on ? 1 : 0;
             }
+        }
+        if (empty($values)) return;
+        $managedTx = !$this->db->inTransaction();
+        if ($managedTx) $this->db->beginTransaction();
+        try {
+            $this->db->query(
+                "INSERT INTO notification_preferences (user_id, type, channel, enabled)
+                 VALUES " . implode(', ', $values) . "
+                 ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
+                $params
+            );
+            if ($managedTx) $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($managedTx && $this->db->inTransaction()) $this->db->rollback();
+            throw $e;
         }
     }
 

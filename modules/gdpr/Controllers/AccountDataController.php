@@ -186,6 +186,38 @@ class AccountDataController
             }
         }
 
+        // Phase 43.197c M4 — actually send the cancel-link email the
+        // success-flash promises. Pre-fix the flash said "Check your
+        // email for a cancel link" but no MailService::send was ever
+        // called — the deletion_token sat in the DB unreachable by the
+        // user. Account-takeover attacker could issue erase, rightful
+        // owner got no warning, 30-day purge fires.
+        try {
+            $email = (string) ($user['email'] ?? '');
+            if ($email !== '') {
+                $appUrl   = rtrim((string) ($_ENV['APP_URL'] ?? ''), '/');
+                $cancelUrl = $appUrl . '/account/data/erase/cancel/' . $token;
+                $appName   = (string) (config('app.name') ?? 'your account');
+                $subject   = "Your $appName account is scheduled for deletion";
+                $eUrl      = htmlspecialchars($cancelUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $eAppName  = htmlspecialchars($appName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $html = "<p>We received a request to delete your $eAppName account.</p>"
+                      . "<p>Your account will be permanently deleted in $graceDays days.</p>"
+                      . "<p>If you DIDN'T request this, click the link below to cancel:</p>"
+                      . "<p><a href=\"$eUrl\">Cancel account deletion →</a></p>"
+                      . "<p><strong>If you don't recognize this request, your account may be compromised.</strong> "
+                      . "Cancel deletion + change your password immediately.</p>";
+                $text = "We received a request to delete your $appName account.\n"
+                      . "Your account will be permanently deleted in $graceDays days.\n\n"
+                      . "If you DIDN'T request this, cancel by visiting:\n  $cancelUrl\n\n"
+                      . "If you don't recognize this request, your account may be compromised. "
+                      . "Cancel deletion + change your password immediately.";
+                (new \Core\Services\MailService())->send($email, $subject, $html, $text);
+            }
+        } catch (\Throwable $e) {
+            error_log('[AccountDataController::eraseRequest] cancel-link email failed: ' . $e->getMessage());
+        }
+
         return Response::redirect('/account/data')
             ->withFlash('success', "Your account is scheduled for deletion in {$graceDays} days. Check your email for a cancel link.");
     }

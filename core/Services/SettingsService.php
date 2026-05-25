@@ -24,6 +24,43 @@ class SettingsService
     }
 
     /**
+     * Phase 43.197c M2 — invalidate the warm-cache for a specific bucket
+     * (and optionally a specific key). Long-running CLI loops (cron sweeps
+     * like `marketing:dispatch-scheduled`, GDPR purger, ZipBuilder 90s+
+     * builds) need this so they pick up admin-set changes mid-script.
+     * Pre-fix the `$warmed` flag was sticky-per-request — an instance
+     * cached at the start of a 90s build never saw a setting written
+     * by an admin during the build window.
+     *
+     * Without args, drops everything. With args, drops a single bucket
+     * or a single key within a bucket.
+     *
+     * Note: this is a single-process invalidator. Cross-process / cross-
+     * server invalidation requires a versioned schema-stamp (planned in
+     * a separate phase if/when settings get hotter write contention).
+     */
+    public function invalidate(?string $scope = null, ?string $scopeKey = null, ?string $key = null): void
+    {
+        if ($scope === null) {
+            $this->cache = [];
+            $this->warmed = [];
+            return;
+        }
+        $bucketKey = "$scope:$scopeKey";
+        if ($key === null) {
+            unset($this->warmed[$bucketKey]);
+            $prefix = "$bucketKey:";
+            foreach (array_keys($this->cache) as $ck) {
+                if (str_starts_with($ck, $prefix)) unset($this->cache[$ck]);
+            }
+            return;
+        }
+        unset($this->cache["$bucketKey:$key"]);
+        // Bucket warmed-flag stays — caller invalidated ONE key, others
+        // should keep their cached values.
+    }
+
+    /**
      * Bulk-load every row in a (scope, scopeKey) bucket into the per-key
      * cache with one SELECT. Subsequent get() calls in the same request
      * hit the cache; misses are authoritative (no second query).
@@ -78,7 +115,29 @@ class SettingsService
 
     public function set(string $key, mixed $value, string $scope = 'site', ?string $scopeKey = null, string $type = 'string'): void
     {
-        $encoded = is_array($value) ? json_encode($value) : (string) $value;
+        // Phase 43.197c L2 — strict JSON type coercion. Pre-fix
+        // `is_array($value) ? json_encode($value) : (string) $value`
+        // silently corrupted type=json: caller passing a string with
+        // type='json' persisted verbatim, then get() called
+        // json_decode() returning null. Now: when type='json', always
+        // json_encode regardless of input shape. Arrays + objects
+        // round-trip naturally; scalars like int/string get wrapped
+        // (`5` → `"5"` → json_decode → 5; `"hi"` → `"\"hi\""` → "hi").
+        if ($type === 'json') {
+            $encoded = json_encode($value);
+            if ($encoded === false) {
+                throw new \InvalidArgumentException(
+                    "SettingsService::set type='json' value couldn't be encoded: " . json_last_error_msg()
+                );
+            }
+        } elseif (is_array($value)) {
+            // Legacy back-compat: array passed with non-json type still gets
+            // json_encode'd. Callers should use type='json' explicitly going
+            // forward but we don't break existing behaviour.
+            $encoded = json_encode($value);
+        } else {
+            $encoded = (string) $value;
+        }
         // WHERE column order matches the (scope, scope_key, key) UNIQUE
         // index so the optimiser uses the leftmost prefix without
         // index-condition rewriting.
