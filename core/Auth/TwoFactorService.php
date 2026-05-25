@@ -365,9 +365,21 @@ class TwoFactorService
 
         if (!$challenge) return false;
 
-        // Increment attempts and check limit
-        $attempts = (int) $challenge['attempts'] + 1;
-        $this->db->update('two_factor_challenges', ['attempts' => $attempts], 'id = ?', [$challengeId]);
+        // Phase 43.202c M5 — atomic increment instead of read-then-write.
+        // Pre-fix two parallel wrong-code submissions both SELECTed at
+        // attempts=N, both wrote attempts=N+1 → counter ends at N+1
+        // instead of N+2. With enough concurrent wrong attempts the
+        // lockout threshold could be bypassed by a small margin. Now:
+        // `attempts = attempts + 1` runs server-side atomically; re-
+        // read for the threshold check.
+        $this->db->query(
+            "UPDATE two_factor_challenges SET attempts = attempts + 1 WHERE id = ? AND used_at IS NULL",
+            [$challengeId]
+        );
+        $attempts = (int) $this->db->fetchColumn(
+            "SELECT attempts FROM two_factor_challenges WHERE id = ?",
+            [$challengeId]
+        );
 
         if ($attempts > self::MAX_ATTEMPTS) return false;
 

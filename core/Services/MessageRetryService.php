@@ -111,11 +111,19 @@ class MessageRetryService
         if (!$row) return false;
         if ($row['status'] === 'sent') return true;
 
-        // Clear next_attempt_at so it's not skipped if someone mass-runs the queue later.
-        $this->db->update('message_log',
+        // Phase 43.202b H4 — CAS-guarded claim. Pre-fix the admin
+        // "Retry" path did an unconditional UPDATE then unconditionally
+        // called resend(). Admin double-clicking Retry, OR admin Retry
+        // racing a `run()` cron tick that just picked the row from its
+        // eligible-set query, both fired resend() → subscriber
+        // received email twice. Same fix as 43.201a C2 applied to
+        // run() — admin path was missed. Now: CAS-guard the claim
+        // against the row's current status; return false on race.
+        $claimed = $this->db->update('message_log',
             ['status' => 'queued', 'next_attempt_at' => null],
-            'id = ?', [$logId]
+            'id = ? AND status = ?', [$logId, $row['status']]
         );
+        if ($claimed === 0) return false;
 
         return match ($row['channel']) {
             'email'   => $this->mail->resend($logId),

@@ -86,6 +86,41 @@ class Database
      */
     public static function resetInstance(): void
     {
+        // Phase 43.202b H7 — refuse mid-transaction reset. Pre-fix
+        // discarding the singleton while txDepth > 0 left the OLD
+        // PDO holding an uncommitted transaction with no API to find
+        // / commit / rollback it; MySQL would eventually rollback on
+        // connection close, but during the window data state was
+        // inconsistent + `inTransaction()` on the NEW instance lied
+        // to downstream code. Now: throw a clear LogicException so
+        // operators see the issue rather than running into mystery
+        // partial-commit bugs.
+        if (self::$instance !== null) {
+            try {
+                if (self::$instance->inTransaction()) {
+                    throw new \LogicException(
+                        "Database::resetInstance refused — singleton has an in-flight transaction. " .
+                        "Caller must commit() / rollBack() first, or use unsafeResetInstance() if abandoning the tx is intentional."
+                    );
+                }
+            } catch (\LogicException $e) {
+                throw $e;
+            } catch (\Throwable) {
+                // inTransaction() check failed on a half-dead PDO; safe to discard.
+            }
+        }
+        self::$instance = null;
+    }
+
+    /**
+     * Phase 43.202b H7 — escape hatch for the rare case where
+     * abandoning the in-flight transaction is the deliberate choice
+     * (test harnesses, recovery after detected corruption). MySQL
+     * will rollback on connection close anyway; this just bypasses
+     * the safety check + the LogicException.
+     */
+    public static function unsafeResetInstance(): void
+    {
         self::$instance = null;
     }
 

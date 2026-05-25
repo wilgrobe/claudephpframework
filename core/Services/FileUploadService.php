@@ -109,8 +109,21 @@ class FileUploadService
         // storage drivers — GD always works on a local temp path.
         if (!extension_loaded('gd')) {
             // No GD: move the raw upload. This is a soft fallback; logs warn.
+            // Phase 43.202c M4 — pass ['visibility' => 'public'] like the
+            // GD-success path below; without it the S3 driver writes the
+            // file at default (private) → 403 to public readers. Also
+            // explicit fopen-then-fclose since Flysystem driver-by-driver
+            // ownership of passed streams varies.
             error_log('[FileUploadService] GD extension not available; image not re-encoded. Install ext-gd for full security.');
-            $this->fs->writeStream($relKey, fopen($tmpPath, 'rb'));
+            $stream = fopen($tmpPath, 'rb');
+            if ($stream === false) {
+                throw new \RuntimeException('Failed to open raw upload for streaming.');
+            }
+            try {
+                $this->fs->writeStream($relKey, $stream, ['visibility' => 'public']);
+            } finally {
+                if (is_resource($stream)) fclose($stream);
+            }
             return $relKey;
         }
 

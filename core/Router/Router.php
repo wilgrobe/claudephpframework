@@ -260,6 +260,19 @@ class Router
 
     private function runMiddleware(array $middleware, Request $request, callable $final): Response
     {
+        // Phase 43.202b H6 — class_exists guard. Pre-fix a typo in
+        // routes.php (e.g. App\Middlewere\Authmiddleware) threw a raw
+        // fatal "Class not found" from inside the foreach closure;
+        // the framework's error handler couldn't render a clean 500
+        // page from the obscured closure context, AND the fatal
+        // aborted the request AFTER any security headers had already
+        // been sent. Now: validate up front so the error handler can
+        // render a proper 500.
+        foreach ($middleware as $mw) {
+            if (!is_string($mw) || !class_exists($mw)) {
+                throw new \RuntimeException("Middleware class not found: " . (is_string($mw) ? $mw : gettype($mw)));
+            }
+        }
         $handler = $final;
         foreach (array_reverse($middleware) as $mw) {
             $next    = $handler;
