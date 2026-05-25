@@ -223,12 +223,13 @@ class CookieConsentService
             return;
         }
 
-        setcookie(self::COOKIE_NAME, $value, [
+        // Phase 43.197b H3 — central Cookie helper. Pre-fix used
+        // raw $_SERVER['HTTPS'] which fails behind TLS proxies; Cookie::set
+        // honors TRUST_PROXY + X-Forwarded-Proto. httponly stays false
+        // here — analytics-gating JS legitimately reads this cookie.
+        \Core\Http\Cookie::set(self::COOKIE_NAME, $value, [
             'expires'  => time() + self::COOKIE_TTL,
-            'path'     => '/',
-            'secure'   => !empty($_SERVER['HTTPS']),
             'httponly' => false,  // JS reads this to gate analytics scripts
-            'samesite' => 'Lax',
         ]);
     }
 

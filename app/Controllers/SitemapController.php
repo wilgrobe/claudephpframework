@@ -119,9 +119,17 @@ class SitemapController
 
         $xml .= '</urlset>';
 
+        // Phase 43.197b H5 — drop max-age from 3600 → 600 so a retracted
+        // page (status='draft' OR is_public=0) propagates to CDN/Cloudflare
+        // caches in 10 minutes rather than an hour. Add Vary: Cookie so
+        // misconfigured proxies that ignore cache-private hints can't
+        // accidentally serve a sitemap variant cross-user (defense-in-
+        // depth — this surface IS public so cookie shouldn't change
+        // output, but Vary makes that contract explicit to caches).
         return new Response($xml, 200, [
             'Content-Type'  => 'application/xml; charset=UTF-8',
-            'Cache-Control' => 'public, max-age=3600',
+            'Cache-Control' => 'public, max-age=600',
+            'Vary'          => 'Cookie',
         ]);
     }
 }

@@ -59,10 +59,73 @@ class Response
         return $this;
     }
 
+    /**
+     * Redirect to a local OR external URL. Pre-43.197b this was the only
+     * redirect builder, leading to caller-side open-redirect bugs at
+     * sites that passed user-controlled `$back` / Referer values
+     * through. Phase 43.197b H4 keeps this method as a back-compat
+     * surface — callers should now prefer the explicit-intent
+     * `Response::redirectLocal` (path-only) or `Response::redirectExternal`
+     * (allowlisted full URL) so the intent is auditable.
+     *
+     * Defense-in-depth: strip CR/LF from the URL before it reaches the
+     * Location header. PHP's header() rejects CRLF since 5.1.2 but
+     * stripping here means callers passing user-tainted strings get a
+     * cleaned URL rather than a runtime error.
+     */
     public static function redirect(string $url, int $code = 302): self
     {
+        $url = preg_replace('/[\r\n]+/', '', $url) ?? '';
         $r = new self('', $code, ['Location' => $url]);
         return $r;
+    }
+
+    /**
+     * Phase 43.197b H4 — explicit local-path redirect. Refuses URLs
+     * that aren't a single forward-slash-prefixed path (no scheme, no
+     * host, no protocol-relative `//evil.com`). When the URL doesn't
+     * meet that bar, falls back to `/`. Use this for any redirect
+     * where the destination should be inside this app.
+     */
+    public static function redirectLocal(string $localPath, int $code = 302): self
+    {
+        $localPath = preg_replace('/[\r\n]+/', '', $localPath) ?? '';
+        // Must start with exactly one `/` and not `//` (protocol-relative).
+        if ($localPath === '' || $localPath[0] !== '/' || (isset($localPath[1]) && $localPath[1] === '/')) {
+            $localPath = '/';
+        }
+        return new self('', $code, ['Location' => $localPath]);
+    }
+
+    /**
+     * Phase 43.197b H4 — explicit external redirect. Caller declares
+     * intent to leave the app. Validates the URL against an allowlist
+     * derived from APP_URL host + the optional REDIRECT_ALLOWLIST_HOSTS
+     * env (comma-separated). Off-list URLs fall back to `/` with
+     * error_log so the operator notices.
+     */
+    public static function redirectExternal(string $url, int $code = 302): self
+    {
+        $url = preg_replace('/[\r\n]+/', '', $url) ?? '';
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!is_string($host) || $host === '') {
+            error_log('[Response::redirectExternal] rejected (no host): ' . $url);
+            return new self('', $code, ['Location' => '/']);
+        }
+        $allowed = [];
+        $appUrl = (string) ($_ENV['APP_URL'] ?? getenv('APP_URL') ?? '');
+        $appHost = parse_url($appUrl, PHP_URL_HOST);
+        if (is_string($appHost) && $appHost !== '') $allowed[] = strtolower($appHost);
+        $extra = (string) ($_ENV['REDIRECT_ALLOWLIST_HOSTS'] ?? getenv('REDIRECT_ALLOWLIST_HOSTS') ?? '');
+        foreach (explode(',', $extra) as $h) {
+            $h = strtolower(trim($h));
+            if ($h !== '') $allowed[] = $h;
+        }
+        if (!in_array(strtolower($host), $allowed, true)) {
+            error_log('[Response::redirectExternal] off-allowlist host: ' . $host);
+            return new self('', $code, ['Location' => '/']);
+        }
+        return new self('', $code, ['Location' => $url]);
     }
 
     public static function view(string $view, array $data = []): self
