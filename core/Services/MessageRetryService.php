@@ -65,12 +65,22 @@ class MessageRetryService
             $id = (int)$row['id'];
             $ids[] = $id;
 
-            // Mark as queued while in-flight so a concurrent run doesn't pick
-            // the same row. Write is cheap; failure path will overwrite.
-            $this->db->update('message_log',
+            // Phase 43.201a C2 — only resend when the CAS actually won.
+            // Pre-fix the UPDATE was issued but its rowCount was ignored;
+            // a parallel cron tick + opportunistic mid-request drain would
+            // both SELECT the same row, both attempt the CAS, and both
+            // call resend() even though only one CAS actually flipped
+            // status='failed' to 'queued'. Result: subscriber received
+            // the email twice (and the message_log row was finalised by
+            // whichever resend completed last).
+            $claimed = $this->db->update('message_log',
                 ['status' => 'queued'],
                 'id = ? AND status = ?', [$id, 'failed']
             );
+            if ($claimed === 0) {
+                // Another runner already claimed this row this tick.
+                continue;
+            }
 
             $success = match ($row['channel']) {
                 'email'   => $this->mail->resend($id),

@@ -1061,17 +1061,34 @@ class AuthController
             'ignore_errors' => true,
         ]]);
         $result = @file_get_contents($userUrls[$provider] ?? '', false, $ctx);
-        if ($result === false) return ['id' => '', 'email' => '', 'first_name' => '', 'last_name' => '', 'avatar' => null, 'token' => $accessToken];
+        if ($result === false) return ['id' => '', 'email' => '', 'first_name' => '', 'last_name' => '', 'avatar' => null, 'token' => $accessToken, 'email_verified' => false];
         $data   = json_decode($result, true) ?? [];
+
+        // Phase 43.201b H2 — surface email_verified per provider.
+        // - Google + Microsoft OIDC userinfo returns `email_verified`
+        //   as a bool. Honor it.
+        // - Apple is added on parity with Google/Microsoft (their JWT
+        //   id_token carries `email_verified`; if/when this codebase
+        //   adds Apple, it should populate the same field).
+        // - Facebook + LinkedIn do NOT publish a verified flag; treat
+        //   the email as unverified by default. Users linking those
+        //   providers go through the "no match → register new user"
+        //   path; existing-account-linking via shared email is
+        //   refused by Auth::attemptOAuth's H2 fix.
+        $verifiedProviders = ['google', 'microsoft'];
+        $emailVerified = in_array($provider, $verifiedProviders, true)
+            ? (bool) ($data['email_verified'] ?? false)
+            : false;
 
         // Normalize to common format
         return [
-            'id'         => $data['sub'] ?? $data['id'] ?? '',
-            'email'      => $data['email'] ?? '',
-            'first_name' => $data['given_name'] ?? $data['first_name'] ?? $data['localizedFirstName'] ?? '',
-            'last_name'  => $data['family_name'] ?? $data['last_name'] ?? $data['localizedLastName'] ?? '',
-            'avatar'     => $data['picture'] ?? null,
-            'token'      => $accessToken,
+            'id'             => $data['sub'] ?? $data['id'] ?? '',
+            'email'          => $data['email'] ?? '',
+            'first_name'     => $data['given_name'] ?? $data['first_name'] ?? $data['localizedFirstName'] ?? '',
+            'last_name'      => $data['family_name'] ?? $data['last_name'] ?? $data['localizedLastName'] ?? '',
+            'avatar'         => $data['picture'] ?? null,
+            'token'          => $accessToken,
+            'email_verified' => $emailVerified,
         ];
     }
 }

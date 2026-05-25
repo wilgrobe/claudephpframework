@@ -146,9 +146,22 @@ class Auth
                 [$oauth['user_id']]
             );
         } else {
-            // Check by email first
+            // Phase 43.201b H2 — only honor provider-supplied email for
+            // account-linking when the provider explicitly claims it
+            // verified the email. Pre-fix the code silently linked the
+            // new OAuth identity to an existing local user whenever the
+            // emails matched — which, for a provider that doesn't
+            // verify emails (custom OIDC providers, certain legacy
+            // Facebook flows, future allowlist additions), let an
+            // attacker register `victim@example.com` upstream + take
+            // over the victim's local account. Google/Microsoft/Apple
+            // verify by default; opting in via `email_verified=true`
+            // in $providerData makes the link safe.
+            $emailVerified = !empty($providerData['email_verified']);
+
+            // Check by email first — only when verified
             $user = null;
-            if (!empty($providerData['email'])) {
+            if ($emailVerified && !empty($providerData['email'])) {
                 $user = $this->db->fetchOne(
                     "SELECT * FROM users WHERE email = ?",
                     [$providerData['email']]
@@ -162,7 +175,7 @@ class Auth
                     'last_name'  => $providerData['last_name']  ?? null,
                     'avatar'     => $providerData['avatar']     ?? null,
                     'is_active'  => 1,
-                    'email_verified_at' => date('Y-m-d H:i:s'),
+                    'email_verified_at' => $emailVerified ? date('Y-m-d H:i:s') : null,
                 ]);
                 // Assign default viewer role
                 $viewerRole = $this->db->fetchOne("SELECT id FROM roles WHERE slug = 'viewer'");

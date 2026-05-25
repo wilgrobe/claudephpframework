@@ -138,23 +138,40 @@ class SettingsService
         } else {
             $encoded = (string) $value;
         }
-        // WHERE column order matches the (scope, scope_key, key) UNIQUE
-        // index so the optimiser uses the leftmost prefix without
-        // index-condition rewriting.
-        $existing = $this->db->fetchOne(
-            "SELECT id FROM settings WHERE scope = ? AND scope_key <=> ? AND `key` = ?",
-            [$scope, $scopeKey, $key]
-        );
-        if ($existing) {
-            $this->db->update('settings', ['value' => $encoded, 'type' => $type], 'id = ?', [$existing['id']]);
-        } else {
-            $this->db->insert('settings', [
-                'scope'     => $scope,
-                'scope_key' => $scopeKey,
-                'key'       => $key,
-                'value'     => $encoded,
-                'type'      => $type,
-            ]);
+        // Phase 43.201b H1 — SELECT-then-write race wrapped in a
+        // transaction with FOR UPDATE. Pre-fix two concurrent writes
+        // of the same (scope, scope_key, key) tuple both SELECTed and
+        // saw no existing row → both attempted INSERT → second hit
+        // the UNIQUE index and threw a PDOException out of the
+        // request. Same shape Phase 43.197a C3 closed for
+        // project_settings (which has the same NULL-scope_key UNIQUE
+        // semantics; MySQL treats each NULL as distinct so
+        // ON DUPLICATE KEY UPDATE can't help — must serialise via
+        // FOR UPDATE inside a tx instead).
+        //
+        // WHERE column order matches the (scope, scope_key, key)
+        // UNIQUE index so the optimiser uses the leftmost prefix.
+        $this->db->beginTransaction();
+        try {
+            $existing = $this->db->fetchOne(
+                "SELECT id FROM settings WHERE scope = ? AND scope_key <=> ? AND `key` = ? FOR UPDATE",
+                [$scope, $scopeKey, $key]
+            );
+            if ($existing) {
+                $this->db->update('settings', ['value' => $encoded, 'type' => $type], 'id = ?', [$existing['id']]);
+            } else {
+                $this->db->insert('settings', [
+                    'scope'     => $scope,
+                    'scope_key' => $scopeKey,
+                    'key'       => $key,
+                    'value'     => $encoded,
+                    'type'      => $type,
+                ]);
+            }
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
         // Refresh the cache entry rather than unset - the bucket is already
         // warmed, so unsetting would force a missing-key default on the next

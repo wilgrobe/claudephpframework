@@ -289,6 +289,18 @@ class MailService implements MailDriver
 
     public function sendTemplate(string $to, string $subject, string $template, array $vars = [], ?int $chargeUserId = null): bool
     {
+        // Phase 43.201a C3 — template-name allowlist to close the LFI
+        // surface. Every internal caller passes a hardcoded slug today,
+        // but the signature is public — a future caller forwarding user
+        // input (a webhook handler picking a template by user setting,
+        // a notification preference page that exposes template choice)
+        // would let an attacker pass `template = "../../config/database"`
+        // which would resolve `BASE_PATH . "/app/Views/emails/../../config/database.php"`
+        // → arbitrary PHP file inclusion with extract($vars) feeding
+        // variables into the included file's scope.
+        if (!preg_match('/^[a-z0-9_-]+$/i', $template)) {
+            throw new \InvalidArgumentException("MailService::sendTemplate: invalid template name '$template' — must match /^[a-z0-9_-]+$/i.");
+        }
         ob_start();
         extract($vars, EXTR_SKIP);
         $templatePath = BASE_PATH . "/app/Views/emails/$template.php";

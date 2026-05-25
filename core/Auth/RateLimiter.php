@@ -158,19 +158,38 @@ class RateLimiter
 
     private function recordAttempt(string $key): void
     {
-        $count = $this->countRecent($key) + 1;
-
-        $lockedUntil = null;
-        if ($count >= self::LOCKOUT_THRESHOLD) {
-            // Hard lockout
-            $lockedUntil = date('Y-m-d H:i:s', time() + self::LOCKOUT_MINUTES * 60);
-        }
-
+        // Phase 43.201b H4 — insert FIRST, then recount, so concurrent
+        // recordAttempt() calls don't under-count and miss the lockout
+        // threshold. Pre-fix N parallel calls all read count=K-1, all
+        // INSERTed with locked_until=NULL, all computed "still under
+        // threshold" — even though after the writes settled the
+        // actual count was K+N. Lockout still kicked in on the NEXT
+        // attempt, but the window of damage widened with N. Now: the
+        // insert always lands a row first; the recount that decides
+        // lockout sees every other concurrent INSERT that completed,
+        // narrowing the under-count window to "completed during my
+        // count" rather than "completed during my count + insert".
+        // The race still exists (PDO doesn't expose post-insert count
+        // atomically), but the impact narrows from N to ~1 row.
         $this->db->insert('login_attempts', [
             'attempt_key' => $key,
             'attempted_at'=> date('Y-m-d H:i:s'),
-            'locked_until'=> $lockedUntil,
+            'locked_until'=> null,
         ]);
+
+        $count = $this->countRecent($key);
+        if ($count >= self::LOCKOUT_THRESHOLD) {
+            // Hard lockout — backfill locked_until on this row + any
+            // other recent NULL-lock rows so the next tooManyAttempts()
+            // check sees the lock immediately.
+            $this->db->query(
+                "UPDATE login_attempts SET locked_until = ?
+                  WHERE attempt_key = ?
+                    AND locked_until IS NULL
+                    AND attempted_at >= DATE_SUB(NOW(), INTERVAL ? MINUTE)",
+                [date('Y-m-d H:i:s', time() + self::LOCKOUT_MINUTES * 60), $key, self::DECAY_MINUTES]
+            );
+        }
 
         // Periodic cleanup of old records (run ~1% of the time to avoid overhead)
         if (random_int(1, 100) === 1) {

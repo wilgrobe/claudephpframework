@@ -150,9 +150,38 @@ class TwoFactorService
     /**
      * Create and dispatch an OTP challenge for email or SMS methods.
      * Returns the challenge ID to store in the session.
+     *
+     * @throws \RuntimeException when the per-user dispatch rate limit
+     *         is exceeded. Caller should surface "too many code
+     *         requests; try again in a minute" to the user.
      */
     public function sendChallenge(int $userId, string $method): int
     {
+        // Phase 43.201b H3 — per-user rate limit on dispatch.
+        // Pre-fix any call (e.g. attacker who has email+password from
+        // credential stuffing reaching the 2FA stage) could spam
+        // sendChallenge to drain SMS budget (paid per send via
+        // SmsService) or flood the victim's mailbox. The shared
+        // RateLimiter's hard ceiling at 10/15-min covers it — anyone
+        // needing more than 10 OTP code requests in 15 min is
+        // abusive. Key on userId; pass request IP so a single
+        // attacker can't rotate identities to evade.
+        // Best-effort: catch any RateLimiter unavailability (CLI /
+        // standalone-framework path) so legitimate sends don't break.
+        try {
+            $limiter = new RateLimiter();
+            $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+            $sendKey = "2fasend:$userId";
+            if ($limiter->tooManyAttempts($sendKey, $ip)) {
+                throw new \RuntimeException('Too many code requests. Please wait a few minutes before requesting another.');
+            }
+            $limiter->hit($sendKey, $ip);
+        } catch (\RuntimeException $e) {
+            if (str_starts_with($e->getMessage(), 'Too many')) throw $e;
+        } catch (\Throwable $e) {
+            // Limiter unavailable; continue without gating.
+        }
+
         // Invalidate any existing pending challenge for this user
         $this->db->query(
             "UPDATE two_factor_challenges SET used_at = NOW()
@@ -346,15 +375,20 @@ class TwoFactorService
             return false;
         }
 
-        // Mark used
-        $this->db->update(
-            'two_factor_challenges',
-            ['used_at' => date('Y-m-d H:i:s')],
-            'id = ?',
-            [$challengeId]
+        // Phase 43.201a C1 — CAS guard on used_at. Pre-fix two concurrent
+        // submissions of the same correct OTP both SELECTed at used_at
+        // IS NULL, both password_verified, both UPDATEd used_at — yielding
+        // two authenticated sessions from one 6-digit code. Same TOCTOU
+        // shape Phase 43.190a A1 closed for verifyRecoveryCode; this
+        // sibling was missed. Now: only return true on rowCount=1; the
+        // race-loser sees 0 because its WHERE used_at IS NULL no longer
+        // matches.
+        $stmt = $this->db->pdo()->prepare(
+            "UPDATE two_factor_challenges SET used_at = ?
+              WHERE id = ? AND used_at IS NULL"
         );
-
-        return true;
+        $stmt->execute([date('Y-m-d H:i:s'), $challengeId]);
+        return $stmt->rowCount() === 1;
     }
 
     // =========================================================================
