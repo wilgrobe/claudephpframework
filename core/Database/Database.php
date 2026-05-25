@@ -63,6 +63,26 @@ class Database
      * Existing PDO references already handed out continue to work —
      * they're independent objects, not proxies. Reset only affects
      * what subsequent getInstance() calls return.
+     *
+     * Phase 43.196c L1 — DEVELOPER WARNING. Singleton services bound
+     * in the container that captured `Database::getInstance()` in
+     * their constructor STILL hold the OLD PDO after a swap. Their
+     * queries continue to read the pre-swap DB even though the rest
+     * of the request thinks it's on the new one. Real symptom: a
+     * tenant-context swap inside a controller invocation makes a
+     * cached `MailService` (or other DB-using singleton) query
+     * central instead of the tenant.
+     *
+     * Mitigation patterns:
+     *   - Always resolve `Database::getInstance()` at method-call
+     *     time, NOT at service-constructor time.
+     *   - For long-lived singletons that genuinely need DB access,
+     *     have them hold a closure `(fn() => Database::getInstance())`
+     *     instead of the PDO directly.
+     *   - When swapping is necessary (TenantProvisioner / artisan
+     *     `tenant:migrate`), wrap with try/finally restoring both
+     *     `$_ENV['DB_DATABASE']` AND calling `Database::resetInstance`
+     *     so the central singleton rebuilds on next getInstance().
      */
     public static function resetInstance(): void
     {

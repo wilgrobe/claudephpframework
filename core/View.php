@@ -78,6 +78,22 @@ class View
         self::$sectionStack = [];
 
         try {
+            // Phase 43.196c M4 — log key collisions silently masked by
+            // EXTR_SKIP. The same root cause as the 43.107 `$data`
+            // bug: a view-vars key that collides with a local variable
+            // (often the loop var of the calling context or a method
+            // param) gets silently skipped — view reads the wrong
+            // value with no error. error_log puts a footprint in the
+            // server log for debugging; EXTR_SKIP semantics preserved.
+            $collisions = array_intersect_key($data, get_defined_vars());
+            // Filter out our own loop vars and infrastructure.
+            unset($collisions['data'], $collisions['path'], $collisions['view'], $collisions['content']);
+            if (!empty($collisions)) {
+                error_log(sprintf(
+                    '[View] extract() collision in render(%s) — skipped keys: %s',
+                    $view, implode(', ', array_keys($collisions)),
+                ));
+            }
             extract($data, EXTR_SKIP);
             ob_start();
             include $path;
@@ -349,9 +365,22 @@ class View
         $relative = str_replace('.', '/', $view) . '.php';
         $resolved = realpath($base . '/' . $relative);
 
-        // Assert resolved path is actually inside the views directory
+        // Phase 43.196c L2 — differentiate "view doesn't exist" from
+        // "view exists but is outside the views dir" (path traversal).
+        // Pre-fix both conditions raised "View path traversal detected"
+        // — a typo in the view name (e.g. `admin.user.eddit` missing
+        // an `i`) sent operators investigating a non-existent security
+        // incident instead of a benign typo.
         $basePath = realpath($base);
-        if ($resolved === false || $basePath === false || !str_starts_with($resolved, $basePath . DIRECTORY_SEPARATOR)) {
+        if ($basePath === false) {
+            throw new \RuntimeException("View base directory missing: [$base]");
+        }
+        if ($resolved === false) {
+            // Path doesn't exist — typo, missing template, etc.
+            throw new \RuntimeException("View not found: [$view] (looked for: $relative)");
+        }
+        if (!str_starts_with($resolved, $basePath . DIRECTORY_SEPARATOR)) {
+            // File exists but escaped the views dir — actual traversal.
             throw new \RuntimeException("View path traversal detected: [$view]");
         }
 
