@@ -26,7 +26,7 @@
         <div class="card-header"><h2 style="margin:0;font-size:1rem">About this layout</h2></div>
         <div class="card-body">
             <p style="color:var(--color-gray-500);font-size:13px;margin:0 0 .85rem 0">
-                Optional metadata that helps admins find and recognise this
+                Optional metadata that helps admins find and recognize this
                 layout on the index page. Module migrations seed reasonable
                 defaults; you can override them here.
             </p>

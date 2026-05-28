@@ -160,7 +160,7 @@ elsewhere. Where we transfer personal information out of the European
 Economic Area, the United Kingdom, or other regions with cross-border
 restrictions, we rely on appropriate safeguards such as the European
 Commission's Standard Contractual Clauses, equivalent UK transfer
-mechanisms, or another lawful basis recognised by applicable law.
+mechanisms, or another lawful basis recognized by applicable law.
 
 ## 8. Your rights
 
@@ -200,7 +200,7 @@ If you are a California resident, you have the right to:
 We do not sell personal information for monetary consideration. To the
 extent that any of our processing constitutes "sharing" under the CPRA
 (for example, by sending information to certain analytics or advertising
-providers), you can opt out at **/do-not-sell**. We honour the **Global
+providers), you can opt out at **/do-not-sell**. We honor the **Global
 Privacy Control** (`Sec-GPC`) signal as an opt-out request.
 
 We will not discriminate against you for exercising any of these rights.
@@ -229,7 +229,7 @@ will take appropriate steps to remove the information.
 
 ## 10. Security
 
-We implement reasonable technical and organisational measures designed
+We implement reasonable technical and organizational measures designed
 to protect personal information, including encrypted transport (TLS),
 hashed password storage, configurable two-factor authentication,
 session management with rotation on login, audit logging,

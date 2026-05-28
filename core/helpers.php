@@ -398,7 +398,7 @@ if (!function_exists('toggle_switch')) {
      * extra stylesheets.
      *
      * When unchecked, the checkbox isn't submitted at all — this is the
-     * default HTML behaviour. Settings handlers that read
+     * default HTML behavior. Settings handlers that read
      * `!empty($request->post('key'))` interpret absence as "off" correctly.
      */
     function toggle_switch(string $name, bool $checked, string $value = '1', ?string $title = null, bool $submitOnChange = false): string

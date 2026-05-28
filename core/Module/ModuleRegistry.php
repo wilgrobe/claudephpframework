@@ -338,7 +338,7 @@ class ModuleRegistry
      * roots. Roots that don't exist on disk are silently skipped — a
      * production deploy of core-only WITHOUT the premium repo mounted
      * will dump a cache that contains only core modules, which is the
-     * intended behaviour.
+     * intended behavior.
      *
      * @param string|string[] $modulesDirs  directory or directories to scan
      * @param string          $cacheFile    absolute path to write

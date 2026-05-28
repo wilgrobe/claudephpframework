@@ -305,7 +305,7 @@ class Database
     {
         if ($this->txDepth <= 0) {
             // Tolerate over-rollback by no-op'ing — matches PDO's
-            // historical behaviour and avoids cascading the failure.
+            // historical behavior and avoids cascading the failure.
             return;
         }
         $this->txDepth--;

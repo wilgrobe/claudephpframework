@@ -3,7 +3,7 @@
 namespace Modules\Accessibility\Services;
 
 /**
- * Static analyser for HTML / PHP-template accessibility issues.
+ * Static analyzer for HTML / PHP-template accessibility issues.
  *
  * Walks app/Views/ + every modules/{name}/Views/ tree and flags the
  * common WCAG 2.1 AA violations that template-level review can catch:
@@ -331,7 +331,7 @@ class A11yLintService
         return $roots;
     }
 
-    public function summarise(array $findings): array
+    public function summarize(array $findings): array
     {
         $byRule = [];
         $bySeverity = [self::SEVERITY_ERROR => 0, self::SEVERITY_WARNING => 0];

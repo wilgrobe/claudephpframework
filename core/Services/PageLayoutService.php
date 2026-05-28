@@ -78,35 +78,35 @@ class PageLayoutService
 
     /**
      * Insert or update the layout row for a page. Validates ranges +
-     * normalises arrays to integers so a ?width=garbage or oversized
+     * normalizes arrays to integers so a ?width=garbage or oversized
      * value can't sneak past the controller's form validation.
      */
     public function saveLayout(int $pageId, array $input): void
     {
         $rows        = max(1, min(self::MAX_ROWS, (int) ($input['rows'] ?? self::DEFAULT_ROWS)));
         $cols        = max(1, min(self::MAX_COLS, (int) ($input['cols'] ?? self::DEFAULT_COLS)));
-        $colWidths   = $this->normalisePercentArray($input['col_widths']  ?? self::DEFAULT_COL_WIDTHS,  $cols);
-        $rowHeights  = $this->normalisePercentArray($input['row_heights'] ?? self::DEFAULT_ROW_HEIGHTS, $rows);
+        $colWidths   = $this->normalizePercentArray($input['col_widths']  ?? self::DEFAULT_COL_WIDTHS,  $cols);
+        $rowHeights  = $this->normalizePercentArray($input['row_heights'] ?? self::DEFAULT_ROW_HEIGHTS, $rows);
         $gapPct      = max(0, min(20, (int) ($input['gap_pct'] ?? self::DEFAULT_GAP_PCT)));
         $maxWidthPx  = max(320, min(4096, (int) ($input['max_width_px'] ?? self::DEFAULT_MAX_WIDTH_PX)));
 
-        // Per-row styling: 0-indexed, sanitised through self::sanitiseRowStyle
+        // Per-row styling: 0-indexed, sanitized through self::sanitizeRowStyle
         // so admins can't paste `bg_color: javascript:…` and have it land in
         // rendered CSS.
         $rowStyles = [];
         foreach ($this->coerceJsonInput($input['row_styles'] ?? null) as $idx => $raw) {
             if (!is_array($raw)) continue;
-            $clean = self::sanitiseRowStyle($raw);
+            $clean = self::sanitizeRowStyle($raw);
             if ($clean) $rowStyles[(int) $idx] = $clean;
         }
 
-        // Per-cell styling: keyed by "row-col". Same sanitisation.
+        // Per-cell styling: keyed by "row-col". Same sanitization.
         $cellStyles = [];
         foreach ($this->coerceJsonInput($input['cell_styles'] ?? null) as $key => $raw) {
             if (!is_array($raw)) continue;
             // Accept either "r-c" string keys (admin form) or [r,c] tuples.
             if (!is_string($key) || !preg_match('/^\d+-\d+$/', $key)) continue;
-            $clean = self::sanitiseCellStyle($raw);
+            $clean = self::sanitizeCellStyle($raw);
             if ($clean) $cellStyles[$key] = $clean;
         }
 
@@ -156,14 +156,14 @@ class PageLayoutService
                 }
 
                 // Per-placement wrapper styling. Same JSON-or-array
-                // round-trip as settings + same sanitiser as cell styles.
+                // round-trip as settings + same sanitizer as cell styles.
                 $style = $p['style'] ?? null;
                 if (is_string($style)) {
                     $decoded = json_decode($style, true);
                     $style   = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) ? $decoded : null;
                 }
                 if (is_array($style)) {
-                    $style = self::sanitiseCellStyle($style);
+                    $style = self::sanitizeCellStyle($style);
                     if (empty($style)) $style = null;
                 }
 
@@ -208,7 +208,7 @@ class PageLayoutService
 
     /**
      * Style inputs may arrive from POST as a JSON-encoded string OR an
-     * already-decoded associative array. Normalise to array form so the
+     * already-decoded associative array. Normalize to array form so the
      * caller doesn't need to think about it.
      */
     private function coerceJsonInput($input): array
@@ -228,7 +228,7 @@ class PageLayoutService
      * comes back as ''. Defense in depth — Will paste a color into a text
      * input, this is what stops it from leaking arbitrary CSS.
      */
-    public static function sanitiseColor(string $v): string
+    public static function sanitizeColor(string $v): string
     {
         $v = trim($v);
         if ($v === '') return '';
@@ -256,7 +256,7 @@ class PageLayoutService
      * paths, or `data:image/...` URIs (small inlined images). Anything
      * else comes back as ''.
      */
-    public static function sanitiseBgUrl(string $v): string
+    public static function sanitizeBgUrl(string $v): string
     {
         $v = trim($v);
         if ($v === '') return '';
@@ -267,13 +267,13 @@ class PageLayoutService
     }
 
     /** Common style fields shared by row/cell/placement wrappers. */
-    private static function sanitiseCommonStyle(array $raw): array
+    private static function sanitizeCommonStyle(array $raw): array
     {
         $out = [];
-        $color = self::sanitiseColor((string) ($raw['bg_color'] ?? ''));
+        $color = self::sanitizeColor((string) ($raw['bg_color'] ?? ''));
         if ($color !== '') $out['bg_color'] = $color;
 
-        $img = self::sanitiseBgUrl((string) ($raw['bg_image'] ?? ''));
+        $img = self::sanitizeBgUrl((string) ($raw['bg_image'] ?? ''));
         if ($img !== '') $out['bg_image'] = $img;
 
         $pad = (int) ($raw['padding_px'] ?? 0);
@@ -282,19 +282,19 @@ class PageLayoutService
         $radius = (int) ($raw['radius_px'] ?? 0);
         if ($radius > 0 && $radius <= 200) $out['radius_px'] = $radius;
 
-        $textColor = self::sanitiseColor((string) ($raw['text_color'] ?? ''));
+        $textColor = self::sanitizeColor((string) ($raw['text_color'] ?? ''));
         if ($textColor !== '') $out['text_color'] = $textColor;
 
         return $out;
     }
 
     /**
-     * Sanitise a row style entry. Adds row-only fields on top of the
+     * Sanitize a row style entry. Adds row-only fields on top of the
      * common ones — full_bleed (bool) and content_padding_px (int).
      */
-    public static function sanitiseRowStyle(array $raw): array
+    public static function sanitizeRowStyle(array $raw): array
     {
-        $out = self::sanitiseCommonStyle($raw);
+        $out = self::sanitizeCommonStyle($raw);
 
         if (!empty($raw['full_bleed'])) $out['full_bleed'] = true;
 
@@ -304,10 +304,10 @@ class PageLayoutService
         return $out;
     }
 
-    /** Sanitise a cell or placement style. Common fields only. */
-    public static function sanitiseCellStyle(array $raw): array
+    /** Sanitize a cell or placement style. Common fields only. */
+    public static function sanitizeCellStyle(array $raw): array
     {
-        return self::sanitiseCommonStyle($raw);
+        return self::sanitizeCommonStyle($raw);
     }
 
     /**
@@ -316,7 +316,7 @@ class PageLayoutService
      * admin form can post either shape. Pads short arrays with the
      * last seen value; truncates long arrays.
      */
-    private function normalisePercentArray(mixed $input, int $count): array
+    private function normalizePercentArray(mixed $input, int $count): array
     {
         if (is_string($input)) {
             $input = array_filter(array_map('trim', explode(',', $input)), fn($s) => $s !== '');

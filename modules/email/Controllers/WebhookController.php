@@ -160,7 +160,7 @@ class WebhookController
             $this->suppressAll([$email], SuppressionService::REASON_COMPLAINT, 'Postmark spam complaint');
         } elseif ($type === 'SubscriptionChange' && empty($event['SuppressSending'])) {
             // User resubscribed via Postmark UI — clear our wildcard suppression
-            // (admin can decide whether to honour this; default: log only).
+            // (admin can decide whether to honor this; default: log only).
         }
 
         return new Response('OK', 200);
@@ -198,7 +198,7 @@ class WebhookController
         }
 
         // SMTP2GO sends either {"events":[...]} OR a single event at
-        // the top level (older webhook format). Normalise to a list.
+        // the top level (older webhook format). Normalize to a list.
         $events = isset($payload['events']) && is_array($payload['events'])
             ? $payload['events']
             : [$payload];

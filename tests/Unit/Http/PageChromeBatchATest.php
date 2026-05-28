@@ -313,7 +313,7 @@ final class PageChromeBatchATest extends TestCase
             'Slot rows must hard-set visible_to to any — the controller owns auth gating.');
     }
 
-    public function test_get_normalises_slot_name_null_to_primary(): void
+    public function test_get_normalizes_slot_name_null_to_primary(): void
     {
         $this->db->layouts['x.y'] = [
             'name' => 'x.y',
@@ -335,7 +335,7 @@ final class PageChromeBatchATest extends TestCase
         $env = $svc->get('x.y');
         $this->assertNotSame(null, $env);
         $this->assertSame('primary', $env['placements'][0]['slot_name'],
-            'NULL slot_name must be normalised to "primary" by the service.');
+            'NULL slot_name must be normalized to "primary" by the service.');
     }
 
     // ── Response chrome API ──────────────────────────────────────────────────

@@ -126,7 +126,7 @@ module entitlement.
   cookie-policy.md); the seed migration converts each via `Core\Support\Markdown`
   and inserts as a published Page admins can edit through `/admin/pages`.
 - Each policy ships with a prominent "TEMPLATE — REVIEW BEFORE PUBLISHING"
-  banner and `[BRACKETED]` placeholders for organisation-specific values
+  banner and `[BRACKETED]` placeholders for organization-specific values
   (org name, contact email, jurisdiction, EU/UK Art. 27 representatives,
   cookie inventory). Generic but substantive — covers GDPR / UK GDPR
   legal bases, CCPA/CPRA opt-out (linked to `/do-not-sell`), COPPA age

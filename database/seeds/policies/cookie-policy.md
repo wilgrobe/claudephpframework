@@ -176,7 +176,7 @@ your browser settings remain the most reliable means to block them.
 Some browsers send a "Do Not Track" (DNT) signal. There is no industry-
 standard interpretation of this signal. We respond to the **Global
 Privacy Control** signal (described above) instead, which has clearer
-legal status under California's privacy laws and is honoured as an
+legal status under California's privacy laws and is honored as an
 opt-out from "sale" or "sharing" of personal information.
 
 ## 7. Changes to this Policy

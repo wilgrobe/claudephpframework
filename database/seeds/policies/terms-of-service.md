@@ -4,7 +4,7 @@
 >
 > This document is a generic boilerplate that ships with claudephpframework.
 > It is **not legal advice**. Before relying on this for any deployment,
-> replace every `[BRACKETED]` placeholder with your own values, customise
+> replace every `[BRACKETED]` placeholder with your own values, customize
 > the language to your specific operation, and have a qualified lawyer
 > review the result. Laws governing online services differ by jurisdiction
 > and by the type of service offered.
@@ -23,8 +23,8 @@ use the Service.
 You must be at least the minimum age required by the laws of your jurisdiction
 to use the Service. Where the Service is configured to enforce a minimum age
 gate at registration, you must truthfully provide your date of birth. If you
-register on behalf of an organisation, you represent that you have authority
-to bind that organisation to these Terms.
+register on behalf of an organization, you represent that you have authority
+to bind that organization to these Terms.
 
 ## 2. Accounts
 

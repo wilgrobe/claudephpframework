@@ -3,7 +3,7 @@
 Companion to [`qa-checklist.md`](qa-checklist.md). The checklist is the
 *exhaustive* per-module reference; this document is the *fast path* — a single
 sit-down, browser-first run through your install that hits every surface in the
-order that minimises re-logins, role switches, and fixture rebuilds.
+order that minimizes re-logins, role switches, and fixture rebuilds.
 
 > **Premium modules ship from a separate repository.** If your install includes
 > [claudephpframeworkpremium](https://github.com/) modules, this file covers
@@ -33,7 +33,7 @@ Anything failing here invalidates everything downstream. Stop and fix.
 
 - [ ] Site root (`/`) loads without 500. As guest, redirects to `/login` (or to the configured guest homepage).
 - [ ] `/login` renders. Form fields visible.
-- [ ] CSS loads — header has site colours, not unstyled white-on-black.
+- [ ] CSS loads — header has site colors, not unstyled white-on-black.
 - [ ] No "Whoops" / stack-trace strings anywhere on a fresh page load (`APP_DEBUG=false` in prod, `true` is fine in dev).
 - [ ] Open DevTools → Console. Reload `/login`. Zero red errors.
 - [ ] DevTools → Application → Cookies. Session cookie present, `HttpOnly` and `SameSite=Lax` flags set.
@@ -73,7 +73,7 @@ Profile **C** (still signed out, about to register a fresh account).
 
 ### First-time signup
 
-- [ ] `/register` — fill the form with a fresh email + strong password → account created. Behaviour depends on settings:
+- [ ] `/register` — fill the form with a fresh email + strong password → account created. Behavior depends on settings:
   - With `require_email_verify=true` (default-ish): you'll be bounced to `/login` with "check your email"; click the verify link in your inbox / mail driver, then sign in.
   - The post-login landing page can be set in admin settings (e.g. `post_login_redirect_url`); on a fresh install the default is `/dashboard`.
 - [ ] Open Profile **B** in another window. Visit `/register`, try to register with the *same* email → validation error, no duplicate created.
@@ -214,7 +214,7 @@ Profile **A** (superadmin).
 - [ ] On `/admin/pages/{id}/edit`, click **⊞ Layout & blocks** → lands on `/admin/pages/{id}/layout`.
 - [ ] Save the layout with no placements → public URL still renders body content normally.
 - [ ] Add a placement → pick a block → row=0 col=0 → save → public page renders the block in the top-left cell.
-- [ ] Add a second placement of the same block at row=0 col=1 with a different settings JSON (e.g. `{"limit": 3}`) → both honour their own settings.
+- [ ] Add a second placement of the same block at row=0 col=1 with a different settings JSON (e.g. `{"limit": 3}`) → both honor their own settings.
 - [ ] Add two placements in the same cell with different sort_orders → both stack top-to-bottom.
 - [ ] Set "Visible to" = Logged-in → block disappears for guests. "Guests only" — opposite.
 - [ ] Edit layout to rows=3 cols=3 → public page renders new grid.
@@ -224,7 +224,7 @@ Profile **A** (superadmin).
 
 ### Site-building blocks (siteblocks module)
 
-- [ ] On a page layout, drop `siteblocks.html` → save → renders the HTML you typed (sanitised — script tags + `on*` handlers stripped). With "Wrap in card" → renders inside a card container.
+- [ ] On a page layout, drop `siteblocks.html` → save → renders the HTML you typed (sanitized — script tags + `on*` handlers stripped). With "Wrap in card" → renders inside a card container.
 - [ ] Drop `siteblocks.markdown` → save → renders Markdown headings, lists, code, links. `javascript:` href in source → neutered to `about:blank`.
 - [ ] Drop the hero / image / video / CTA / spacer / search-box blocks → each renders, settings-schema modal exposes the right inputs (textarea / checkbox / image-url) per block.
 - [ ] Drop `siteblocks.newsletter_signup` → submit a guest email → row appears in `newsletter_signups`. Submit duplicate → idempotent (no error page).

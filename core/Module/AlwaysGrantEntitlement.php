@@ -6,7 +6,7 @@ namespace Core\Module;
  * Default EntitlementCheck implementation: grants every premium module
  * that is physically on disk.
  *
- * This is the right behaviour for self-hosted installs and for local
+ * This is the right behavior for self-hosted installs and for local
  * development against the paired claudephpframeworkpremium checkout.
  * If you have the files, you have the licence.
  *

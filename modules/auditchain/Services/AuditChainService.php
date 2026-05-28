@@ -149,7 +149,7 @@ class AuditChainService
 
             // Even if the hash mismatches, we walk forward using the
             // STORED row_hash so subsequent rows aren't all flagged.
-            // The break is localised to the offending row.
+            // The break is localized to the offending row.
             $expectedPrev = (string) $r['row_hash'];
         }
 

@@ -7,7 +7,7 @@ use Core\Support\Markdown;
  * Seed three default policy pages — Terms of Service, Privacy Policy,
  * and Cookie Policy — so a fresh install has compliance-ready boilerplate
  * available at standard slugs out of the box. Admins are expected to
- * review and customise each before going live (each policy ships with a
+ * review and customize each before going live (each policy ships with a
  * prominent template warning at the top).
  *
  * Source files live at:
@@ -39,7 +39,7 @@ return new class extends Migration {
      * Stored in seo_keywords because that column is otherwise free-form
      * and rarely used on policy pages. Admins are free to overwrite it
      * — doing so detaches the row from rollback eligibility, which is
-     * the desired behaviour (we shouldn't auto-delete a page an admin
+     * the desired behavior (we shouldn't auto-delete a page an admin
      * has been curating).
      */
     private const SEED_MARKER = 'cphpfw:policy-seed:';

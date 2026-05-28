@@ -106,7 +106,7 @@ final class PageChromeBatchDTest extends TestCase
     }
 
     /**
-     * Resolve the premium-repo root. Honours MODULE_PREMIUM_PATH (the
+     * Resolve the premium-repo root. Honors MODULE_PREMIUM_PATH (the
      * env var ModuleRegistry already reads), then falls back to the
      * sibling-checkout convention `C:\www\claudephpframeworkpremium`.
      */

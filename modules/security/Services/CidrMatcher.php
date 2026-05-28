@@ -12,7 +12,7 @@ namespace Modules\Security\Services;
  *   matches('2001:db8::1', ['2001:db8::/32'])   → true
  *
  * Bare IPs without a `/N` are treated as exact-match (/32 v4, /128 v6).
- * IPv4-in-IPv6 (::ffff:1.2.3.4) is normalised before matching.
+ * IPv4-in-IPv6 (::ffff:1.2.3.4) is normalized before matching.
  *
  * Used by AdminIpAllowlistMiddleware to gate /admin/* against the
  * configured allowlist. Designed to be cheap — pure inet_pton +
@@ -28,7 +28,7 @@ class CidrMatcher
     public static function matches(string $ip, array|string $cidrList): bool
     {
         $entries = is_array($cidrList) ? $cidrList : self::parseList($cidrList);
-        $ip      = self::normalise($ip);
+        $ip      = self::normalize($ip);
         $ipBin   = @inet_pton($ip);
         if ($ipBin === false) return false;
 
@@ -118,7 +118,7 @@ class CidrMatcher
             $bits = -1; // sentinel: pick /32 or /128 based on family
         }
 
-        $bin = @inet_pton(self::normalise($ip));
+        $bin = @inet_pton(self::normalize($ip));
         if ($bin === false) return null;
         $maxBits = strlen($bin) === 4 ? 32 : 128;
 
@@ -127,7 +127,7 @@ class CidrMatcher
         return [$bin, $bits];
     }
 
-    private static function normalise(string $ip): string
+    private static function normalize(string $ip): string
     {
         // ::ffff:192.168.1.1 → 192.168.1.1 so an IPv4 client behind a
         // dual-stack proxy still matches an IPv4 CIDR.

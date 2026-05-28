@@ -10,7 +10,7 @@ use Core\Database\Migration;
  *                      cached for 30 days so the same IP doesn't hit
  *                      the rate-limited free API on every login.
  *
- *   login_anomalies  — append-only event log. One row per analysed
+ *   login_anomalies  — append-only event log. One row per analyzed
  *                      sign-in that triggered any flag (impossible
  *                      travel, country jump, etc). Powers the admin
  *                      review surface + retention sweeper.

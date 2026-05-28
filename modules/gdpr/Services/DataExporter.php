@@ -83,7 +83,7 @@ class DataExporter
             $readme .= "Generated: " . date('Y-m-d H:i:s T') . "\n";
             $readme .= "Expires:   " . date('Y-m-d H:i:s T', time() + $ttlDays * 86400) . "\n\n";
             $readme .= "This export contains every record the framework holds about\n";
-            $readme .= "your account, organised by the module that owns each piece.\n\n";
+            $readme .= "your account, organized by the module that owns each piece.\n\n";
 
             // ── 1. The user record itself ───────────────────────────
             $userRow = $this->db->fetchOne("SELECT * FROM users WHERE id = ?", [$userId]);

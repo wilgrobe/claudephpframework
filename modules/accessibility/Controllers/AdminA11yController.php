@@ -33,7 +33,7 @@ class AdminA11yController
         // template files, this is sub-second. If you grow into the
         // thousands of templates, move to a queued job + cached result.
         $findings = $this->svc->lintAll();
-        $summary  = $this->svc->summarise($findings);
+        $summary  = $this->svc->summarize($findings);
 
         return Response::view('accessibility::admin.index', [
             'findings' => $findings,

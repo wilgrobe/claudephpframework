@@ -63,7 +63,7 @@ class ThemeService
 
         // ── Chrome (sidebar + footer always-dark surfaces) ──
         // Defaults match the legacy hardcoded indigo palette so nothing
-        // visibly shifts for sites that don't customise. light + dark
+        // visibly shifts for sites that don't customize. light + dark
         // defaults are the SAME on purpose: chrome surfaces are designed
         // to stay dark in both modes (matches sidebar/footer's visual
         // role as a fixed dark band). Admins can split them per mode if
@@ -91,7 +91,7 @@ class ThemeService
     /**
      * Implicit dark-mode overrides for the framework gray-* ramp declared
      * in app/Views/layout/header.php. These aren't theme tokens admins
-     * can customise — they're the baseline grayscale used by the existing
+     * can customize — they're the baseline grayscale used by the existing
      * chrome (sidebar, body, btn, card) which Batch F migrated only
      * partially. Until a Batch F2 sweep migrates the chrome to bg-* /
      * text-* / border-* tokens directly, flipping the gray ramp in dark
@@ -220,7 +220,7 @@ class ThemeService
     /**
      * Resolve tokens for the requested mode.
      *
-     * Light mode: returns ONLY admin-customised tokens (empty/invalid drop
+     * Light mode: returns ONLY admin-customized tokens (empty/invalid drop
      * to header.php's hardcoded :root fallback). This is the legacy v1 +
      * v2 behavior so the light render stays unchanged when admin hasn't
      * touched anything.
@@ -228,7 +228,7 @@ class ThemeService
      * Dark mode: returns EVERY color token, using either the admin's saved
      * `<key>.dark` value or the shipped `default_dark`. Always emits the
      * full dark palette so OS-preference dark mode flips correctly even
-     * when the admin hasn't customised dark.
+     * when the admin hasn't customized dark.
      *
      * @param string     $mode     'light' | 'dark'
      * @param array|null $context  reserved for future group/user cascade
@@ -268,7 +268,7 @@ class ThemeService
         // ramp + the seven brand colors, NOT the new bg-* / text-* /
         // border-* / radius-* / font-size-* tokens. So for light mode
         // those would have resolved to undefined without admin
-        // customisation. Always emitting defaults makes both modes
+        // customization. Always emitting defaults makes both modes
         // self-consistent and lets var(--bg-page) etc. always resolve.
         foreach (self::TOKEN_DEFINITIONS as $settingKey => $def) {
             $raw = (string) $this->settings->get($settingKey, '', 'site');

@@ -209,7 +209,7 @@ class RateLimiter
 
     private function key(string $type, string $value): string
     {
-        // Hash to normalise length and prevent injection into the key column
+        // Hash to normalize length and prevent injection into the key column
         return $type . ':' . hash('sha256', strtolower(trim($value)));
     }
 }

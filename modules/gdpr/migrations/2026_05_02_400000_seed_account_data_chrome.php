@@ -23,13 +23,13 @@ use Core\Services\SystemLayoutService;
  * INSERT IGNORE on their natural keys, so re-running this migration
  * after admin edits won't clobber anything.
  *
- * Rollback: down() respects admin customisation. If the layout still
+ * Rollback: down() respects admin customization. If the layout still
  * has exactly the seeded shape (one placement — the content slot in
  * cell 0,0), we delete it on rollback. If the admin has added any
  * blocks, we leave the row alone — the same protective pattern the
  * 2026-05-02 policy seed migration uses, just expressed as a
  * "shape match" rather than a content hash because layout
- * customisation is detectable without hashing.
+ * customization is detectable without hashing.
  */
 return new class extends Migration {
     private const LAYOUT_NAME = 'account.data';

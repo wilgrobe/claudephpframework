@@ -30,8 +30,8 @@ $pageTitle = ($kind['label'] ?? 'Policy')
 
     <article class="page-body" style="line-height:1.8">
         <?php
-        // Body was sanitised when first stored on the source page; we
-        // re-sanitise on render in case the storage was bypassed.
+        // Body was sanitized when first stored on the source page; we
+        // re-sanitize on render in case the storage was bypassed.
         echo \Core\Validation\Validator::sanitizeHtml((string) ($version['body_html'] ?? ''));
         ?>
     </article>

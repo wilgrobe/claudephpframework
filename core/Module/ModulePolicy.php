@@ -10,7 +10,7 @@ use Core\Services\SettingsService;
  * Shared base for per-module site-policy services.
  *
  * Each module that needs a "who can do X / what's the public surface
- * look like / which behaviours are gated by site-level toggles" layer
+ * look like / which behaviors are gated by site-level toggles" layer
  * subclasses this and overrides `settingPrefix()` and `permission()`.
  * The standard knobs (access mode, role/group gating, public visibility,
  * notifications on/off, moderation auto vs queue) live here so that

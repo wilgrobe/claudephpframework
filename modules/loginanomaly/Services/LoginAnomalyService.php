@@ -46,7 +46,7 @@ class LoginAnomalyService
     }
 
     /**
-     * Analyse a sign-in event. Returns the recorded anomaly row id +
+     * Analyze a sign-in event. Returns the recorded anomaly row id +
      * severity, or null when no anomaly fires (clean login or
      * insufficient data to compare).
      *
@@ -56,7 +56,7 @@ class LoginAnomalyService
      *
      * @return array{anomaly_id:int, severity:string, rule:string, implied_kmh:?int, distance_km:?int}|null
      */
-    public function analyseLogin(int $userId, string $ip, string $userAgent): ?array
+    public function analyzeLogin(int $userId, string $ip, string $userAgent): ?array
     {
         if (!$this->isEnabled()) return null;
         if ($userId <= 0 || $ip === '') return null;

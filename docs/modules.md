@@ -11,7 +11,7 @@ The framework currently ships with 47 modules across two repos:
 - **claudephpframework** (open source) — 26 core modules. Compliance, security, basic
   UI, site management. Things any web app benefits from.
 - **claudephpframeworkpremium** (proprietary) — 21 premium modules. Commerce, social,
-  scheduling, specialised feature surfaces. Loaded only when both files are on disk
+  scheduling, specialized feature surfaces. Loaded only when both files are on disk
   AND the `EntitlementCheck` contract grants them.
 
 Module structure is identical across the two tiers — the only difference is one line
@@ -430,7 +430,7 @@ These all cost real time when you don't know about them:
 
 **`$_POST` silently converts dots and spaces to underscores.** A field named
 `settings.foo` arrives as `$_POST['settings_foo']`. Read namespaced keys via
-`$request->post()` (which the framework normalises) or translate on read.
+`$request->post()` (which the framework normalizes) or translate on read.
 
 **`htmlspecialchars()` inside `<style>` breaks CSS silently.** HTML entities aren't
 decoded in style blocks; the browser sees `&quot;` literally. For CSS-context output,

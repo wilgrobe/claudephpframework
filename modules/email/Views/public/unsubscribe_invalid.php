@@ -17,7 +17,7 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--color-gray
 <div class="box">
     <div class="x">!</div>
     <h1>Unsubscribe link expired</h1>
-    <p>This unsubscribe link has expired or wasn't recognised. You can manage your email preferences from your account.</p>
+    <p>This unsubscribe link has expired or wasn't recognized. You can manage your email preferences from your account.</p>
     <p><a href="/account/email-preferences">Sign in to manage preferences</a></p>
 </div>
 </body>

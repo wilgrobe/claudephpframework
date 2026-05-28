@@ -128,7 +128,7 @@ class SystemLayoutService
         foreach ($placements as &$p) {
             $p['settings']       = $p['settings'] ? (json_decode($p['settings'], true) ?: []) : [];
             $p['placement_type'] = $p['placement_type'] ?? 'block';
-            // Normalise slot_name: the renderer treats NULL and 'primary'
+            // Normalize slot_name: the renderer treats NULL and 'primary'
             // as equivalent, but it's friendlier to consumers if we hand
             // them a concrete value for slot rows.
             if ($p['placement_type'] === 'content_slot') {
@@ -208,7 +208,7 @@ class SystemLayoutService
     }
 
     /**
-     * Upsert a layout row. Same percent-array normalisation as
+     * Upsert a layout row. Same percent-array normalization as
      * PageLayoutService — duplicated rather than shared via a trait
      * because the two services are intentionally independent (no
      * shared parent class) and the helper is small.
@@ -223,8 +223,8 @@ class SystemLayoutService
     {
         $rows  = max(1, min(6, (int) ($input['rows'] ?? 1)));
         $cols  = max(1, min(4, (int) ($input['cols'] ?? 1)));
-        $colWidths  = $this->normalisePercentArray($input['col_widths']  ?? [], $cols);
-        $rowHeights = $this->normalisePercentArray($input['row_heights'] ?? [], $rows);
+        $colWidths  = $this->normalizePercentArray($input['col_widths']  ?? [], $cols);
+        $rowHeights = $this->normalizePercentArray($input['row_heights'] ?? [], $rows);
         $gapPct     = max(0, min(20, (int) ($input['gap_pct'] ?? 3)));
         $maxWidthPx = max(320, min(4096, (int) ($input['max_width_px'] ?? 1280)));
 
@@ -412,8 +412,8 @@ class SystemLayoutService
     {
         $rows         = max(1, min(6, (int) ($opts['rows']         ?? 1)));
         $cols         = max(1, min(4, (int) ($opts['cols']         ?? 1)));
-        $colWidths    = $this->normalisePercentArray($opts['col_widths']  ?? [], $cols);
-        $rowHeights   = $this->normalisePercentArray($opts['row_heights'] ?? [], $rows);
+        $colWidths    = $this->normalizePercentArray($opts['col_widths']  ?? [], $cols);
+        $rowHeights   = $this->normalizePercentArray($opts['row_heights'] ?? [], $rows);
         $gapPct       = max(0, min(20, (int) ($opts['gap_pct']      ?? 3)));
         $maxWidthPx   = max(320, min(4096, (int) ($opts['max_width_px'] ?? 1280)));
 
@@ -553,7 +553,7 @@ class SystemLayoutService
      * Cheap memo of the schema state. Several columns were added across
      * Batches A + C; keep a separate guard per column group so a
      * partial install (one ALTER applied, the next not yet) still gets
-     * correct behaviour through the right code path.
+     * correct behavior through the right code path.
      */
     private ?bool $cachedHasDiscoverability = null;
     private ?bool $cachedHasPlacementCols   = null;
@@ -621,7 +621,7 @@ class SystemLayoutService
         return array_map(fn($v) => (int) $v, $arr);
     }
 
-    private function normalisePercentArray(mixed $input, int $count): array
+    private function normalizePercentArray(mixed $input, int $count): array
     {
         if (is_string($input)) {
             $input = array_filter(array_map('trim', explode(',', $input)), fn($s) => $s !== '');

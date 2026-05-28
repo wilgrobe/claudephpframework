@@ -17,7 +17,7 @@ namespace Core\Module;
  *      `project_submodules`, caches the entire (project → modules →
  *      keys) tree for the rest of the request.
  *
- * Backwards-compat behaviour (CONFIGURABLE — see decision log in the
+ * Backwards-compat behavior (CONFIGURABLE — see decision log in the
  * docblock of `enabledForProject` below):
  *   - Apex requests (no tenant) → all submodules enabled (the wizard
  *     decides spend, runtime gating doesn't apply).
@@ -72,7 +72,7 @@ final class SubmoduleRegistry
             $seen[$d->key] = true;
         }
         // Allow re-registration of the same module (idempotent) but
-        // overwrite — last-call-wins is the right behaviour if a
+        // overwrite — last-call-wins is the right behavior if a
         // module's submodules() shape changes between requests.
         $this->catalog[$moduleName] = array_values($descriptors);
     }

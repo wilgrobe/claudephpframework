@@ -14,7 +14,7 @@ use Core\Database\Database;
  *   2. GPC (Global Privacy Control) signal — when the browser sends
  *      Sec-GPC: 1 and the honor toggle is on, we silently record an
  *      opt-out tied to the cookie + (if signed in) user_id. CPRA §
- *      1798.135(b) explicitly recognises GPC as a valid opt-out.
+ *      1798.135(b) explicitly recognizes GPC as a valid opt-out.
  *   3. Admin / API — operator-initiated.
  *
  * Lookups happen via isOptedOut() which checks (in order):

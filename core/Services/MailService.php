@@ -73,7 +73,7 @@ class MailService implements MailDriver
      * wallet. On a successful send we call
      * `\App\Services\TokenGate::chargeActionFor($chargeUserId, 'action.email.send')`
      * via class_exists guard — framework users without TokenGate get
-     * no charging behaviour. Pass null (default) for system-triggered
+     * no charging behavior. Pass null (default) for system-triggered
      * mail (claim emails, password resets, queue retries, 2FA codes)
      * that shouldn't bill anyone.
      */
@@ -178,13 +178,13 @@ class MailService implements MailDriver
         $driver = strtolower($this->config['driver'] ?? 'smtp');
 
         // Phase 43.195b H2 — strip CRLF from every header-bound field at
-        // the bottleneck. Pre-fix only Subject + from_name were sanitised
+        // the bottleneck. Pre-fix only Subject + from_name were sanitized
         // (Phase 43.187c S4), but $to (sourced from users.email — could
         // contain `\r\nBcc: attacker@evil` if a future signup flow lands
-        // a non-normalised email) was NOT sanitised, and from_address
+        // a non-normalized email) was NOT sanitized, and from_address
         // was missed too. The bare mail() path is the only driver
         // currently affected — PHPMailer's SMTP path escapes internally
-        // — but defense-in-depth + future-proofing wins by sanitising
+        // — but defense-in-depth + future-proofing wins by sanitizing
         // here before any driver branch.
         //
         // `_address` fields strip newlines entirely (a legit email

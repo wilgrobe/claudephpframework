@@ -68,7 +68,7 @@ class AdminPolicyController
             : null;
 
         // Page picker — list every published page so the admin can
-        // pick the source. Filter to policy-flavoured slugs first;
+        // pick the source. Filter to policy-flavored slugs first;
         // fall back to all pages if the user wants a less standard one.
         $pages = $this->db->fetchAll(
             "SELECT id, title, slug, status FROM pages ORDER BY title ASC LIMIT 200"

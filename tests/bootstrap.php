@@ -96,7 +96,7 @@ spl_autoload_register(function (string $class) use ($__testsRoots) {
 // Multi-root: tests should be able to reach premium modules from the
 // sibling claudephpframeworkpremium checkout when it's present. We pull
 // the same config/modules.php list the runtime registry uses so the
-// behaviours stay aligned. config/modules.php returns absolute paths,
+// behaviors stay aligned. config/modules.php returns absolute paths,
 // so we just iterate them.
 $__moduleRoots = [];
 if (is_file(BASE_PATH . '/config/modules.php')) {

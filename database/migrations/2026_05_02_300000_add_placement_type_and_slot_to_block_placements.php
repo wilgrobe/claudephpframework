@@ -8,7 +8,7 @@ use Core\Database\Migration;
  * Adds two columns to BOTH `system_block_placements` and the parallel
  * `page_block_placements` table so a placement can be either:
  *
- *   - a regular block (the existing behaviour — placement_type='block',
+ *   - a regular block (the existing behavior — placement_type='block',
  *     block_key resolves through Core\Module\BlockRegistry), OR
  *   - a "content slot" placeholder (placement_type='content_slot',
  *     slot_name names which controller-rendered slot fills the cell at
@@ -18,7 +18,7 @@ use Core\Database\Migration;
  * CHECK/index assumptions; content-slot rows store the sentinel value
  * `__slot__` so a casual SQL inspection makes the type immediately
  * obvious without needing to JOIN the placement_type column. Open
- * question 3 in the page-chrome plan was decided in favour of this
+ * question 3 in the page-chrome plan was decided in favor of this
  * sentinel approach.
  *
  * `slot_name` defaults to NULL; the renderer treats NULL and the literal

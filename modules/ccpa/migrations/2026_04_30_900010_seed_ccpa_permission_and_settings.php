@@ -17,7 +17,7 @@ use Core\Database\Migration;
  *                             what data is "sold" / "shared")
  *   ccpa_honor_gpc_signal     auto-record opt-out when the browser sends
  *                             Sec-GPC: 1 (Global Privacy Control). CPRA
- *                             expressly recognises GPC; default: true.
+ *                             expressly recognizes GPC; default: true.
  */
 return new class extends Migration {
     public function up(): void

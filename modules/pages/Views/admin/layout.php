@@ -70,7 +70,7 @@
                     <input type="number" name="max_width_px" min="320" max="4096" required
                            value="<?= (int) ($layout['max_width_px'] ?? 1280)?>"
                            class="form-control" style="max-width:160px" id="max_width_px">
-                    <span style="font-size:12px;color:var(--color-gray-500)">Centred; collapses to one column under 720px.</span>
+                    <span style="font-size:12px;color:var(--color-gray-500)">Centered; collapses to one column under 720px.</span>
                 </div>
             </div>
         </div>

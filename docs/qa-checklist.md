@@ -4,7 +4,7 @@ This is the exhaustive verification list for an installation of claudephpframewo
 Work through it once before going live, and again as a regression suite after any
 substantial framework upgrade.
 
-The list is organised so each section's setup is satisfied by the section before it
+The list is organized so each section's setup is satisfied by the section before it
 (don't moderate comments before there are comments to moderate). For a faster
 sequenced walkthrough that hits the high-value paths in one sit-down, see
 [`docs/qa-process.md`](qa-process.md).
@@ -59,7 +59,7 @@ Before running through any module section:
 - [ ] **G** Log in with wrong password → rejected; the row in `sessions` for your current cookie stays in guest state (`user_id IS NULL`); rate-limit counter increments.
 - [ ] **U** Log out → cannot access any authenticated page; redirected to `/login`.
 - [ ] **U** Immediately after `/logout`, the session cookie is cleared (DevTools shows `Set-Cookie` with past expiry).
-- [ ] **U** On the *next* page load after logout, a fresh guest session is created with a **different** session id than before. The previous authenticated session id never comes back — that's the verifiable invariant. (Deleting the cookie by hand and refreshing behaves the same way; that's expected PHP session behaviour, not a logout bug.)
+- [ ] **U** On the *next* page load after logout, a fresh guest session is created with a **different** session id than before. The previous authenticated session id never comes back — that's the verifiable invariant. (Deleting the cookie by hand and refreshing behaves the same way; that's expected PHP session behavior, not a logout bug.)
 - [ ] **A** Delete a user's row from the `sessions` table while they're logged in → their next request lands on `/login`.
 - [ ] **A** With two open sessions for one user in different browsers, `DELETE FROM sessions WHERE user_id = <id>` kicks both → emergency sign-out works.
 
@@ -203,7 +203,7 @@ Before running through any module section:
 - [ ] **A** Save the layout with no placements → `page_layouts` row appears; the page's public URL still renders normally (empty grid, but body fallback no longer applies once a layout exists).
 - [ ] **A** Click "+ Add placement" → a new row appears with row/col/order numeric inputs, a block dropdown grouped by category, a visible-to dropdown, and a settings textarea.
 - [ ] **A** Pick a block, set row=0/col=0, save → public page renders the block in the top-left cell.
-- [ ] **A** Add a second placement at row=0/col=1 with the SAME block but a different settings JSON → both renders honour their own settings.
+- [ ] **A** Add a second placement at row=0/col=1 with the SAME block but a different settings JSON → both renders honor their own settings.
 - [ ] **A** Add two placements in the same cell with different sort_orders → both render stacked top-to-bottom in the cell.
 - [ ] **A** Set a placement's "Visible to" to "Logged in" → block disappears for guests. "Guests only" — opposite. "Anyone" — both.
 - [ ] **A** Mark a placement's "Remove" checkbox + save → that placement is deleted; the rest persist.

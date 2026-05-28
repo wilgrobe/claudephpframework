@@ -75,7 +75,7 @@ return new class extends ModuleProvider {
             // as expandable Q/A pairs on the page itself. Shipped as a
             // marketing-page primitive rather than a directory tile.
             // Settings: { ids: [1,2,3], heading: "Frequently asked" }.
-            // Native <details>/<summary> for zero-JS expand behaviour.
+            // Native <details>/<summary> for zero-JS expand behavior.
             new \Core\Module\BlockDescriptor(
                 key:         'faq.accordion',
                 label:       'FAQ Accordion (inline)',

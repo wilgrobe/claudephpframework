@@ -309,7 +309,7 @@ abstract class ModuleProvider
      * The runtime gate lives in
      * `SubmoduleRegistry::isEnabledForCurrent($moduleName, $key)`. The
      * tenant-scoped lookup is opt-in — apps that don't ship a
-     * project_submodules table get full-available behaviour.
+     * project_submodules table get full-available behavior.
      *
      * @return \Core\Module\SubmoduleDescriptor[]
      */

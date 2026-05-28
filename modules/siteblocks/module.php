@@ -54,7 +54,7 @@ return new class extends ModuleProvider {
             new \Core\Module\BlockDescriptor(
                 key:         'siteblocks.html',
                 label:       'Raw HTML',
-                description: 'Admin-authored HTML, sanitised through the framework allowlist on render.',
+                description: 'Admin-authored HTML, sanitized through the framework allowlist on render.',
                 category:    'Site Building',
                 defaultSize: 'medium',
                 defaultSettings: ['html' => '', 'wrap_in_card' => false],
@@ -81,7 +81,7 @@ return new class extends ModuleProvider {
             // mailto, fragment, relative paths) — javascript: hrefs are
             // neutered to about:blank. If a caller needs raw HTML they
             // should use siteblocks.html instead, which runs the heavier
-            // sanitiser allowlist.
+            // sanitizer allowlist.
             new \Core\Module\BlockDescriptor(
                 key:         'siteblocks.markdown',
                 label:       'Markdown',
@@ -190,7 +190,7 @@ return new class extends ModuleProvider {
                     if ($embedSrc === null) {
                         $auth = \Core\Auth\Auth::getInstance();
                         return $auth->hasRole(['super-admin','admin'])
-                            ? '<div class="siteblock-video-error" style="background:var(--color-warning-bg);border:1px dashed #fcd34d;color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognised — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
+                            ? '<div class="siteblock-video-error" style="background:var(--color-warning-bg);border:1px dashed #fcd34d;color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognized — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
                             : '';
                     }
 
@@ -427,14 +427,14 @@ return new class extends ModuleProvider {
             ),
 
             // ── Register Form ───────────────────────────────────────────
-            // Inline registration form posting to /register. Honours the
+            // Inline registration form posting to /register. Honors the
             // allow_registration site setting — when off, the block
             // renders the "registration is closed" message instead of
             // exposing a form that would 403/redirect on submit.
             new \Core\Module\BlockDescriptor(
                 key:         'siteblocks.register_form',
                 label:       'Register Form (inline)',
-                description: 'Inline registration form. Honours the allow_registration setting.',
+                description: 'Inline registration form. Honors the allow_registration setting.',
                 category:    'Site Building',
                 defaultSize: 'medium',
                 defaultSettings: [],

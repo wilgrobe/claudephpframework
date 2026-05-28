@@ -71,7 +71,7 @@ class MessageRetryService
             // both SELECT the same row, both attempt the CAS, and both
             // call resend() even though only one CAS actually flipped
             // status='failed' to 'queued'. Result: subscriber received
-            // the email twice (and the message_log row was finalised by
+            // the email twice (and the message_log row was finalized by
             // whichever resend completed last).
             $claimed = $this->db->update('message_log',
                 ['status' => 'queued'],

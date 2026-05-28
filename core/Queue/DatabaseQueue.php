@@ -11,7 +11,7 @@ use Core\Database\Database;
  *   - Rows start status='pending', available_at=NOW (or a future backoff time).
  *   - reserve() atomically claims a batch by stamping reserved_by/reserved_at
  *     so parallel workers can't double-claim.
- *   - complete() / fail() finalise the row. Transient failure calls release()
+ *   - complete() / fail() finalize the row. Transient failure calls release()
  *     with a backoff, which sets status back to 'pending' and pushes out
  *     available_at.
  *
@@ -120,7 +120,7 @@ class DatabaseQueue
         return self::$reservationSeq . '.' . bin2hex(random_bytes(4));
     }
 
-    // ── Finalise ──────────────────────────────────────────────────────────
+    // ── Finalize ──────────────────────────────────────────────────────────
 
     public function complete(int $jobId): void
     {

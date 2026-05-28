@@ -240,7 +240,7 @@ class PageController
             'gap_pct'      => $request->post('gap_pct'),
             'max_width_px' => $request->post('max_width_px'),
             // The composer JS posts these as JSON strings — the service
-            // accepts string-or-array via coerceJsonInput. Sanitiser
+            // accepts string-or-array via coerceJsonInput. Sanitizer
             // strips anything that doesn't pass the color/url whitelist.
             'row_styles'   => $request->post('row_styles'),
             'cell_styles'  => $request->post('cell_styles'),

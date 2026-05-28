@@ -13,7 +13,7 @@
             HMAC-SHA256 chain over <code>audit_log</code> rows. Every row is
             sealed with the prior row's hash on insert; verification recomputes
             and reports any drift. Per-day chains let us verify in parallel and
-            keep tampering localised.
+            keep tampering localized.
         </p>
     </div>
     <a href="/admin/audit-chain/breaks" class="btn btn-secondary" style="font-size:12.5px">

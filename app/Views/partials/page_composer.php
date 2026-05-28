@@ -28,7 +28,7 @@
 // emits a single <div class="page-composer-root"> with all the grid
 // CSS scoped via custom properties.
 //
-// Responsive behaviour:
+// Responsive behavior:
 //   - Outer wrapper: full width. Each row's inner content is constrained
 //     to layout.max_width_px and centered, UNLESS the row is full-bleed
 //     (background + content extends to viewport edges).
@@ -39,8 +39,8 @@
 //   - row_styles[r]   → background, full_bleed, content_padding_px
 //   - cell_styles[r-c]→ background, padding
 //   - placement.style → wrapper background + padding around the block
-//   All values arrive pre-sanitised by PageLayoutService::sanitiseRowStyle
-//   and ::sanitiseCellStyle so direct interpolation into inline `style`
+//   All values arrive pre-sanitized by PageLayoutService::sanitizeRowStyle
+//   and ::sanitizeCellStyle so direct interpolation into inline `style`
 //   is safe (no javascript:/expression()/url() chicanery survives).
 ?>
 <?php
@@ -85,7 +85,7 @@
     }
 
     /**
-     * Convert a sanitised style array into an inline `style` attribute.
+     * Convert a sanitized style array into an inline `style` attribute.
      * $extra is an associative array of additional properties to mix in
      * (e.g. min-height for cells). Returns the full attribute string
      * including style="..." or '' when there's nothing to emit.

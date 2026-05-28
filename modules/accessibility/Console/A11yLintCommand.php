@@ -42,7 +42,7 @@ class A11yLintCommand extends Command
                 fn($f) => $f['severity'] === A11yLintService::SEVERITY_ERROR
             ));
         }
-        $summary = $svc->summarise($findings);
+        $summary = $svc->summarize($findings);
 
         if ($jsonOut) {
             $this->line(json_encode([

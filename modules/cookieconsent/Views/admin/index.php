@@ -11,7 +11,7 @@
         <h1 style="margin:.25rem 0 0;font-size:1.3rem;font-weight:700">Cookie Consent</h1>
         <p style="margin:.25rem 0 0;color:var(--color-gray-500);font-size:13px">
             GDPR-style consent banner shown to every visitor until they accept,
-            reject, or customise their cookie preferences. Bump the policy
+            reject, or customize their cookie preferences. Bump the policy
             version to re-prompt all visitors after a policy change.
         </p>
     </div>

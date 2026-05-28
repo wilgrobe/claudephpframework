@@ -23,7 +23,7 @@ use Core\Database\Migration;
  *     {"bg_color":"#fee","bg_image":"","padding_px":12,"radius_px":8}
  *
  * All nullable — existing rows continue to render unstyled. The
- * PageLayoutService sanitises the values on save so a pasted
+ * PageLayoutService sanitizes the values on save so a pasted
  * `bg_color = "javascript:…"` can't slip through into rendered CSS.
  */
 return new class extends Migration {

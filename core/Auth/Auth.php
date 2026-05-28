@@ -541,7 +541,7 @@ class Auth
 
         try {
             $svc = new \Modules\Loginanomaly\Services\LoginAnomalyService();
-            $finding = $svc->analyseLogin((int) $user['id'], $ip, $ua);
+            $finding = $svc->analyzeLogin((int) $user['id'], $ip, $ua);
             if ($finding === null) return;
 
             // Email the user on warn/alert. info-level findings are
@@ -562,7 +562,7 @@ class Auth
                       . "Implied speed: " . (int) ($finding['implied_kmh'] ?? 0) . " km/h\n\n"
                       . "If this was you (e.g. you're using a VPN or just landed somewhere new),\n"
                       . "no action is needed. If not, sign in to $appUrl/account/sessions and\n"
-                      . "terminate any sessions you don't recognise, then change your password.";
+                      . "terminate any sessions you don't recognize, then change your password.";
                 $html = '<div style="font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;color:#111">'
                       . '<h2 style="margin:0 0 .5rem 0">⚠️ Suspicious sign-in</h2>'
                       . '<p>' . nl2br(htmlspecialchars($body, ENT_QUOTES | ENT_HTML5)) . '</p></div>';

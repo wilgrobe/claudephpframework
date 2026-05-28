@@ -10,7 +10,7 @@ use Core\Database\Database;
  *
  * The pattern: lowercase ASCII letters / digits / underscores / hyphens
  * only, 3-50 chars (matching the column's VARCHAR(50)). Anything outside
- * that range gets normalised — Unicode chars stripped, whitespace
+ * that range gets normalized — Unicode chars stripped, whitespace
  * collapsed to underscores, leading / trailing punctuation trimmed.
  *
  * Suggestion order (first available wins for the *primary* suggestion;
@@ -137,9 +137,9 @@ class UsernameSuggester
      */
     private function candidates(?string $email, ?string $firstName, ?string $lastName): array
     {
-        $emailLocal = $this->normalise($this->beforeAt((string) $email));
-        $first      = $this->normalise((string) $firstName);
-        $last       = $this->normalise((string) $lastName);
+        $emailLocal = $this->normalize($this->beforeAt((string) $email));
+        $first      = $this->normalize((string) $firstName);
+        $last       = $this->normalize((string) $lastName);
 
         $list = [];
 
@@ -170,11 +170,11 @@ class UsernameSuggester
      */
     private function primaryStem(?string $email, ?string $firstName, ?string $lastName): string
     {
-        $emailLocal = $this->normalise($this->beforeAt((string) $email));
+        $emailLocal = $this->normalize($this->beforeAt((string) $email));
         if ($emailLocal !== '') return $emailLocal;
 
-        $first = $this->normalise((string) $firstName);
-        $last  = $this->normalise((string) $lastName);
+        $first = $this->normalize((string) $firstName);
+        $last  = $this->normalize((string) $lastName);
         if ($first !== '' && $last !== '') return $first . $last;
         if ($first !== '') return $first;
         if ($last !== '')  return $last;
@@ -191,7 +191,7 @@ class UsernameSuggester
      * Strip everything outside the allowed pattern, lowercase, trim
      * leading/trailing punctuation, collapse repeated separators.
      */
-    private function normalise(string $s): string
+    private function normalize(string $s): string
     {
         $s = strtolower(trim($s));
         // Replace whitespace with underscore

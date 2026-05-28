@@ -50,7 +50,7 @@ class ProfileController
         $twofa = $this->twoFactor->getUserTwoFactorInfo($userId);
 
         // Page-chrome Batch C: fragment + chrome wrap. Slug `profile`
-        // mirrors the URL it chromes. Admins customise via
+        // mirrors the URL it chromes. Admins customize via
         // /admin/system-layouts/profile.
         return Response::view('profile::show', [
             'user'           => $user,
@@ -198,7 +198,7 @@ class ProfileController
             'secure'   => !empty($_SERVER['HTTPS']),
         ]);
 
-        // Redirect back to where the user was. The referer is sanitised
+        // Redirect back to where the user was. The referer is sanitized
         // through the same same-origin check used for form submissions.
         $back = (string) ($_SERVER['HTTP_REFERER'] ?? '/profile');
         $hostNow = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));

@@ -113,7 +113,7 @@ class CookieConsentController
             $values[$key] = $this->settings->get($key, null, 'site');
         }
 
-        // Recent activity — last 50 events, summarised. Counts give the
+        // Recent activity — last 50 events, summarized. Counts give the
         // admin a one-glance sense of accept/reject ratios over the last
         // 30 days.
         $db = \Core\Database\Database::getInstance();

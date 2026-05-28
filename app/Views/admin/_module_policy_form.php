@@ -33,7 +33,7 @@ $accessRoles   = (string) ($values['access_roles']  ?? '');
 $accessGroups  = (string) ($values['access_groups'] ?? '');
 
 $defaultHelp = [
-    'all_users'   => 'Any authenticated user with the module\'s permission. (Default — preserves existing behaviour.)',
+    'all_users'   => 'Any authenticated user with the module\'s permission. (Default — preserves existing behavior.)',
     'admins_only' => 'Restrict to users with the <code>admin</code> or <code>super-admin</code> role.',
     'roles'       => 'Only users with one of the listed role slugs. Supply slugs comma-separated below.',
     'groups'      => 'Only members of the listed groups. Supply group ids comma-separated below.',

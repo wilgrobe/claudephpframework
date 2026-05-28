@@ -320,7 +320,7 @@ class Router
             // on every call — production-broken endpoints across
             // unsubscribe / GDPR / policies / retention / loginanomaly
             // / auditchain. Phase 43.193a fixed 5 GDPR admin methods
-            // by normalising signatures to `(Request): Response`, but
+            // by normalizing signatures to `(Request): Response`, but
             // the codebase has ~16 other methods still on the
             // multi-arg shape.
             //

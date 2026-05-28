@@ -8,7 +8,7 @@ use Core\Module\ModuleProvider;
  * Wires into the framework via:
  *
  *   1. Auth::notifyOnNewDeviceLogin — patched to call
- *      LoginAnomalyService::analyseLogin after the existing new-device
+ *      LoginAnomalyService::analyzeLogin after the existing new-device
  *      email logic. Geo-aware additional check.
  *
  *   2. Public ip-api.com lookups for IP→geo, cached 30 days per IP

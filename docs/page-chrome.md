@@ -4,7 +4,7 @@ The page-chrome system lets admins decorate any module page with the same
 composer that powers `pages` and the dashboard. A controller declares "this
 view should be wrapped in the layout named `messages`"; the framework
 fills in a header, runs the controller's view through a `primary` content
-slot inside that layout, then closes with the footer. Admins customise
+slot inside that layout, then closes with the footer. Admins customize
 the layout from `/admin/system-layouts/{slug}` — drop a hero strip above,
 a "Need help?" sidebar beside, a CTA below — without touching code.
 
@@ -183,7 +183,7 @@ without needing the `chromed_url` column to be populated (though
 populating it lights up the admin index's "View ↗" button — see below).
 
 Module-internal prefixes (`gdpr.account_data`) were the convention
-during Batch B, then discarded in Batch C in favour of the URL-mirroring
+during Batch B, then discarded in Batch C in favor of the URL-mirroring
 form. The `2026_05_02_500000_rename_gdpr_account_data_layout.php`
 migration renames the legacy slug if you have one in your install.
 
@@ -261,7 +261,7 @@ Notes on the metadata fields:
   chromes several pages (e.g. profile has both "read view" and "edit
   form").
 - `description` — one-sentence summary that hints at useful admin
-  customisations ("Drop a privacy-hero block above the slot…").
+  customizations ("Drop a privacy-hero block above the slot…").
 - `chromed_url` — what URL this layout chromes. Powers the admin
   index's "View ↗" button. Optional; NULL means "this layout isn't a
   standalone page" (dashboard partials, etc).
@@ -269,7 +269,7 @@ Notes on the metadata fields:
   container width so the chromed default renders identically.
 
 `seedLayout()` is idempotent (INSERT IGNORE on the primary key);
-re-running the migration after an admin has customised the layout
+re-running the migration after an admin has customized the layout
 won't clobber anything. `seedSlot()` is also idempotent — uniqueness
 keyed on (`system_name`, `row_index`, `col_index`, `slot_name`).
 

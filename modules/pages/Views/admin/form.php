@@ -852,7 +852,7 @@ function rebuildHiddenInputs() {
     });
 
     // Row + cell styles posted as single JSON-encoded fields. The
-    // service decodes via coerceJsonInput + sanitises per entry.
+    // service decodes via coerceJsonInput + sanitizes per entry.
     wrap.insertAdjacentHTML('beforeend',
         `<input type="hidden" name="row_styles"  value="${escapeAttr(JSON.stringify(__rowStyles))}">
          <input type="hidden" name="cell_styles" value="${escapeAttr(JSON.stringify(__cellStyles))}">`
@@ -956,7 +956,7 @@ function openCellStyleModal(rowIdx, colIdx) {
 
     const key = rowIdx + '-' + colIdx;
     const cur = __cellStyles[key] || {};
-    let html = '<p class="cb-modal-help" style="margin-bottom:.85rem">Cell-level wrapper. Background colors and image URLs are sanitised on save.</p>';
+    let html = '<p class="cb-modal-help" style="margin-bottom:.85rem">Cell-level wrapper. Background colors and image URLs are sanitized on save.</p>';
     for (const f of __commonStyleSchema) {
         html += renderSchemaField({ ...f, key: '__style_' + f.key }, prefixedStyle(cur, '__style_'));
     }
@@ -1236,7 +1236,7 @@ function handleRepClick(e) {
 }
 
 /* Read every common-style field into an unprefixed object; drop empty
-   strings + nulls + zeroes so a sanitised-empty style serialises as
+   strings + nulls + zeroes so a sanitized-empty style serialises as
    {} (which the service stores as NULL). Used by all three modes. */
 function readCommonStyleFromModal(extras) {
     const out = {};

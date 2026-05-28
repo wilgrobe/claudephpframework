@@ -6,7 +6,7 @@ namespace Core\Queue;
  * Worker — drain phase of the queue.
  *
  * Pull up to N ready jobs via DatabaseQueue::reserve(), instantiate each one
- * from its stored class + payload, run handle(), and finalise the row
+ * from its stored class + payload, run handle(), and finalize the row
  * according to whether it threw.
  *
  * Intentionally synchronous and single-pass. Long-running daemons are out of
@@ -24,7 +24,7 @@ class Worker
     }
 
     /**
-     * Reserve up to $limit ready jobs from $queue, run each, and finalise.
+     * Reserve up to $limit ready jobs from $queue, run each, and finalize.
      *
      * @return array{picked:int, succeeded:int, failed:int, released:int, ids:int[]}
      */

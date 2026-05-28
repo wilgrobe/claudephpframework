@@ -224,7 +224,7 @@ final class ActivityController
 
     /**
      * Pick an emoji icon for an action / notification type. Falls back
-     * to a default dot when the prefix isn't recognised. Cheap +
+     * to a default dot when the prefix isn't recognized. Cheap +
      * deterministic + keeps the timeline scannable.
      */
     private function iconFor(string $type): string

@@ -396,7 +396,7 @@
     /* ── Server-emitted token catalogue ──
        Each entry: { css, default, default_dark }. Used to look up the
        css-var name for each input AND to fall back to shipped defaults
-       when the input is empty (admin hasn't customised this token).
+       when the input is empty (admin hasn't customized this token).
        Without that fallback, switching to Dark on the preview's own
        sub-toggle does nothing because most dark inputs are empty. */
     const TOKEN_DEFAULTS = <?= json_encode(array_map(
@@ -438,7 +438,7 @@
 
         // Empty input means "use the shipped default for this mode" - that's
         // what makes the dark mode actually look dark when the admin
-        // hasn't customised any dark values yet.
+        // hasn't customized any dark values yet.
         if (val === '') {
             val = isDark ? def.default_dark : def.default;
         }
@@ -467,7 +467,7 @@
         }
         // For dark mode, also flip the preview's bg/text via the dark
         // defaults of any tokens that have NO matching input value
-        // (admin hasn't customised dark for that token).
+        // (admin hasn't customized dark for that token).
     }
 
     document.querySelectorAll('input[name], select[name], textarea[name]').forEach(el => {

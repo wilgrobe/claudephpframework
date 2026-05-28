@@ -1,5 +1,5 @@
 <?php
-// Smoke-test the color + bg-url sanitisers. These are the gates that
+// Smoke-test the color + bg-url sanitizers. These are the gates that
 // stop pasted CSS from becoming inline-CSS-injection on the public page.
 
 define('BASE_PATH', dirname(__DIR__, 2));
@@ -10,7 +10,7 @@ spl_autoload_register(function (string $class) {
 });
 
 // PageLayoutService's constructor wants a Database singleton; the
-// sanitisers are static methods that don't need it. Direct call.
+// sanitizers are static methods that don't need it. Direct call.
 use Core\Services\PageLayoutService as P;
 
 $colorCases = [
@@ -30,7 +30,7 @@ $colorCases = [
     ['  red  ',                    'red'],
 ];
 foreach ($colorCases as [$in, $want]) {
-    $got = P::sanitiseColor($in);
+    $got = P::sanitizeColor($in);
     echo ($got === $want ? '✅' : '❌'),
          ' color ', json_encode($in), ' -> ', json_encode($got),
          ($got === $want ? '' : "  (wanted " . json_encode($want) . ')'), "\n";
@@ -48,7 +48,7 @@ $urlCases = [
     ['',                             ''],
 ];
 foreach ($urlCases as [$in, $want]) {
-    $got = P::sanitiseBgUrl($in);
+    $got = P::sanitizeBgUrl($in);
     echo ($got === $want ? '✅' : '❌'),
          ' bg_url ', json_encode($in), ' -> ', json_encode($got),
          ($got === $want ? '' : "  (wanted " . json_encode($want) . ')'), "\n";
@@ -56,7 +56,7 @@ foreach ($urlCases as [$in, $want]) {
 
 echo "\n";
 
-// Full row-style sanitiser sweep with mixed valid + invalid fields.
+// Full row-style sanitizer sweep with mixed valid + invalid fields.
 $dirty = [
     'bg_color'           => 'javascript:alert(1)',  // → dropped
     'bg_image'           => 'https://ok/x.png',      // → kept
@@ -67,9 +67,9 @@ $dirty = [
     'radius_px'          => -10,                     // → dropped (negative)
     'extraneous'         => 'gets ignored',          // → dropped
 ];
-$clean = P::sanitiseRowStyle($dirty);
+$clean = P::sanitizeRowStyle($dirty);
 $expectedKeys = ['bg_image','full_bleed','content_padding_px','text_color'];
 sort($expectedKeys);
 $gotKeys = array_keys($clean); sort($gotKeys);
 echo ($gotKeys === $expectedKeys ? '✅' : '❌'),
-     ' row sanitiser produced expected keys: ', json_encode($gotKeys), "\n";
+     ' row sanitizer produced expected keys: ', json_encode($gotKeys), "\n";

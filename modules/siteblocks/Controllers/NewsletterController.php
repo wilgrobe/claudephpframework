@@ -85,7 +85,7 @@ class NewsletterController
     /**
      * Sanity-check the redirect target so the form can't be turned into
      * an open redirect. Same approach Auth::safeRedirect uses for the
-     * post-login intended-URL — only relative paths are honoured.
+     * post-login intended-URL — only relative paths are honored.
      */
     private function safeRedirect(string $url): string
     {

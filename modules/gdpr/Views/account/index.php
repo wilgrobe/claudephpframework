@@ -48,7 +48,7 @@ $restricted = !empty($user['processing_restricted_at']);
         <p style="margin:0 0 1rem;color:var(--color-gray-500);font-size:13px;line-height:1.6">
             Generate a ZIP file containing every record we hold about your
             account — your profile, comments, posts, orders, and more.
-            Organised by module so you can see what we keep and where.
+            Organized by module so you can see what we keep and where.
         </p>
         <form method="POST" action="/account/data/export">
             <?= csrf_field() ?>

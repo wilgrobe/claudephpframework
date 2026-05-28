@@ -6,7 +6,7 @@
 
 ## Problem
 
-The framework currently customises layouts at two levels:
+The framework currently customizes layouts at two levels:
 
 1. **`pages` module pages** (`/terms`, `/about`, anything an admin creates at
    `/admin/pages`) are fully editable via the page composer — title, body,
@@ -25,7 +25,7 @@ on `/messages`, `/feed`, `/shop`, `/events`, `/kb`, `/account/data`,
 
 That is fine for an opinionated CMS but limiting for the web-app builder
 direction the framework is heading toward — tenants of a hosted builder will
-expect to brand and customise every visible surface, not just admin-created
+expect to brand and customize every visible surface, not just admin-created
 pages.
 
 ## Goal
@@ -57,13 +57,13 @@ backward compatibility for modules that don't opt in.
 
 ## Architecture
 
-The dashboard already shows the shape. Generalise it.
+The dashboard already shows the shape. Generalize it.
 
 A **module page** that opts in to chrome:
 
 1. Has a named system layout (e.g. `messaging.thread_index`).
 2. The system layout contains zero or more **block placements** (existing
-   behaviour) PLUS at least one **content slot placement** (new).
+   behavior) PLUS at least one **content slot placement** (new).
 3. Content slot placements are filled at request time by the controller's
    rendered view.
 4. The layout renders top-to-bottom: each row owns its column grid, each
@@ -343,7 +343,7 @@ Ships the rendering infrastructure but converts no module pages.
   - `chrome()` with multiple slots interpolates correctly; missing slots
     render empty; extra slots are ignored.
   - `placement_type='block'` rows still render via BlockRegistry.
-  - `visible_to` is honoured for blocks but ignored for slots.
+  - `visible_to` is honored for blocks but ignored for slots.
 - Admin UI: editor handles `placement_type` selector, slot_name input,
   badges; index page surfaces the new columns.
 
@@ -458,7 +458,7 @@ all layouts in one query at boot.
 
 If a controller calls `withLayout('messaging.thread_index')` but no
 migration has seeded that layout (admin nuked it, fresh install before
-migrate, etc.), the page renders unwrapped. Documented behaviour, not
+migrate, etc.), the page renders unwrapped. Documented behavior, not
 a bug.
 
 Optional: ship a generic fallback layout `chrome.default` with a single
@@ -480,7 +480,7 @@ doesn't yet exist; subsequent updates are admin-driven.
 Module authors who want to push a new layout shape to existing
 installs can either (a) ship a one-shot migration that explicitly
 overrides the existing layout (with a flag the admin can opt out of),
-or (b) accept that the admin's existing customisation wins.
+or (b) accept that the admin's existing customization wins.
 
 ### 7. AJAX / HTMX detection
 
@@ -525,9 +525,9 @@ These are real future capabilities but explicitly NOT part of this work:
   current editor uses numeric row/col/sort_order inputs. UX upgrade
   is desirable but separate.
 - **A/B testing layouts.** Out of scope.
-- **Per-route caching of chromed output.** Optional optimisation.
-- **Localised layouts** (different layout per locale). Localisable
-  block content already works via i18n; layout-level localisation is
+- **Per-route caching of chromed output.** Optional optimization.
+- **Localized layouts** (different layout per locale). Localisable
+  block content already works via i18n; layout-level localization is
   a future concern.
 - **Builder-tier layout entitlement.** The hosted web-app builder may
   want to limit how many custom layouts a tenant can have. That's a
@@ -552,7 +552,7 @@ risk; B-E are conversions following an established pattern.
 After all five batches, when an admin lands on
 `/admin/system-layouts`:
 
-- They see a categorised list of every module's pages with
+- They see a categorized list of every module's pages with
   friendly names, grouped by module.
 - Each entry can be edited — they can add blocks (header strip,
   sidebar, footer CTA, custom HTML, marketing primitives), change
@@ -564,4 +564,4 @@ After all five batches, when an admin lands on
 - The same composer the framework already ships handles all of it —
   no new admin concept to learn.
 
-That's a hosted web-app builder's foundation for site customisation.
+That's a hosted web-app builder's foundation for site customization.

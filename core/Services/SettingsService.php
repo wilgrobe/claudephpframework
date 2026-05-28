@@ -133,7 +133,7 @@ class SettingsService
         } elseif (is_array($value)) {
             // Legacy back-compat: array passed with non-json type still gets
             // json_encode'd. Callers should use type='json' explicitly going
-            // forward but we don't break existing behaviour.
+            // forward but we don't break existing behavior.
             $encoded = json_encode($value);
         } else {
             $encoded = (string) $value;
@@ -150,7 +150,7 @@ class SettingsService
         // FOR UPDATE inside a tx instead).
         //
         // WHERE column order matches the (scope, scope_key, key)
-        // UNIQUE index so the optimiser uses the leftmost prefix.
+        // UNIQUE index so the optimizer uses the leftmost prefix.
         $this->db->beginTransaction();
         try {
             $existing = $this->db->fetchOne(

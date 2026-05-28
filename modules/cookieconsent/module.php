@@ -32,7 +32,7 @@ return new class extends ModuleProvider {
      * `banner-ui` separates the visual banner partial + reopen-link
      * block from the underlying `consent_allowed()` gate logic. Sites
      * using an external CMP (Cookiebot, OneTrust) want the framework's
-     * gate behaviour without our banner UI competing with theirs.
+     * gate behavior without our banner UI competing with theirs.
      * The reopen-link block + banner partial check the gate before
      * rendering anything.
      */
