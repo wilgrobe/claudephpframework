@@ -57,6 +57,75 @@ class StripeService implements \Core\Contracts\PaymentGateway
         return $this->config['public_key'];
     }
 
+    /**
+     * Resolve the per-site statement-descriptor suffix that will appear on
+     * the customer's credit-card statement alongside the platform's
+     * built-in Stripe prefix. Configurable two ways, in this priority:
+     *
+     *   1. site setting `stripe.statement_descriptor_suffix`
+     *      (per-tenant; edit via your admin settings UI)
+     *   2. env var `STRIPE_STATEMENT_DESCRIPTOR_SUFFIX`
+     *      (deployment-wide fallback)
+     *
+     * Returns null when neither is set, in which case Stripe falls back
+     * to the platform's plain statement descriptor with no suffix
+     * appended.
+     *
+     * Stripe enforces these rules on the suffix server-side; we sanitize
+     * client-side too so operators see what'll actually appear on
+     * statements:
+     *   - 1-22 characters max
+     *   - allowed: alphanumeric, spaces, and . , - _ &
+     *   - disallowed: < > \ ' " * /
+     *
+     * Static so callers can reach it without container resolution. Every
+     * checkout-session and payment-intent creation site across the
+     * framework + downstream modules consults this helper.
+     */
+    public static function statementDescriptorSuffix(): ?string
+    {
+        $raw = '';
+
+        // (1) Site settings — only consulted when the setting() helper
+        // is available. Avoid noisy errors in CLI contexts where the
+        // helper might be missing or the table absent on a half-set-up
+        // install.
+        if (function_exists('setting')) {
+            try {
+                $val = setting('stripe.statement_descriptor_suffix', '');
+                if (is_string($val)) {
+                    $raw = trim($val);
+                }
+            } catch (\Throwable $e) {
+                // Settings table missing or unreachable — fall through to env.
+            }
+        }
+
+        // (2) .env fallback
+        if ($raw === '') {
+            $env = getenv('STRIPE_STATEMENT_DESCRIPTOR_SUFFIX');
+            if ($env !== false) {
+                $raw = trim((string) $env);
+            }
+        }
+
+        if ($raw === '') {
+            return null;
+        }
+
+        // Strip Stripe-disallowed characters (< > \ ' " * /). Stripe would
+        // reject the whole charge if these came through unfiltered.
+        $clean = preg_replace('/[<>\'"\\\\\/*]/', '', $raw);
+        // Collapse repeated whitespace
+        $clean = preg_replace('/\s+/', ' ', trim((string) $clean));
+        if ($clean === '') {
+            return null;
+        }
+        // 22-char cap; Stripe truncates anyway but we want what we send to
+        // match what'll appear on statements.
+        return mb_substr($clean, 0, 22);
+    }
+
     // ── PaymentGateway surface ────────────────────────────────────────────
 
     public function charge(int $amountCents, string $currency, string $source, array $meta = []): array
@@ -74,6 +143,10 @@ class StripeService implements \Core\Contracts\PaymentGateway
             'automatic_payment_methods[enabled]'         => 'true',
             'automatic_payment_methods[allow_redirects]' => 'never',
         ], $this->flattenMeta($meta));
+
+        if ($suffix = self::statementDescriptorSuffix()) {
+            $body['statement_descriptor_suffix'] = $suffix;
+        }
 
         return $this->normalize($this->call('POST', '/v1/payment_intents', $body));
     }
@@ -98,6 +171,10 @@ class StripeService implements \Core\Contracts\PaymentGateway
             'automatic_payment_methods[enabled]'         => 'true',
             'automatic_payment_methods[allow_redirects]' => 'never',
         ], $this->flattenMeta($meta));
+
+        if ($suffix = self::statementDescriptorSuffix()) {
+            $body['statement_descriptor_suffix'] = $suffix;
+        }
 
         return $this->normalize($this->call('POST', '/v1/payment_intents', $body));
     }
