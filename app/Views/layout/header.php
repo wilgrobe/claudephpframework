@@ -614,7 +614,27 @@ $__hdrShowSearch = $__hdrShowSearch !== false && $__hdrShowSearch !== '' && $__h
                     <?php endif; ?>
                     <nav class="topbar-nav" aria-label="Primary">
                         <?php foreach (menu('header') as $__tb_item): ?>
-                            <a href="<?= e($__tb_item['url'] ?? '#') ?>"><?= e($__tb_item['label']) ?></a>
+                            <?php if (!empty($__tb_item['children'])): ?>
+                                <!-- Menu holder with children → topbar dropdown using
+                                     the existing .topbar-dd CSS family. Mirrors the
+                                     Admin dropdown + the sidebar's holder handling.
+                                     Without this, the topbar renders holders as flat
+                                     <a href=""> placeholders that do nothing on
+                                     click. -->
+                                <div class="topbar-dd">
+                                    <button type="button" class="topbar-dd-toggle" aria-haspopup="menu" aria-expanded="false"
+                                            onclick="var p=this.parentElement;var o=p.classList.toggle('open');this.setAttribute('aria-expanded',o?'true':'false');">
+                                        <?= e($__tb_item['label']) ?> ▾
+                                    </button>
+                                    <div class="topbar-dd-menu" role="menu">
+                                        <?php foreach ($__tb_item['children'] as $__tb_child): ?>
+                                        <a href="<?= e($__tb_child['url'] ?? '#') ?>" role="menuitem"><?= e($__tb_child['label']) ?></a>
+                                        <?php endforeach; unset($__tb_child); ?>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <a href="<?= e($__tb_item['url'] ?? '#') ?>"><?= e($__tb_item['label']) ?></a>
+                            <?php endif; ?>
                         <?php endforeach; unset($__tb_item); ?>
 
                         <?php if ($auth->check()): ?>

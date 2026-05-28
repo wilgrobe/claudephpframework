@@ -173,7 +173,8 @@ class FaqController
     {
         $cats = $this->db->fetchAll(
             "SELECT fc.*, JSON_ARRAYAGG(JSON_OBJECT(
-                'id', f.id, 'question', f.question, 'answer', f.answer
+                'id', f.id, 'question', f.question, 'answer', f.answer,
+                'sort_order', f.sort_order
              )) AS faqs
              FROM faq_categories fc
              LEFT JOIN faqs f ON f.category_id = fc.id AND f.is_public = 1 AND f.is_active = 1
@@ -181,13 +182,27 @@ class FaqController
              GROUP BY fc.id ORDER BY fc.sort_order"
         );
 
-        // Fallback for MySQL versions without JSON_ARRAYAGG
-        if (empty($cats)) {
+        if (!empty($cats)) {
+            // Decode the JSON_ARRAYAGG payload into the `faqs_list` key the
+            // view consumes. JSON_ARRAYAGG returns a row even when the
+            // LEFT JOIN had no matches — it emits [{"id":null,...}], so we
+            // filter out the null-id placeholder rows.
+            foreach ($cats as &$cat) {
+                $decoded = json_decode($cat['faqs'] ?? '[]', true);
+                if (!is_array($decoded)) $decoded = [];
+                $real = array_values(array_filter($decoded, fn($f) => !empty($f['id'])));
+                usort($real, fn($a, $b) => ((int)($a['sort_order'] ?? 0)) <=> ((int)($b['sort_order'] ?? 0)));
+                $cat['faqs_list'] = $real;
+            }
+            unset($cat);
+        } else {
+            // Fallback for MySQL versions without JSON_ARRAYAGG
             $cats    = $this->db->fetchAll("SELECT * FROM faq_categories WHERE is_public = 1 ORDER BY sort_order");
             $allFaqs = $this->db->fetchAll("SELECT * FROM faqs WHERE is_public = 1 AND is_active = 1 ORDER BY sort_order");
             foreach ($cats as &$cat) {
                 $cat['faqs_list'] = array_filter($allFaqs, fn($f) => $f['category_id'] == $cat['id']);
             }
+            unset($cat);
         }
 
         $uncategorized = $this->db->fetchAll(

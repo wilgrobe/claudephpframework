@@ -139,6 +139,29 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     .nav-links { display: flex; gap: 1.25rem; align-items: center; }
     .nav-links a { text-decoration: none; color: var(--text-default, var(--color-gray-700)); font-size: 14px; }
     .nav-links a:hover { color: var(--color-primary, var(--color-primary)); }
+    /* Dropdown holders (menu kind=holder with children) */
+    .nav-dropdown { position: relative; }
+    .nav-dropdown > a, .nav-dropdown-btn {
+        background: transparent; border: 0; padding: 0; cursor: pointer;
+        font: inherit; font-size: 14px;
+        color: var(--text-default, var(--color-gray-700));
+        text-decoration: none;
+    }
+    .nav-dropdown:hover > a, .nav-dropdown-btn:hover { color: var(--color-primary); }
+    .nav-dropdown-menu {
+        display: none; position: absolute; top: 100%; right: 0; left: auto;
+        min-width: 200px; background: var(--bg-panel, #fff);
+        border: 1px solid var(--border-default, var(--color-gray-200));
+        border-radius: var(--radius-md, 6px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        padding: .35rem 0; margin-top: .5rem; z-index: 100;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown.open .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a {
+        display: block; padding: .55rem 1rem; font-size: 13.5px; white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover { background: var(--accent-subtle, var(--color-gray-50)); }
     .btn-login { background: var(--color-primary, var(--color-primary)); color: var(--accent-contrast, #fff) !important; padding: .4rem .9rem; border-radius: var(--radius-md, 6px); font-size: 13.5px; font-weight: 500; }
 
     .page-hero { background: var(--bg-panel, #fff); border-bottom: 1px solid var(--border-default, var(--color-gray-200)); padding: 3rem 1.5rem; text-align: center; }
@@ -189,8 +212,41 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
         }
     ?></a>
     <nav class="nav-links">
-        <a href="/faq">FAQ</a>
+        <?php
+        // Render the configured header menu (menus.location='header') for
+        // guest pages, mirroring layout/header.php's authed-shell pattern.
+        // menu() applies per-item visibility internally so 'logged_in'
+        // items naturally hide for guests. Falls back to a hardcoded FAQ
+        // link when no menu items resolve so an unconfigured install
+        // still has something usable in the header.
+        $__pubHeaderItems = function_exists('menu') ? menu('header') : [];
+        if (empty($__pubHeaderItems)) {
+            echo '<a href="/faq">FAQ</a>';
+        } else {
+            foreach ($__pubHeaderItems as $__pubItem) {
+                $__pubLabel = htmlspecialchars((string)($__pubItem['label'] ?? ''), ENT_QUOTES);
+                if (!empty($__pubItem['children'])) {
+                    echo '<div class="nav-dropdown" onclick="this.classList.toggle(\'open\')">';
+                    if (!empty($__pubItem['url'])) {
+                        echo '<a href="' . htmlspecialchars((string)$__pubItem['url'], ENT_QUOTES) . '">' . $__pubLabel . ' ▾</a>';
+                    } else {
+                        echo '<button type="button" class="nav-dropdown-btn">' . $__pubLabel . ' ▾</button>';
+                    }
+                    echo '<div class="nav-dropdown-menu">';
+                    foreach ($__pubItem['children'] as $__pubChild) {
+                        echo '<a href="' . htmlspecialchars((string)($__pubChild['url'] ?? '#'), ENT_QUOTES) . '">'
+                           . htmlspecialchars((string)($__pubChild['label'] ?? ''), ENT_QUOTES) . '</a>';
+                    }
+                    echo '</div></div>';
+                } else {
+                    echo '<a href="' . htmlspecialchars((string)($__pubItem['url'] ?? '#'), ENT_QUOTES) . '">' . $__pubLabel . '</a>';
+                }
+            }
+        }
+        ?>
+        <?php if (\Core\Auth\Auth::getInstance()->guest()): ?>
         <a href="/login" class="btn-login">Sign In</a>
+        <?php endif; ?>
     </nav>
 </header>
 
