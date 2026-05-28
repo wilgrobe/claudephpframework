@@ -26,6 +26,7 @@ $panels = [
     ['content',      'Content',                '📝',  'Comments, reviews, posts, polls, forms'],
     ['commerce',     'Commerce',               '🛒',  'Store features, currency, payments'],
     ['integrations', 'Integrations',           '🔌',  'Mail, analytics, Sentry, modules'],
+    ['contact',      'Contact form',           '✉️',  'Recipients, autoreply, anti-spam'],
     ['other',        'Other / Unmanaged',      '🗂️',  'Free-form ad-hoc keys'],
 ];
 $activePanel = $activePanel ?? '';
