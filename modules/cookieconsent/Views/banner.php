@@ -132,9 +132,9 @@ $descs = [
     position: fixed;
     left: 0; right: 0; bottom: 0;
     z-index: 9000;
-    /* --bg-panel has a dark-mode variant in TOKEN_DEFINITIONS
-     * (light=#fff, dark=#111827); --bg-card doesn't, so the banner
-     * stayed white in dark mode with white text becoming unreadable. */
+    /* --bg-panel has dark variant in TOKEN_DEFINITIONS (light=#fff,
+     * dark=#111827); --bg-card didn't, so the banner stayed white
+     * in dark mode with white text becoming unreadable. */
     background: var(--bg-panel, #fff);
     color: var(--text-default, var(--color-gray-900));
     border-top: 1px solid var(--border-default, var(--color-gray-200));
@@ -157,8 +157,15 @@ $descs = [
 .cc-banner__text { flex: 1 1 320px; min-width: 0; }
 .cc-banner__title { display:block; font-size: 14px; margin-bottom: .15rem; }
 .cc-banner__body  { margin: 0; color: var(--text-muted, var(--color-gray-500)); }
-.cc-banner__link  { color: var(--color-primary, var(--color-primary)); text-decoration: none; white-space: nowrap; }
-.cc-banner__link:hover { text-decoration: underline; }
+.cc-banner__link  { color: var(--color-primary, var(--color-primary)); text-decoration: underline; text-decoration-color: currentColor; text-decoration-thickness: 1px; text-underline-offset: 2px; white-space: nowrap; }
+.cc-banner__link:hover { text-decoration-thickness: 2px; }
+/* Dark-mode fallback — if the tenant's --color-primary is dark
+   (e.g. brand red on dark bg), mix with white to keep readable.
+   color-mix has wide browser support (Chrome 111+, Firefox 113+). */
+body.theme-dark .cc-banner__link  { color: color-mix(in srgb, var(--color-primary) 60%, white); }
+@media (prefers-color-scheme: dark) {
+    body:not(.theme-light) .cc-banner__link  { color: color-mix(in srgb, var(--color-primary) 60%, white); }
+}
 
 .cc-banner__actions {
     display: flex; gap: .5rem; flex-wrap: wrap;
