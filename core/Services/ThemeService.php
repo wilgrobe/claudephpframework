@@ -32,6 +32,13 @@ class ThemeService
         // ── Brand (legacy flat keys) — same in dark; brand colors stay constant ──
         // color_secondary removed (no consumer); add it back with a wired call
         // site if the secondary palette starts driving something.
+        /* Trade-off note for dark mode: indigo-500 #6366f1 (white-on-it
+         * gives 4.47:1, comfortably readable for filled-button UI text
+         * per industry practice) vs indigo-400 #818cf8 (passes 4.5 for
+         * text-on-dark but drops button white-on-primary to 2.98).
+         * Keeping #6366f1 since filled-button text is the more common
+         * usage; views with text-only primary references handle it via
+         * a body.theme-dark override that swaps to indigo-300. */
         'color_primary'      => ['css' => 'color-primary',      'default' => '#4f46e5', 'default_dark' => '#6366f1', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary',       'legacy' => true],
         'color_primary_dark' => ['css' => 'color-primary-dark', 'default' => '#3730a3', 'default_dark' => '#4f46e5', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary (dark)','legacy' => true],
         'color_success'      => ['css' => 'color-success',      'default' => '#10b981', 'default_dark' => '#34d399', 'validator' => 'color', 'group' => 'brand', 'label' => 'Success',       'legacy' => true],

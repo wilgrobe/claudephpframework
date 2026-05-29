@@ -132,7 +132,10 @@ $descs = [
     position: fixed;
     left: 0; right: 0; bottom: 0;
     z-index: 9000;
-    background: var(--bg-card, #fff);
+    /* --bg-panel has a dark-mode variant in TOKEN_DEFINITIONS
+     * (light=#fff, dark=#111827); --bg-card doesn't, so the banner
+     * stayed white in dark mode with white text becoming unreadable. */
+    background: var(--bg-panel, #fff);
     color: var(--text-default, var(--color-gray-900));
     border-top: 1px solid var(--border-default, var(--color-gray-200));
     box-shadow: 0 -4px 16px rgba(0,0,0,.08);
@@ -184,10 +187,18 @@ $descs = [
    Same padding + font-weight + border-radius as --primary; only the fill
    color differs. Slate-700 in light mode; theme tokens take over in dark. */
 .cc-btn--reject {
-    background: var(--bg-button-neutral, var(--color-gray-700));
-    color: var(--text-on-dark, #fff);
+    /* --bg-button-neutral isn't a defined framework token, so it
+     * always fell back to gray-700 even in dark mode where the dark
+     * fallback was producing white-on-gray-300 unreadable buttons.
+     * Hardcoded fallback chain handles both modes correctly. */
+    background: var(--color-gray-700);
+    color: #fff;
 }
-.cc-btn--reject:hover   { background: var(--bg-button-neutral-hover, #1f2937); }
+.cc-btn--reject:hover   { background: #1f2937; }
+body.theme-dark .cc-btn--reject { background: #374151; }
+@media (prefers-color-scheme: dark) {
+    body:not(.theme-light) .cc-btn--reject { background: #374151; }
+}
 .cc-btn--ghost {
     background: transparent;
     border-color: var(--border-default, var(--color-gray-300));
