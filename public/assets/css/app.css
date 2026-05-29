@@ -38,6 +38,24 @@
     --shadow-md:          0 4px 6px -1px rgba(0,0,0,.08);
     --sidebar-width:      240px;
     --transition:         .15s ease;
+
+    /* Phase 43.11 — non-color page-style tokens. Defaults below match
+       the framework's pre-existing hardcoded values so unset projects
+       render identically. Admin overrides come in via
+       ThemeService::renderOverrideStyle() (which fetches saved
+       project_settings rows and emits them as --style-* CSS vars on
+       :root). Consumers below this :root block reference these via
+       var(--style-*) so admin overrides propagate site-wide. */
+    --style-border-card-radius:    12px;
+    --style-border-card-width:     1px;
+    --style-border-button-radius:  6px;
+    --style-spacing-section-padding: 48px;
+    --style-spacing-card-padding:    16px;
+    --style-spacing-element-gap:     12px;
+    --style-font-h1-size:    24px;
+    --style-font-h2-size:    18px;
+    --style-font-body-size:  14px;
+    --style-font-heading-weight: 700;
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -47,9 +65,27 @@ body {
     font-family: var(--font);
     background: var(--bg-page, var(--color-gray-50));
     color: var(--text-default, var(--color-gray-900));
-    font-size: 14px;
+    font-size: var(--style-font-body-size, 14px);
+    /* Phase 43.33 — body weight + italic from --style-font-body-* tokens. */
+    font-weight: var(--style-font-body-weight, 400);
+    font-style: var(--style-font-body-italic, normal);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+}
+
+/* Phase 43.11 — public-page chrome heading scale + weight driven by
+   --style-font-* tokens. Admin overrides at /admin/settings/theme (or
+   wizard step 6) shift the whole heading ramp without per-rule edits. */
+/* Phase 43.31 — h1/h2/h3 use --font-family-heading when set, else
+   fall back to body. code/pre/kbd use --font-family-mono. */
+/* Phase 43.33 — heading italic + mono weight/italic via dedicated tokens. */
+h1 { font-size: var(--style-font-h1-size, 24px); font-weight: var(--style-font-heading-weight, 700); font-style: var(--style-font-heading-italic, normal); font-family: var(--font-family-heading, var(--font-family-body, var(--font))); }
+h2 { font-size: var(--style-font-h2-size, 18px); font-weight: var(--style-font-heading-weight, 700); font-style: var(--style-font-heading-italic, normal); font-family: var(--font-family-heading, var(--font-family-body, var(--font))); }
+h3 { font-size: calc(var(--style-font-h2-size, 18px) * 0.9); font-weight: var(--style-font-heading-weight, 700); font-style: var(--style-font-heading-italic, normal); font-family: var(--font-family-heading, var(--font-family-body, var(--font))); }
+code, pre, kbd, samp {
+    font-family: var(--font-family-mono, ui-monospace, 'JetBrains Mono', 'Fira Code', monospace);
+    font-weight: var(--style-font-mono-weight, 400);
+    font-style: var(--style-font-mono-italic, normal);
 }
 
 /* ── Dark-mode form-input fallback ────────────────────────────
@@ -75,6 +111,34 @@ body.theme-dark textarea {
     color: var(--text-default);
     border-color: var(--border-strong);
 }
+
+/* Global dark-mode overrides for inline-styled light-tinted rows
+   commonly used across admin tables (danger highlight = #fef2f2,
+   warning = #fffbeb, etc.). Without these, dark-mode users see
+   light-tinted rows with white text inheritance = invisible. */
+body.theme-dark [style*="background:#fef2f2"],
+body.theme-dark [style*="background: #fef2f2"] { background: rgba(185, 28, 28, .15) !important; color: var(--text-default) !important; }
+body.theme-dark [style*="background:#fffbeb"],
+body.theme-dark [style*="background: #fffbeb"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+body.theme-dark [style*="background:#fef3c7"],
+body.theme-dark [style*="background: #fef3c7"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+body.theme-dark [style*="background:#fef9c3"],
+body.theme-dark [style*="background: #fef9c3"] { background: rgba(202, 138, 4, .15) !important; color: var(--text-default) !important; }
+body.theme-dark [style*="background:#eef2ff"],
+body.theme-dark [style*="background: #eef2ff"] { background: rgba(79, 70, 229, .15) !important; color: var(--text-default) !important; }
+@media (prefers-color-scheme: dark) {
+    body:not(.theme-light) [style*="background:#fef2f2"],
+    body:not(.theme-light) [style*="background: #fef2f2"] { background: rgba(185, 28, 28, .15) !important; color: var(--text-default) !important; }
+    body:not(.theme-light) [style*="background:#fffbeb"],
+    body:not(.theme-light) [style*="background: #fffbeb"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+    body:not(.theme-light) [style*="background:#fef3c7"],
+    body:not(.theme-light) [style*="background: #fef3c7"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+    body:not(.theme-light) [style*="background:#fef9c3"],
+    body:not(.theme-light) [style*="background: #fef9c3"] { background: rgba(202, 138, 4, .15) !important; color: var(--text-default) !important; }
+    body:not(.theme-light) [style*="background:#eef2ff"],
+    body:not(.theme-light) [style*="background: #eef2ff"] { background: rgba(79, 70, 229, .15) !important; color: var(--text-default) !important; }
+}
+
 a { color: var(--color-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 img { max-width: 100%; height: auto; }
@@ -243,20 +307,23 @@ textarea:focus-visible {
    so authed views get the theme-aware versions and unauthed
    views get these baseline versions.                            */
 
-/* Cards */
+/* Cards — Phase 43.11 routes radius / border-width / inner padding
+   through --style-* tokens so admin overrides at /admin/settings/theme
+   (or wizard step 6) apply site-wide. Var fallbacks preserve the
+   pre-existing visual baseline. */
 .card {
     background: var(--bg-panel, #fff);
-    border-radius: var(--radius);
+    border-radius: var(--style-border-card-radius, var(--radius));
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-default, var(--color-gray-200));
+    border: var(--style-border-card-width, 1px) solid var(--border-default, var(--color-gray-200));
 }
 .card-header {
-    padding: 1rem 1.25rem;
+    padding: var(--style-spacing-card-padding, 1rem) 1.25rem;
     border-bottom: 1px solid var(--color-gray-200);
     display: flex; align-items: center; justify-content: space-between;
 }
 .card-header h2 { margin: 0; font-size: .95rem; font-weight: 600; }
-.card-body { padding: 1.25rem; }
+.card-body { padding: var(--style-spacing-card-padding, 1.25rem); }
 
 /* Alerts */
 .alert {
@@ -300,10 +367,10 @@ select.form-control {
     padding-right: 2rem;
 }
 
-/* Buttons */
+/* Buttons — Phase 43.11 button radius driven by --style-* token. */
 .btn {
     display: inline-flex; align-items: center; gap: .4rem;
-    padding: .5rem 1rem; border-radius: 6px;
+    padding: .5rem 1rem; border-radius: var(--style-border-button-radius, 6px);
     font-weight: 500; font-size: 13.5px;
     cursor: pointer; text-decoration: none;
     border: 1px solid transparent;
