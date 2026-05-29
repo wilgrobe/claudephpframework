@@ -26,7 +26,7 @@
         <?php foreach ($catFaqs as $faq): ?>
         <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
             <button type="button" onclick="toggleFaq(this)"
-                    style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, #fff);border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
+                    style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, #fff);color:var(--text-default, #111);border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
                 <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
             </button>
@@ -43,7 +43,7 @@
         <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid var(--color-gray-200);padding-bottom:.5rem;margin-bottom:1rem">General</h2>
         <?php foreach ($uncategorized as $faq): ?>
         <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
-            <button type="button" onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, #fff);border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
+            <button type="button" onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, #fff);color:var(--text-default, #111);border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
                 <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
             </button>
