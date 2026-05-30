@@ -797,7 +797,7 @@ INSERT INTO user_groups (user_id, group_id, group_role_id) VALUES
 INSERT INTO settings (`scope`, `key`, `value`, `type`, is_public) VALUES
 -- Core site identity
 ('site', 'site_name',           'My Application',               'string',  1),
-('site', 'site_tagline',        'Built with PHP Framework v2',  'string',  1),
+('site', 'site_tagline',        'Built with ClaudePHPFramework',  'string',  1),
 ('site', 'contact_email',       'hello@example.com',            'string',  0),
 ('site', 'allow_registration',  'true',                         'boolean', 1),
 ('site', 'require_email_verify','true',                         'boolean', 0),
@@ -830,7 +830,7 @@ INSERT INTO settings (`scope`, `key`, `value`, `type`, is_public) VALUES
 ('site', 'footer_logo_text',     '🚀 My Application',              'string',  1),
 ('site', 'footer_tagline',       '',                                'string',  1),
 ('site', 'footer_copyright',     '© {{year}} My Application',       'string',  1),
-('site', 'footer_powered_by',    'Powered by PHP Framework v2',     'string',  1),
+('site', 'footer_powered_by',    'Powered by ClaudePHPFramework',     'string',  1),
 ('site', 'footer_show_menu',     'true',                            'boolean', 1),
 ('site', 'footer_menu_location', 'footer',                          'string',  1);
 

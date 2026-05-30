@@ -1,4 +1,4 @@
-# nginx.conf.example — PHP Framework v2
+# nginx.conf.example — ClaudePHPFramework
 # Copy to /etc/nginx/sites-available/yoursite and symlink to sites-enabled/
 
 # Rate limiting zones — add to nginx.conf http {} block:
