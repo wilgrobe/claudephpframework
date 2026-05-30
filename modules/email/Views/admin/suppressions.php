@@ -17,6 +17,7 @@
         </p>
     </div>
     <div style="display:flex;gap:.5rem">
+        <a href="/admin/email-deliverability" class="btn btn-secondary" style="font-size:12.5px">Deliverability</a>
         <a href="/admin/email-suppressions/blocks" class="btn btn-secondary" style="font-size:12.5px">View blocked sends</a>
         <a href="/admin/email-suppressions/bounces" class="btn btn-secondary" style="font-size:12.5px">View bounce events</a>
     </div>

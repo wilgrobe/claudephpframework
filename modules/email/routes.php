@@ -10,6 +10,7 @@ use App\Middleware\RequireAdmin;
 $U = 'Modules\\Email\\Controllers\\UnsubscribeController';
 $W = 'Modules\\Email\\Controllers\\WebhookController';
 $A = 'Modules\\Email\\Controllers\\AdminController';
+$D = 'Modules\\Email\\Controllers\\DeliverabilityController';
 
 // ── Public unsubscribe ────────────────────────────────────────────────
 // /unsubscribe/{token}/one-click is the RFC 8058 endpoint — providers
@@ -39,3 +40,8 @@ $router->post('/admin/email-suppressions',                    "$A@add",     [Csr
 $router->post('/admin/email-suppressions/{id}/delete',        "$A@delete",  [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
 $router->get ('/admin/email-suppressions/blocks',             "$A@blocks",  [AuthMiddleware::class, RequireAdmin::class]);
 $router->get ('/admin/email-suppressions/bounces',            "$A@bounces", [AuthMiddleware::class, RequireAdmin::class]);
+
+// ── Deliverability dashboard (SPF/DKIM/DMARC verifier + bounce-rate
+// rollup over mail_bounce_events). Re-homed from the marketing module —
+// deliverability is email infrastructure, not a marketing concern.
+$router->get ('/admin/email-deliverability',                  "$D@index",   [AuthMiddleware::class, RequireAdmin::class]);
