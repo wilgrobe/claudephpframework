@@ -286,7 +286,17 @@ class ModuleRegistry
         // Also key by folder basename so the autoloader can resolve
         // Modules\<Folder>\... → moduleDir even when name() differs
         // from the folder (e.g. folder 'importexport', name 'import_export').
-        $this->folderPaths[strtolower(basename($moduleDir))] = $moduleDir;
+        $folderKey = strtolower(basename($moduleDir));
+        $this->folderPaths[$folderKey] = $moduleDir;
+        // And key by the de-punctuated form so a StudlyCase namespace
+        // resolves to a hyphen/underscore folder name: the autoloader
+        // lowercases the namespace segment (Modules\DevPortal\ → 'devportal',
+        // Modules\ImportExport\ → 'importexport'), which can never contain
+        // the '-' / '_' present in folders like 'dev-portal' / 'import_export'.
+        $alias = str_replace(['-', '_'], '', $folderKey);
+        if ($alias !== $folderKey && !isset($this->folderPaths[$alias])) {
+            $this->folderPaths[$alias] = $moduleDir;
+        }
 
         if ($viewsPath = $provider->viewsPath()) {
             if (is_dir($viewsPath)) {
