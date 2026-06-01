@@ -214,6 +214,45 @@ class FileUploadService
         return $relKey;
     }
 
+    /**
+     * Write raw in-memory bytes to storage and return their public URL.
+     *
+     * Unlike uploadImage()/uploadFile() (which take a $_FILES-shaped upload
+     * and re-encode), this persists exact bytes a caller already holds —
+     * generated derivatives (resized/transcoded media), exports, etc. The
+     * caller owns validation; this is a thin storage primitive.
+     *
+     * @param string  $relativePath  storage key, e.g. 'media/42/thumb.webp'
+     * @param string  $bytes         raw file contents
+     * @param ?string $contentType   optional MIME for the stored object
+     */
+    public function putBytes(string $relativePath, string $bytes, ?string $contentType = null): string
+    {
+        $relKey = ltrim($this->pathFromUrl($relativePath) ?: ltrim($relativePath, '/'), '/');
+        if ($relKey === '') {
+            throw new \InvalidArgumentException('putBytes: relativePath required');
+        }
+        $opts = ['visibility' => 'public'];
+        if ($contentType !== null && $contentType !== '') {
+            $opts['ContentType'] = $contentType;
+        }
+        $stream = fopen('php://temp', 'r+');
+        if ($stream === false) {
+            throw new \RuntimeException('putBytes: could not open temp stream');
+        }
+        try {
+            fwrite($stream, $bytes);
+            rewind($stream);
+            $this->fs->writeStream($relKey, $stream, $opts);
+        } finally {
+            if (is_resource($stream)) fclose($stream);
+        }
+        if (class_exists(\App\Tenancy\TenantQuotaGate::class) && strlen($bytes) > 0) {
+            try { \App\Tenancy\TenantQuotaGate::recordWrite(strlen($bytes)); } catch (\Throwable) { /* best-effort */ }
+        }
+        return $this->url($relKey);
+    }
+
         /**
      * Delete a stored file. No-op if path is empty or missing.
      */
