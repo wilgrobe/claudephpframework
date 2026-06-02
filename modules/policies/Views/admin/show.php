@@ -107,10 +107,10 @@
             <?php else: foreach ($versions as $v):
                 $current = (int) ($kind['current_version_id'] ?? 0) === (int) $v['id'];
             ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= $current ? 'background:#f5f3ff' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= $current ? 'background:var(--color-purple-bg)' : '' ?>">
                     <td style="padding:.5rem .75rem">
                         <strong>v<?= htmlspecialchars((string) $v['version_label'], ENT_QUOTES) ?></strong>
-                        <?php if ($current): ?><span style="font-size:10px;background:var(--color-primary);color:#fff;padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">CURRENT</span><?php endif; ?>
+                        <?php if ($current): ?><span style="font-size:10px;background:var(--color-primary);color:var(--bg-panel);padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">CURRENT</span><?php endif; ?>
                     </td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500)"><?= htmlspecialchars(date('M j, Y', strtotime((string) $v['effective_date'])), ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px"><?= htmlspecialchars(date('M j, Y g:ia', strtotime((string) $v['created_at'])), ENT_QUOTES) ?></td>
@@ -131,7 +131,7 @@
       data-confirm="Delete this policy kind? Acceptance history is preserved."
       style="margin-top:1.5rem">
     <?= csrf_field() ?>
-    <button type="submit" class="btn btn-danger" style="font-size:12px;background:var(--color-danger);color:#fff">Delete this policy kind</button>
+    <button type="submit" class="btn btn-danger" style="font-size:12px;background:var(--color-danger);color:var(--bg-panel)">Delete this policy kind</button>
 </form>
 <?php endif; ?>
 

@@ -17,14 +17,14 @@
 
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Comments</h3>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('comments_require_moderation', !empty($values['comments_require_moderation']) && $values['comments_require_moderation'] !== 'false') ?>
                     Hold new comments for moderator approval
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     When on, comments land in <code>pending</code> and aren't visible until
-                    a moderator approves them at <a href="/admin/comments" style="color:#4338ca;text-decoration:underline">/admin/comments</a>.
+                    a moderator approves them at <a href="/admin/comments" style="color:var(--color-primary-dark);text-decoration:underline">/admin/comments</a>.
                 </div>
             </div>
 
@@ -42,12 +42,12 @@
                 <small style="color:var(--color-gray-500)">Replies beyond this depth are flattened to a sibling of the deepest visible parent — keeps long threads readable.</small>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('comments_notify_moderators', !empty($values['comments_notify_moderators']) && $values['comments_notify_moderators'] !== 'false') ?>
                     Notify moderators of pending comments
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Digest notification fires every <em>N</em> minutes (below) per moderator
                     if they have pending comments. Master kill-switch for the
                     NotifyModeratorsJob scheduled task.

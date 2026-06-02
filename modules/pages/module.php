@@ -52,15 +52,15 @@ return new class extends ModuleProvider {
                     $h = '<div class="card"><div class="card-header"><h3 style="margin:0;font-size:.95rem">Recent Pages</h3></div>'
                        . '<div class="card-body" style="padding:0">';
                     if (empty($rows)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px;margin:0">No published pages yet.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px;margin:0">No published pages yet.</p>';
                     } else {
                         foreach ($rows as $r) {
                             $slug  = rawurlencode((string) ($r['slug'] ?? ''));
                             $title = htmlspecialchars((string) ($r['title'] ?? '(untitled)'), ENT_QUOTES | ENT_HTML5);
                             $when  = !empty($r['dated_at']) ? date('M j, Y', strtotime($r['dated_at'])) : '';
-                            $h .= '<a href="/' . $slug . '" style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 1.25rem;border-bottom:1px solid #f3f4f6;text-decoration:none;color:inherit;font-size:13.5px">'
-                                . '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#111827">' . $title . '</span>'
-                                . ($when !== '' ? '<span style="color:#9ca3af;font-size:11.5px;flex-shrink:0;margin-left:.5rem">' . $when . '</span>' : '')
+                            $h .= '<a href="/' . $slug . '" style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 1.25rem;border-bottom:1px solid var(--bg-page);text-decoration:none;color:inherit;font-size:13.5px">'
+                                . '<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-default)">' . $title . '</span>'
+                                . ($when !== '' ? '<span style="color:var(--text-subtle);font-size:11.5px;flex-shrink:0;margin-left:.5rem">' . $when . '</span>' : '')
                                 . '</a>';
                         }
                     }
@@ -106,7 +106,7 @@ return new class extends ModuleProvider {
                     foreach ($rows as $r) {
                         $slug  = rawurlencode((string) ($r['slug'] ?? ''));
                         $title = htmlspecialchars((string) ($r['title'] ?? '(untitled)'), ENT_QUOTES | ENT_HTML5);
-                        $h .= '<a href="/' . $slug . '" style="display:block;padding:.6rem 1.25rem;border-bottom:1px solid #f3f4f6;text-decoration:none;color:#111827;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+                        $h .= '<a href="/' . $slug . '" style="display:block;padding:.6rem 1.25rem;border-bottom:1px solid var(--bg-page);text-decoration:none;color:var(--text-default);font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
                             . $title . '</a>';
                     }
                     return $h . '</div></div>';
@@ -151,16 +151,16 @@ return new class extends ModuleProvider {
                     $h = '<div class="card"><div class="card-header"><h3 style="margin:0;font-size:.95rem">Archive</h3></div>'
                        . '<div class="card-body" style="padding:0">';
                     if (empty($rows)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px;margin:0">No archive entries.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px;margin:0">No archive entries.</p>';
                     } else {
                         foreach ($rows as $r) {
                             $y = (int) $r['y'];
                             $m = (int) $r['m'];
                             $n = (int) $r['n'];
                             $label = date('F Y', mktime(0, 0, 0, $m, 1, $y));
-                            $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:13px">'
-                                . '<span style="color:#111827">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span>'
-                                . '<span style="color:#9ca3af;font-size:11.5px">(' . $n . ')</span>'
+                            $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1.25rem;border-bottom:1px solid var(--bg-page);font-size:13px">'
+                                . '<span style="color:var(--text-default)">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span>'
+                                . '<span style="color:var(--text-subtle);font-size:11.5px">(' . $n . ')</span>'
                                 . '</div>';
                         }
                     }

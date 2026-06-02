@@ -43,7 +43,7 @@
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['received_at']))) ?></td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500)"><?= e($r['provider']) ?></td>
                     <td style="padding:.5rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= e($r['event_type']) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= e($r['event_type']) ?></span>
                     </td>
                     <td style="padding:.5rem .75rem;font-family:ui-monospace,monospace;font-size:12px"><?= e($r['email']) ?></td>
                 </tr>

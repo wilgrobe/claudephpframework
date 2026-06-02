@@ -44,7 +44,7 @@
                 ];
                 $color = $reasonColors[$r['reason']] ?? 'var(--color-gray-500)';
             ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck ? 'background:#fef2f2' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck ? 'background:var(--color-danger-bg)' : '' ?>">
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['detected_at']))) ?></td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500)"><?= e($r['day_anchor']) ?></td>
                     <td style="padding:.4rem .75rem">
@@ -53,7 +53,7 @@
                         </a>
                     </td>
                     <td style="padding:.4rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
                     </td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500)">
                         <?php if ($isAck): ?>
@@ -73,7 +73,7 @@
                     </td>
                 </tr>
                 <?php if (!empty($r['expected_hash']) || !empty($r['expected_prev'])): ?>
-                <tr style="border-top:1px solid #fafafa;background:#fafafa">
+                <tr style="border-top:1px solid var(--bg-page);background:var(--bg-page)">
                     <td colspan="6" style="padding:.35rem .75rem;font-family:ui-monospace,monospace;font-size:11px;color:var(--color-gray-500)">
                         <?php if ($r['expected_prev']): ?>
                             expected_prev = <?= e(substr((string) $r['expected_prev'], 0, 16)) ?>… · observed_prev = <?= e(substr((string) ($r['observed_prev'] ?? ''), 0, 16)) ?>…

@@ -18,24 +18,24 @@
 
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Reviews</h3>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('store.reviews_enabled', !empty($values['store.reviews_enabled']) && $values['store.reviews_enabled'] !== 'false') ?>
                     Show reviews on product pages
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Renders the aggregate stars bar, reviews list, and write-a-review
                     form at the bottom of each product page. Off hides the section
                     entirely without deleting reviews.
                 </div>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('store.reviews_badge_in_listing', !empty($values['store.reviews_badge_in_listing']) && $values['store.reviews_badge_in_listing'] !== 'false') ?>
                     Show stars badges on product cards in /shop
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Inline <code>★★★★½ 4.2 · 27 reviews</code> badge under each product.
                     Badges silently omit themselves when a product has zero reviews.
                 </div>

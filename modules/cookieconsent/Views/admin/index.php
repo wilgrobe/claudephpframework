@@ -31,7 +31,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:12px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700;margin-top:.15rem"><?= $value ?></div>
             </div>
@@ -49,7 +49,7 @@
         <div class="card-body" style="padding:1.25rem">
 
             <!-- Master toggle -->
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:1.25rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:1.25rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= function_exists('toggle_switch')
                         ? toggle_switch('cookieconsent_enabled', !empty($values['cookieconsent_enabled']) && $values['cookieconsent_enabled'] !== 'false')
@@ -57,7 +57,7 @@
                     ?>
                     Cookie consent banner enabled
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Master switch. When off, the banner never renders and
                     <code>consent_allowed()</code> returns false for every non-essential
                     category. Existing consent records in the database stay intact.
@@ -193,7 +193,7 @@
                         </td>
                         <td style="padding:.5rem .75rem;font-family:monospace;font-size:11px;color:var(--color-gray-400)"><?= htmlspecialchars(substr((string) $row['anon_id'], 0, 8), ENT_QUOTES) ?>…</td>
                         <td style="padding:.5rem .75rem">
-                            <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:<?= $color ?>"><?= htmlspecialchars((string) $row['action'], ENT_QUOTES) ?></span>
+                            <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:11px;font-weight:600;color:var(--bg-panel);background:<?= $color ?>"><?= htmlspecialchars((string) $row['action'], ENT_QUOTES) ?></span>
                         </td>
                         <td style="padding:.5rem .75rem;text-align:center"><?= $row['preferences'] ? '✓' : '—' ?></td>
                         <td style="padding:.5rem .75rem;text-align:center"><?= $row['analytics']   ? '✓' : '—' ?></td>
@@ -206,7 +206,7 @@
     </div>
 </div>
 
-<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg)">
+<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;font-size:12.5px;color:var(--color-warning-fg)">
     <strong>For developers:</strong> gate any tracking script with
     <code>&lt;?php if (consent_allowed('analytics')): ?&gt;…&lt;?php endif; ?&gt;</code>.
     Categories are <code>preferences</code>, <code>analytics</code>, <code>marketing</code>

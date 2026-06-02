@@ -130,11 +130,11 @@ return new class extends ModuleProvider {
 
                     $h = '<div class="card"><div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
                        . '<h3 style="margin:0;font-size:.95rem">Recent Signups</h3>'
-                       . '<a href="/admin/users" style="font-size:12px;color:#4f46e5;text-decoration:none">All users →</a>'
+                       . '<a href="/admin/users" style="font-size:12px;color:var(--color-primary);text-decoration:none">All users →</a>'
                        . '</div><div class="card-body" style="padding:0">';
 
                     if (empty($rows)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px;margin:0">No users yet.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px;margin:0">No users yet.</p>';
                     } else {
                         foreach ($rows as $u) {
                             $name = trim((string) ($u['first_name'] ?? '')) . ' ' . trim((string) ($u['last_name'] ?? ''));
@@ -142,9 +142,9 @@ return new class extends ModuleProvider {
                             $username = htmlspecialchars((string) ($u['username'] ?? ''), ENT_QUOTES | ENT_HTML5);
                             $when = !empty($u['created_at']) ? date('M j, g:i A', strtotime($u['created_at'])) : '';
                             $id = (int) ($u['id'] ?? 0);
-                            $h .= '<a href="/admin/users/' . $id . '" style="display:block;padding:.55rem 1.25rem;border-bottom:1px solid #f3f4f6;text-decoration:none;color:inherit;font-size:13px">'
-                                . '<div style="font-weight:500;color:#111827">' . ($name !== '' ? $name : '@' . $username) . '</div>'
-                                . '<div style="color:#9ca3af;font-size:11.5px;margin-top:.15rem">'
+                            $h .= '<a href="/admin/users/' . $id . '" style="display:block;padding:.55rem 1.25rem;border-bottom:1px solid var(--bg-page);text-decoration:none;color:inherit;font-size:13px">'
+                                . '<div style="font-weight:500;color:var(--text-default)">' . ($name !== '' ? $name : '@' . $username) . '</div>'
+                                . '<div style="color:var(--text-subtle);font-size:11.5px;margin-top:.15rem">'
                                 .   ($username !== '' ? '@' . $username . ' · ' : '') . $when
                                 . '</div></a>';
                         }
@@ -200,7 +200,7 @@ return new class extends ModuleProvider {
                     try {
                         $snap = (new \Modules\Coreblocks\Services\SystemStatusService())->snapshot();
                     } catch (\Throwable $e) {
-                        return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:#991b1b;font-size:13px">System status probe failed: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_HTML5) . '</div></div>';
+                        return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:var(--color-danger-fg);font-size:13px">System status probe failed: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_HTML5) . '</div></div>';
                     }
 
                     $headerBg = $snap['all_ok'] ? '#ecfdf5' : '#fef3c7';
@@ -223,9 +223,9 @@ return new class extends ModuleProvider {
                         $icon  = $probe['ok'] ? '✓' : '✗';
                         $iconColor = $probe['ok'] ? 'var(--color-success)' : '#dc2626';
                         $note  = htmlspecialchars((string) $probe['note'], ENT_QUOTES | ENT_HTML5);
-                        $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:13px">'
+                        $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 1.25rem;border-bottom:1px solid var(--bg-page);font-size:13px">'
                             . '<div><span style="color:' . $iconColor . ';font-weight:700;font-size:14px;margin-right:.4rem">' . $icon . '</span>'
-                            . '<span style="color:#111827">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span></div>'
+                            . '<span style="color:var(--text-default)">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span></div>'
                             . '<div style="color:var(--color-gray-500);font-size:11.5px">' . $note . '</div>'
                             . '</div>';
                     }

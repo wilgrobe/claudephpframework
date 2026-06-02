@@ -10,7 +10,7 @@
     padding: 1rem;
 }
 .policy-accept-panel {
-    background: var(--bg-card, #fff);
+    background: var(--bg-card, var(--bg-panel));
     color: var(--text-default, var(--color-gray-900));
     width: min(720px, 100%);
     max-height: calc(100vh - 2rem);
@@ -45,7 +45,7 @@
 .policy-row__meta  { font-size: 12px; color: var(--text-muted, var(--color-gray-500)); }
 .policy-row__summary {
     margin-top: .35rem;
-    background: var(--bg-page, #fafafa);
+    background: var(--bg-page, var(--bg-page));
     padding: .5rem .75rem;
     border-left: 3px solid var(--color-primary, var(--color-primary));
     border-radius: 4px;

@@ -27,41 +27,41 @@ $totalPages = max(1, (int) ceil($total_loaded / max(1, $per_page)));
 .wh-help   { color:var(--color-gray-500); font-size:13px; max-width:720px; line-height:1.5; margin:0 0 1rem; }
 
 .wh-tabs   { display:flex; gap:.4rem; margin-bottom:.85rem; }
-.wh-tab    { padding:.4rem .85rem; border-radius:6px; background: var(--bg-panel, #fff); color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
-.wh-tab.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
-.wh-tab:hover { border-color:#c4b5fd; }
+.wh-tab    { padding:.4rem .85rem; border-radius:6px; background: var(--bg-panel, var(--bg-panel)); color:var(--color-gray-700); font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--color-gray-200); }
+.wh-tab.active { background:var(--color-primary); color:var(--bg-panel); border-color:var(--color-primary); }
+.wh-tab:hover { border-color:var(--color-purple); }
 
 .wh-grid   { display:grid; grid-template-columns: 1fr 240px; gap:1rem; align-items:start; }
 @media (max-width: 900px) { .wh-grid { grid-template-columns: 1fr; } }
 
-.wh-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 160px 160px 140px; margin-bottom:.85rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.wh-filters { display:grid; gap:.5rem; grid-template-columns: 1fr 160px 160px 140px; margin-bottom:.85rem; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
 .wh-filters input, .wh-filters button, .wh-filters .btn-secondary { padding:.45rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .wh-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
 
-.wh-table { width:100%; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
+.wh-table { width:100%; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
 .wh-table th, .wh-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid var(--color-gray-100); }
-.wh-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
+.wh-table th { background:var(--bg-page); font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .wh-table tr:last-child td { border-bottom:0; }
 .wh-icon  { font-size:14px; }
 .wh-prov-pill { display:inline-block; padding:.1rem .45rem; border-radius:3px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
 .prov-ses        { background:var(--color-warning-bg); color:var(--color-warning-fg); }
 .prov-sendgrid   { background:var(--color-info-bg); color:var(--color-info-fg); }
-.prov-postmark   { background:#fef9c3; color:#854d0e; }
-.prov-mailgun    { background:#fce7f3; color:#9d174d; }
-.prov-smtp2go    { background:#dcfce7; color:#166534; }
-.prov-stripe     { background:#cffafe; color:#155e75; }
+.prov-postmark   { background:var(--color-warning-bg); color:var(--color-warning-fg); }
+.prov-mailgun    { background:var(--color-danger-bg); color:var(--color-danger-fg); }
+.prov-smtp2go    { background:var(--color-success-bg); color:var(--color-success-fg); }
+.prov-stripe     { background:var(--color-info-bg); color:var(--color-secondary); }
 
 .wh-sidebar h3 { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); margin:0 0 .5rem; font-weight:700; }
 .wh-sidebar .card { padding:.75rem 1rem; }
 .wh-chip-list { display:flex; flex-direction:column; gap:.2rem; }
-.wh-chip { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
-.wh-chip:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
+.wh-chip { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
+.wh-chip:hover { background:var(--color-gray-50); border-color:var(--color-purple); }
 .wh-chip .ct { color:var(--color-gray-400); font-size:10.5px; font-weight:600; }
-.wh-chip.active { background:var(--color-purple-bg); border-color:#c4b5fd; color:var(--color-purple-fg); }
+.wh-chip.active { background:var(--color-purple-bg); border-color:var(--color-purple); color:var(--color-purple-fg); }
 
 .wh-empty { padding:3rem 1rem; color:var(--color-gray-400); text-align:center; font-style:italic; }
 .wh-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
-.wh-pager .nav a, .wh-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, #fff); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.wh-pager .nav a, .wh-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, var(--bg-panel)); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
 .wh-pager .nav span.disabled { color:var(--color-gray-300); }
 </style>
 
@@ -90,7 +90,7 @@ $totalPages = max(1, (int) ceil($total_loaded / max(1, $per_page)));
         <input type="hidden" name="source"   value="<?= e($source) ?>">
         <input type="hidden" name="provider" value="<?= e((string) ($filters['provider'] ?? '')) ?>">
         <div class="actions">
-            <button class="btn btn-primary" style="background:var(--color-primary);color:#fff;border:1px solid var(--color-primary);padding:.45rem .85rem;border-radius:4px;font-size:13px;cursor:pointer">Filter</button>
+            <button class="btn btn-primary" style="background:var(--color-primary);color:var(--bg-panel);border:1px solid var(--color-primary);padding:.45rem .85rem;border-radius:4px;font-size:13px;cursor:pointer">Filter</button>
             <a href="/admin/webhooks" class="btn-secondary" style="padding:.45rem .85rem;text-decoration:none;color:var(--color-gray-700);border:1px solid var(--color-gray-300);border-radius:4px;font-size:13px">Clear</a>
         </div>
     </form>

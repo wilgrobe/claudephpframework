@@ -91,7 +91,7 @@
                   style="display:flex;gap:.5rem;align-items:center">
                 <?= csrf_field() ?>
                 <input type="text" name="confirm" placeholder='type "erase" to confirm' required style="font-size:13px;flex:1 1 200px" autocomplete="off" aria-label="Confirm">
-                <button type="submit" class="btn btn-danger" style="font-size:13px;background:var(--color-danger);color:#fff">
+                <button type="submit" class="btn btn-danger" style="font-size:13px;background:var(--color-danger);color:var(--bg-panel)">
                     Erase user #<?= (int) $row['user_id'] ?>
                 </button>
             </form>

@@ -50,7 +50,7 @@
                     <td style="padding:.4rem .75rem;font-family:monospace;font-size:12px"><?= htmlspecialchars((string) $t['table'], ENT_QUOTES) ?></td>
                     <td style="padding:.4rem .75rem;font-family:monospace;font-size:12px;color:var(--color-gray-500)"><?= htmlspecialchars((string) $t['user_column'], ENT_QUOTES) ?></td>
                     <td style="padding:.4rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= htmlspecialchars($action, ENT_QUOTES) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= htmlspecialchars($action, ENT_QUOTES) ?></span>
                     </td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500)">
                         <?= $hold ? htmlspecialchars($hold, ENT_QUOTES) : '' ?>
@@ -64,7 +64,7 @@
 </div>
 <?php endforeach; ?>
 
-<div style="margin:1.5rem 0;padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
+<div style="margin:1.5rem 0;padding:.85rem 1rem;background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
     <strong>Adding a new module?</strong> Override <code>gdprHandlers()</code> on its
     <code>module.php</code> to declare which tables hold user data, and how
     erasure should treat each. The simple shape is

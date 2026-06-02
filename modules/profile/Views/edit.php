@@ -26,7 +26,7 @@
                     <img src="<?= e($user['avatar']) ?>" alt="Current avatar"
                          style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--color-gray-200)">
                     <?php else: ?>
-                    <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">
+                    <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary);color:var(--bg-panel);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">
                         <?= e(strtoupper(substr($user['first_name']??'?',0,1))) ?>
                     </div>
                     <?php endif; ?>

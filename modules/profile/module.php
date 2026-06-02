@@ -83,16 +83,16 @@ return new class extends ModuleProvider {
 
                     $avatarHtml = $avatar !== ''
                         ? '<img src="' . htmlspecialchars($avatar, ENT_QUOTES | ENT_HTML5) . '" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0">'
-                        : '<div style="width:48px;height:48px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0">' . htmlspecialchars($initial, ENT_QUOTES | ENT_HTML5) . '</div>';
+                        : '<div style="width:48px;height:48px;border-radius:50%;background:var(--color-primary);color:var(--bg-panel);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0">' . htmlspecialchars($initial, ENT_QUOTES | ENT_HTML5) . '</div>';
 
                     return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;display:flex;align-items:center;gap:.85rem">'
                          . $avatarHtml
                          . '<div style="min-width:0;flex:1">'
-                         .   '<div style="font-weight:600;color:#111827;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+                         .   '<div style="font-weight:600;color:var(--text-default);font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
                          .     htmlspecialchars($name, ENT_QUOTES | ENT_HTML5) . $badges
                          .   '</div>'
-                         .   '<div style="color:#9ca3af;font-size:11.5px;margin-top:.15rem">'
-                         .     '<a href="/profile" style="color:#4f46e5;text-decoration:none">View profile</a>'
+                         .   '<div style="color:var(--text-subtle);font-size:11.5px;margin-top:.15rem">'
+                         .     '<a href="/profile" style="color:var(--color-primary);text-decoration:none">View profile</a>'
                          .   '</div>'
                          . '</div>'
                          . '</div></div>';
@@ -133,7 +133,7 @@ return new class extends ModuleProvider {
                     if ($pct === 100) {
                         return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;text-align:center">'
                              . '<div style="font-size:12px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
-                             . '<div style="font-size:1.5rem;font-weight:700;color:#10b981;margin-top:.35rem">100%</div>'
+                             . '<div style="font-size:1.5rem;font-weight:700;color:var(--color-success);margin-top:.35rem">100%</div>'
                              . '<div style="font-size:12.5px;color:var(--color-gray-500);margin-top:.15rem">Complete — nice!</div>'
                              . '</div></div>';
                     }
@@ -148,11 +148,11 @@ return new class extends ModuleProvider {
                          .   '<div style="font-size:12px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Profile</div>'
                          .   '<div style="font-size:1.1rem;font-weight:700;color:' . $barColor . '">' . $pct . '%</div>'
                          . '</div>'
-                         . '<div style="background:#e5e7eb;height:6px;border-radius:3px;overflow:hidden">'
+                         . '<div style="background:var(--border-default);height:6px;border-radius:3px;overflow:hidden">'
                          .   '<div style="background:' . $barColor . ';height:100%;width:' . $pct . '%;transition:width .3s"></div>'
                          . '</div>'
                          . '<div style="font-size:12px;color:var(--color-gray-500);margin-top:.5rem;line-height:1.4">Add: ' . $missingTxt . '</div>'
-                         . '<a href="/profile/edit" style="display:block;text-align:center;font-size:12.5px;color:#4f46e5;text-decoration:none;margin-top:.65rem;font-weight:500">Complete profile →</a>'
+                         . '<a href="/profile/edit" style="display:block;text-align:center;font-size:12.5px;color:var(--color-primary);text-decoration:none;margin-top:.65rem;font-weight:500">Complete profile →</a>'
                          . '</div></div>';
                 }
             ),
@@ -200,7 +200,7 @@ return new class extends ModuleProvider {
                     foreach ($available as $a) {
                         [$icon, $label, $url, ] = $a;
                         $h .= '<a href="' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '" '
-                            . 'style="display:flex;align-items:center;gap:.5rem;padding:.65rem .75rem;background:#f9fafb;border:1px solid #f3f4f6;border-radius:6px;text-decoration:none;color:#111827;font-size:13px;transition:background .15s">'
+                            . 'style="display:flex;align-items:center;gap:.5rem;padding:.65rem .75rem;background:var(--bg-page);border:1px solid var(--bg-page);border-radius:6px;text-decoration:none;color:var(--text-default);font-size:13px;transition:background .15s">'
                             . '<span style="font-size:1.05rem">' . $icon . '</span>'
                             . '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5) . '</span>'
                             . '</a>';

@@ -78,15 +78,15 @@
        (via JS setting inline style.setProperty on this element). */
     --color-primary: var(--color-primary);
     --color-primary-dark: var(--color-primary-dark);
-    --color-secondary: #0ea5e9;
+    --color-secondary: var(--color-secondary);
     --color-success: var(--color-success);
     --color-danger: var(--color-danger);
     --color-warning: var(--color-warning);
     --color-info: var(--color-info);
-    --bg-page: var(--color-gray-50); --bg-panel: #ffffff;
+    --bg-page: var(--color-gray-50); --bg-panel: var(--bg-panel);
     --text-default: var(--color-gray-900); --text-muted: var(--color-gray-500); --text-subtle: var(--color-gray-400);
     --border-default: var(--color-gray-200); --border-strong: var(--color-gray-300); --border-subtle: var(--color-gray-100);
-    --accent-subtle: #eef2ff; --accent-contrast: #ffffff;
+    --accent-subtle: var(--accent-subtle); --accent-contrast: var(--bg-panel);
     --radius-md: 8px; --radius-sm: 4px; --radius-lg: 12px;
     --font-family-body: 'Inter', system-ui, sans-serif;
     --font-family-heading: 'Inter', system-ui, sans-serif;

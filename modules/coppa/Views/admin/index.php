@@ -15,7 +15,7 @@
 
 <div class="card" style="margin-bottom:1rem">
     <div class="card-body" style="display:flex;gap:.75rem;flex-wrap:wrap;padding:1rem">
-        <div style="flex:1 1 160px;text-align:center;padding:.5rem;border-left:3px solid var(--color-warning);background:#fafafa;border-radius:4px">
+        <div style="flex:1 1 160px;text-align:center;padding:.5rem;border-left:3px solid var(--color-warning);background:var(--bg-page);border-radius:4px">
             <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em">Rejections (last 30d)</div>
             <div style="font-size:1.4rem;font-weight:700"><?= (int) ($stats['total_30d'] ?? 0) ?></div>
         </div>
@@ -54,7 +54,7 @@
     </table>
 </div>
 
-<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
+<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
     <strong>Privacy note:</strong> when a sign-up is rejected for being under the
     minimum age, we DO NOT store the date of birth. The audit row records only the
     IP, the user-agent, the minimum age that was in effect, and a 16-char SHA-256

@@ -29,9 +29,9 @@ $restricted = !empty($user['processing_restricted_at']);
 ?>
 
 <?php if ($inGrace): ?>
-    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:1rem 1.25rem;margin-bottom:1.5rem">
+    <div style="background:var(--color-danger-bg);border:1px solid var(--color-danger-bg);border-radius:6px;padding:1rem 1.25rem;margin-bottom:1.5rem">
         <strong style="color:var(--color-danger-fg)">Account deletion scheduled.</strong>
-        <p style="margin:.35rem 0 .75rem;color:#7f1d1d;font-size:13.5px">
+        <p style="margin:.35rem 0 .75rem;color:var(--color-danger-fg);font-size:13.5px">
             Your account will be permanently erased on
             <strong><?= htmlspecialchars(date('M j, Y g:ia', strtotime((string) $user['deletion_grace_until'])), ENT_QUOTES) ?></strong>.
             We sent a cancel link to <?= htmlspecialchars((string) $user['email'], ENT_QUOTES) ?>.
@@ -114,7 +114,7 @@ $restricted = !empty($user['processing_restricted_at']);
 
 <!-- ── Delete account ─────────────────────────────────────────────── -->
 <?php if (!$inGrace): ?>
-<div class="card" style="margin-bottom:1.25rem;border-color:#fecaca">
+<div class="card" style="margin-bottom:1.25rem;border-color:var(--color-danger-bg)">
     <div class="card-body" style="padding:1.25rem">
         <h2 style="margin:0 0 .5rem;font-size:1.05rem;color:var(--color-danger-fg)">Delete your account</h2>
         <p style="margin:0 0 1rem;color:var(--color-gray-500);font-size:13px;line-height:1.6">
@@ -132,7 +132,7 @@ $restricted = !empty($user['processing_restricted_at']);
             </label>
             <input type="text" name="confirm" required style="width:100%;margin-bottom:.75rem"
                    placeholder="delete my account" autocomplete="off" id="confirm">
-            <button type="submit" class="btn btn-danger" style="font-size:13.5px;background:var(--color-danger);color:#fff">
+            <button type="submit" class="btn btn-danger" style="font-size:13.5px;background:var(--color-danger);color:var(--bg-panel)">
                 Delete my account
             </button>
         </form>

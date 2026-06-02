@@ -48,23 +48,23 @@ return new class extends ModuleProvider {
 
                     $h = '<div class="card"><div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
                        . '<h3 style="margin:0;font-size:.95rem">Recent Audit Events</h3>'
-                       . '<a href="/admin/superadmin/audit-log" style="font-size:12px;color:#4f46e5;text-decoration:none">View all →</a>'
+                       . '<a href="/admin/superadmin/audit-log" style="font-size:12px;color:var(--color-primary);text-decoration:none">View all →</a>'
                        . '</div><div class="card-body" style="padding:0">';
 
                     if (empty($rows)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px;margin:0">No audit events yet.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px;margin:0">No audit events yet.</p>';
                     } else {
                         foreach ($rows as $r) {
                             $actor  = htmlspecialchars((string) ($r['actor_username'] ?? 'system'), ENT_QUOTES | ENT_HTML5);
                             $action = htmlspecialchars((string) ($r['action'] ?? ''), ENT_QUOTES | ENT_HTML5);
                             $model  = htmlspecialchars((string) ($r['model'] ?? ''), ENT_QUOTES | ENT_HTML5);
                             $when   = !empty($r['created_at']) ? date('M j, g:i A', strtotime($r['created_at'])) : '';
-                            $h .= '<div style="padding:.5rem 1.25rem;border-bottom:1px solid #f3f4f6;font-size:13px">'
-                                . '<div style="color:#111827"><strong>@' . $actor . '</strong> '
-                                . '<code style="font-size:12px;color:#4f46e5">' . $action . '</code>'
+                            $h .= '<div style="padding:.5rem 1.25rem;border-bottom:1px solid var(--bg-page);font-size:13px">'
+                                . '<div style="color:var(--text-default)"><strong>@' . $actor . '</strong> '
+                                . '<code style="font-size:12px;color:var(--color-primary)">' . $action . '</code>'
                                 . ($model !== '' ? ' <span style="color:var(--color-gray-500)">on ' . $model . '</span>' : '')
                                 . '</div>'
-                                . ($when !== '' ? '<div style="color:#9ca3af;font-size:11px;margin-top:.15rem">' . $when . '</div>' : '')
+                                . ($when !== '' ? '<div style="color:var(--text-subtle);font-size:11px;margin-top:.15rem">' . $when . '</div>' : '')
                                 . '</div>';
                         }
                     }

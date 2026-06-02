@@ -11,7 +11,7 @@
 </p>
 
 <?php if ($hasGpcSignal && $honorsGpc): ?>
-<div style="background:#d1fae5;border:1px solid #6ee7b7;color:var(--color-success-fg);padding:1rem 1.25rem;border-radius:8px;margin-bottom:1.25rem;font-size:13.5px">
+<div style="background:var(--color-success-bg);border:1px solid var(--color-success);color:var(--color-success-fg);padding:1rem 1.25rem;border-radius:8px;margin-bottom:1.25rem;font-size:13.5px">
     <strong>Global Privacy Control detected.</strong>
     Your browser is sending a <code>Sec-GPC: 1</code> header, which we honor
     automatically as a valid opt-out signal — no further action is needed.
@@ -20,10 +20,10 @@
 <?php endif; ?>
 
 <?php if ($isOptedOut): ?>
-<div class="card" style="margin-bottom:1.25rem;border-color:#6ee7b7">
+<div class="card" style="margin-bottom:1.25rem;border-color:var(--color-success)">
     <div class="card-body" style="padding:1.25rem">
         <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
-            <span style="display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--color-success);color:#fff;align-items:center;justify-content:center;font-weight:700;font-size:14px">✓</span>
+            <span style="display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--color-success);color:var(--bg-panel);align-items:center;justify-content:center;font-weight:700;font-size:14px">✓</span>
             <strong style="font-size:1.05rem">You're opted out</strong>
         </div>
         <p style="margin:0;color:var(--color-gray-500);font-size:13.5px;line-height:1.6">

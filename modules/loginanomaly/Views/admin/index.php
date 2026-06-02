@@ -30,7 +30,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -63,7 +63,7 @@
                 $color = $sevColors[$r['severity']] ?? 'var(--color-gray-500)';
                 $isAck = !empty($r['acknowledged_at']);
             ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck && $r['severity'] === 'alert' ? 'background:#fef2f2' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= !$isAck && $r['severity'] === 'alert' ? 'background:var(--color-danger-bg)' : '' ?>">
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px;white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['created_at']))) ?></td>
                     <td style="padding:.4rem .75rem">
                         <a href="/admin/users/<?= (int) $r['user_id'] ?>" style="color:var(--color-primary);text-decoration:none"><?= e($r['username'] ?? '?') ?></a>
@@ -76,7 +76,7 @@
                     <td style="padding:.4rem .75rem;text-align:right"><?= $r['distance_km'] !== null ? number_format((int) $r['distance_km']) . ' km' : '—' ?></td>
                     <td style="padding:.4rem .75rem;text-align:right;<?= ((int) ($r['implied_kmh'] ?? 0)) >= 2000 ? 'color:var(--color-danger);font-weight:600' : '' ?>"><?= $r['implied_kmh'] !== null ? number_format((int) $r['implied_kmh']) . ' km/h' : '—' ?></td>
                     <td style="padding:.4rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:10px;background:<?= $color ?>"><?= e($r['severity']) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:10px;background:<?= $color ?>"><?= e($r['severity']) ?></span>
                         <div style="font-size:10.5px;color:var(--color-gray-400);margin-top:.15rem"><?= e($r['rule']) ?></div>
                     </td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-size:11.5px">
@@ -103,7 +103,7 @@
     </table>
 </div>
 
-<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
+<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
     <strong>Detection notes:</strong> Geo lookups use the free
     <a href="https://ip-api.com" target="_blank" rel="noopener" style="color:var(--color-warning-fg)">ip-api.com</a>
     service (rate-limited to 45 req/min per origin IP). Cached 30 days per IP.

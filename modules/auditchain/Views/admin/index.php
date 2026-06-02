@@ -19,7 +19,7 @@
     <a href="/admin/audit-chain/breaks" class="btn btn-secondary" style="font-size:12.5px">
         Breaks
         <?php if (($stats['unack_breaks'] ?? 0) > 0): ?>
-            <span style="background:var(--color-danger);color:#fff;padding:.05rem .35rem;border-radius:999px;font-size:10px;margin-left:.25rem"><?= (int) $stats['unack_breaks'] ?></span>
+            <span style="background:var(--color-danger);color:var(--bg-panel);padding:.05rem .35rem;border-radius:999px;font-size:10px;margin-left:.25rem"><?= (int) $stats['unack_breaks'] ?></span>
         <?php endif; ?>
     </a>
 </div>
@@ -36,7 +36,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -94,7 +94,7 @@
             <?php if (empty($recent)): ?>
                 <tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--color-gray-500)">No verification runs yet.</td></tr>
             <?php else: foreach ($recent as $r): ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= ((int) ($r['breaks_found'] ?? 0)) > 0 ? 'background:#fef2f2' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= ((int) ($r['breaks_found'] ?? 0)) > 0 ? 'background:var(--color-danger-bg)' : '' ?>">
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500);white-space:nowrap"><?= e(date('M j, g:ia', strtotime((string) $r['started_at']))) ?></td>
                     <td style="padding:.4rem .75rem;font-family:ui-monospace,monospace;font-size:11.5px;color:var(--color-gray-500)"><?= e($r['day_from'] ?? '—') ?> → <?= e($r['day_to'] ?? '—') ?></td>
                     <td style="padding:.4rem .75rem;text-align:right"><?= $r['rows_verified'] !== null ? number_format((int) $r['rows_verified']) : '—' ?></td>

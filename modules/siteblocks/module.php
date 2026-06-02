@@ -190,7 +190,7 @@ return new class extends ModuleProvider {
                     if ($embedSrc === null) {
                         $auth = \Core\Auth\Auth::getInstance();
                         return $auth->hasRole(['super-admin','admin'])
-                            ? '<div class="siteblock-video-error" style="background:var(--color-warning-bg);border:1px dashed #fcd34d;color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognized — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
+                            ? '<div class="siteblock-video-error" style="background:var(--color-warning-bg);border:1px dashed var(--color-warning);color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">Video URL not recognized — supports YouTube and Vimeo. Got: <code>' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
                             : '';
                     }
 
@@ -205,7 +205,7 @@ return new class extends ModuleProvider {
                     // YouTube needs that to verify the embed; stripping it
                     // entirely with referrerpolicy="no-referrer" caused
                     // error-153 playback failures.
-                    return '<div style="position:relative;width:100%;padding-bottom:' . $pad . ';overflow:hidden;border-radius:6px;background:#000">'
+                    return '<div style="position:relative;width:100%;padding-bottom:' . $pad . ';overflow:hidden;border-radius:6px;background:var(--text-default)">'
                          . '<iframe src="' . htmlspecialchars($embedSrc, ENT_QUOTES | ENT_HTML5) . '" '
                          . 'style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" '
                          . 'allowfullscreen loading="lazy"></iframe>'
@@ -267,7 +267,7 @@ return new class extends ModuleProvider {
                     }
                     if ($cta !== '' && $ctaUrl !== '') {
                         $h .= '<div><a href="' . htmlspecialchars($ctaUrl, ENT_QUOTES | ENT_HTML5) . '" '
-                            . 'style="display:inline-block;background:#fff;color:var(--color-primary);padding:.7rem 1.6rem;border-radius:6px;font-weight:600;font-size:.95rem;text-decoration:none">'
+                            . 'style="display:inline-block;background:var(--bg-panel);color:var(--color-primary);padding:.7rem 1.6rem;border-radius:6px;font-weight:600;font-size:.95rem;text-decoration:none">'
                             . htmlspecialchars($cta, ENT_QUOTES | ENT_HTML5) . '</a></div>';
                     }
                     return $h . '</section>';
@@ -314,7 +314,7 @@ return new class extends ModuleProvider {
                     $h .= '</div>';
                     if ($cta !== '' && $ctaUrl !== '') {
                         $h .= '<a href="' . htmlspecialchars($ctaUrl, ENT_QUOTES | ENT_HTML5) . '" '
-                            . 'style="background:' . $palette['btnBg'] . ';color:#fff;padding:.55rem 1.2rem;border-radius:6px;font-weight:600;font-size:.9rem;text-decoration:none;flex-shrink:0">'
+                            . 'style="background:' . $palette['btnBg'] . ';color:var(--bg-panel);padding:.55rem 1.2rem;border-radius:6px;font-weight:600;font-size:.9rem;text-decoration:none;flex-shrink:0">'
                             . htmlspecialchars($cta, ENT_QUOTES | ENT_HTML5) . '</a>';
                     }
                     return $h . '</div>';
@@ -601,12 +601,12 @@ return new class extends ModuleProvider {
                     $kind    = htmlspecialchars((string) $pick['kind'], ENT_QUOTES | ENT_HTML5);
                     $url     = htmlspecialchars((string) $pick['url'], ENT_QUOTES | ENT_HTML5);
 
-                    return '<div class="card" style="background:linear-gradient(135deg,var(--color-primary) 0%,#7c3aed 100%);color:#fff;border:none">'
+                    return '<div class="card" style="background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-purple) 100%);color:var(--bg-panel);border:none">'
                          . '<div class="card-body" style="padding:1.5rem 1.75rem">'
                          .   '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;opacity:.85">⭐ ' . ucfirst($kind) . ' Spotlight</div>'
                          .   '<div style="font-size:1.35rem;font-weight:700;margin-top:.5rem;line-height:1.3">' . $title . '</div>'
                          .   ($excerpt !== '' ? '<div style="font-size:13.5px;margin-top:.5rem;opacity:.92;line-height:1.5">' . $excerpt . '</div>' : '')
-                         .   '<a href="' . $url . '" style="display:inline-block;margin-top:.85rem;padding:.5rem 1rem;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;text-decoration:none;font-size:13.5px;font-weight:500">Read more →</a>'
+                         .   '<a href="' . $url . '" style="display:inline-block;margin-top:.85rem;padding:.5rem 1rem;background:rgba(255,255,255,.18);color:var(--bg-panel);border:1px solid rgba(255,255,255,.3);border-radius:6px;text-decoration:none;font-size:13.5px;font-weight:500">Read more →</a>'
                          . '</div></div>';
                 }
             ),
@@ -671,10 +671,10 @@ return new class extends ModuleProvider {
 
                         $border = $popular ? '2px solid var(--color-primary)' : '1px solid var(--border-default)';
                         $shadow = $popular ? 'box-shadow:0 8px 24px -8px rgba(79,70,229,.35)' : '';
-                        $badge  = $popular ? '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--color-primary);color:#fff;padding:.25rem .75rem;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">Most popular</div>' : '';
+                        $badge  = $popular ? '<div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--color-primary);color:var(--bg-panel);padding:.25rem .75rem;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">Most popular</div>' : '';
                         $btnCls = $popular ? 'btn btn-primary' : 'btn btn-secondary';
 
-                        $cardsHtml .= '<div style="position:relative;background:#fff;border:' . $border . ';border-radius:12px;padding:1.5rem 1.25rem;display:flex;flex-direction:column;' . $shadow . '">'
+                        $cardsHtml .= '<div style="position:relative;background:var(--bg-panel);border:' . $border . ';border-radius:12px;padding:1.5rem 1.25rem;display:flex;flex-direction:column;' . $shadow . '">'
                                     . $badge
                                     . '<div style="font-size:.95rem;font-weight:600;color:var(--text-default)">' . $name . '</div>'
                                     . '<div style="margin-top:.5rem"><span style="font-size:2rem;font-weight:700;color:var(--text-default)">' . $price . '</span>'
@@ -743,10 +743,10 @@ return new class extends ModuleProvider {
                         $initial = strtoupper(substr((string) ($t['author'] ?? '?'), 0, 1));
                         $avatarHtml = $avatar !== ''
                             ? '<img src="' . htmlspecialchars($avatar, ENT_QUOTES | ENT_HTML5) . '" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0">'
-                            : '<div style="width:44px;height:44px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' . htmlspecialchars($initial, ENT_QUOTES | ENT_HTML5) . '</div>';
+                            : '<div style="width:44px;height:44px;border-radius:50%;background:var(--color-primary);color:var(--bg-panel);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' . htmlspecialchars($initial, ENT_QUOTES | ENT_HTML5) . '</div>';
 
                         $qSize = $featured ? '1.25rem' : '14.5px';
-                        return '<div style="background:#fff;border:1px solid var(--border-default);border-radius:12px;padding:1.5rem 1.25rem">'
+                        return '<div style="background:var(--bg-panel);border:1px solid var(--border-default);border-radius:12px;padding:1.5rem 1.25rem">'
                              . '<div style="font-size:' . $qSize . ';line-height:1.55;color:var(--text-default)">"' . $quote . '"</div>'
                              . '<div style="display:flex;align-items:center;gap:.75rem;margin-top:1rem">'
                              . $avatarHtml

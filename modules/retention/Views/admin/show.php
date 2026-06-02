@@ -15,7 +15,7 @@
 </div>
 
 <?php if ($rule['description']): ?>
-<div style="background:#fafafa;border-left:3px solid var(--color-primary);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:13.5px;line-height:1.55;color:var(--color-gray-700)">
+<div style="background:var(--bg-page);border-left:3px solid var(--color-primary);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:13.5px;line-height:1.55;color:var(--color-gray-700)">
     <?= htmlspecialchars((string) $rule['description'], ENT_QUOTES) ?>
 </div>
 <?php endif; ?>
@@ -105,7 +105,7 @@
                         <?php elseif (!empty($r['error_message'])): ?>
                             <span style="font-size:10px;background:var(--color-danger-bg);color:var(--color-danger-fg);padding:.1rem .35rem;border-radius:999px">failed</span>
                         <?php else: ?>
-                            <span style="font-size:10px;background:#d1fae5;color:var(--color-success-fg);padding:.1rem .35rem;border-radius:999px">ok</span>
+                            <span style="font-size:10px;background:var(--color-success-bg);color:var(--color-success-fg);padding:.1rem .35rem;border-radius:999px">ok</span>
                         <?php endif; ?>
                     </td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-400);font-size:11.5px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">

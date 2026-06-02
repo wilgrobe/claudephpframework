@@ -15,10 +15,10 @@ $mailtoSubject = ($row['subject'] ?? '') !== '' ? 'Re: ' . $row['subject'] : 'Re
 .cmd-head h1 { font-size: 1.4rem; margin: 0; font-weight: 700; }
 .cmd-head .meta { font-size: 12.5px; color: var(--color-gray-500); margin-top: .25rem; }
 .cmd-pill { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .35px; }
-.cmd-pill.new      { background: #fef3c7; color: #92400e; }
+.cmd-pill.new      { background: var(--color-warning-bg); color: var(--color-warning-fg); }
 .cmd-pill.read     { background: var(--color-gray-100); color: var(--color-gray-600); }
-.cmd-pill.replied  { background: #d1fae5; color: #065f46; }
-.cmd-pill.archived { background: #e0e7ff; color: #3730a3; }
+.cmd-pill.replied  { background: var(--color-success-bg); color: var(--color-success-fg); }
+.cmd-pill.archived { background: var(--accent-subtle); color: var(--color-primary-dark); }
 
 .cmd-card { background: white; border: 1px solid var(--color-gray-200); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; }
 .cmd-card dl { display: grid; grid-template-columns: 110px 1fr; gap: .35rem .75rem; margin: 0; font-size: 14px; }
@@ -26,15 +26,15 @@ $mailtoSubject = ($row['subject'] ?? '') !== '' ? 'Re: ' . $row['subject'] : 'Re
 .cmd-card dd { margin: 0; word-break: break-word; }
 .cmd-card dd a { color: var(--color-primary); }
 
-.cmd-body { background: #f9fafb; border-left: 3px solid var(--color-primary); padding: 1rem 1.25rem; white-space: pre-wrap; font-size: 14px; line-height: 1.6; border-radius: 0 4px 4px 0; }
+.cmd-body { background: var(--bg-page); border-left: 3px solid var(--color-primary); padding: 1rem 1.25rem; white-space: pre-wrap; font-size: 14px; line-height: 1.6; border-radius: 0 4px 4px 0; }
 
 .cmd-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
 .cmd-actions form { display: inline; }
 .cmd-actions button, .cmd-actions a.btn { padding: .55rem 1rem; border-radius: 4px; font-size: 13.5px; font-weight: 500; text-decoration: none; cursor: pointer; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-700); }
 .cmd-actions a.btn.reply { background: var(--color-primary); color: white; border-color: var(--color-primary); }
-.cmd-actions button.replied { background: #10b981; color: white; border-color: #10b981; }
+.cmd-actions button.replied { background: var(--color-success); color: white; border-color: var(--color-success); }
 .cmd-actions button.archive { color: var(--color-gray-600); }
-.cmd-actions button.delete  { color: #dc2626; border-color: #fca5a5; }
+.cmd-actions button.delete  { color: var(--color-danger); border-color: var(--color-danger); }
 .cmd-actions button:hover, .cmd-actions a.btn:hover { filter: brightness(95%); }
 
 .cmd-meta-card { font-size: 12.5px; color: var(--color-gray-500); }

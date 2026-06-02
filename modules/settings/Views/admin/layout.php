@@ -29,22 +29,22 @@
             <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Header</h3>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('header_show_logo', !empty($values['header_show_logo']) && $values['header_show_logo'] !== 'false') ?>
                     Show logo in header
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Logo image (or fallback site name + emoji) appears at the top-left.
                 </div>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('header_show_search', !empty($values['header_show_search']) && $values['header_show_search'] !== 'false') ?>
                     Show search box in header
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Inline search input that posts to <code>/search</code>. Disable on sites
                     where global search isn't useful.
                 </div>
@@ -53,12 +53,12 @@
             <hr style="margin:1.5rem 0;border:0;border-top:1px solid var(--color-gray-200)">
             <h3 style="margin:0 0 .85rem;font-size:1.05rem">Footer</h3>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('footer_enabled', !empty($values['footer_enabled']) && $values['footer_enabled'] !== 'false') ?>
                     Show footer
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     Renders the standard footer on guest + auth pages. Turn off for
                     minimal-chrome layouts.
                 </div>
@@ -88,7 +88,7 @@
                        value="<?= e((string) ($values['footer_powered_by'] ?? '')) ?>">
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('footer_show_menu', !empty($values['footer_show_menu']) && $values['footer_show_menu'] !== 'false') ?>
                     Render a menu in the footer

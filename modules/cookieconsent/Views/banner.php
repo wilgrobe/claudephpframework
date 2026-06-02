@@ -132,10 +132,10 @@ $descs = [
     position: fixed;
     left: 0; right: 0; bottom: 0;
     z-index: 9000;
-    /* --bg-panel has dark variant in TOKEN_DEFINITIONS (light=#fff,
-     * dark=#111827); --bg-card didn't, so the banner stayed white
+    /* --bg-panel has dark variant in TOKEN_DEFINITIONS (light=var(--bg-panel),
+     * dark=var(--text-default)); --bg-card didn't, so the banner stayed white
      * in dark mode with white text becoming unreadable. */
-    background: var(--bg-panel, #fff);
+    background: var(--bg-panel, var(--bg-panel));
     color: var(--text-default, var(--color-gray-900));
     border-top: 1px solid var(--border-default, var(--color-gray-200));
     box-shadow: 0 -4px 16px rgba(0,0,0,.08);
@@ -186,7 +186,7 @@ body.theme-dark .cc-banner__link  { color: color-mix(in srgb, var(--color-primar
 }
 .cc-btn--primary {
     background: var(--color-primary, var(--color-primary));
-    color: #fff;
+    color: var(--bg-panel);
 }
 .cc-btn--primary:hover  { background: var(--color-primary-dark, var(--color-primary-dark)); }
 /* Equal-weight filled neutral, paired with --primary for Reject/Accept
@@ -199,12 +199,12 @@ body.theme-dark .cc-banner__link  { color: color-mix(in srgb, var(--color-primar
      * fallback was producing white-on-gray-300 unreadable buttons.
      * Hardcoded fallback chain handles both modes correctly. */
     background: var(--color-gray-700);
-    color: #fff;
+    color: var(--bg-panel);
 }
-.cc-btn--reject:hover   { background: #1f2937; }
-body.theme-dark .cc-btn--reject { background: #374151; }
+.cc-btn--reject:hover   { background: var(--text-default); }
+body.theme-dark .cc-btn--reject { background: var(--text-default); }
 @media (prefers-color-scheme: dark) {
-    body:not(.theme-light) .cc-btn--reject { background: #374151; }
+    body:not(.theme-light) .cc-btn--reject { background: var(--text-default); }
 }
 .cc-btn--ghost {
     background: transparent;
@@ -222,7 +222,7 @@ body.theme-dark .cc-btn--reject { background: #374151; }
 .cc-modal__backdrop { position: absolute; inset: 0; background: rgba(17,24,39,.55); }
 .cc-modal__panel {
     position: relative;
-    background: var(--bg-card, #fff);
+    background: var(--bg-card, var(--bg-panel));
     color: var(--text-default, var(--color-gray-900));
     width: min(560px, calc(100% - 2rem));
     max-height: calc(100vh - 4rem);
@@ -283,7 +283,7 @@ body.theme-dark .cc-btn--reject { background: #374151; }
     position: absolute; content: "";
     height: 16px; width: 16px;
     left: 3px; bottom: 3px;
-    background-color: #fff;
+    background-color: var(--bg-panel);
     transition: .2s; border-radius: 50%;
 }
 .cc-toggle input:checked + .cc-toggle__slider { background-color: var(--color-primary, var(--color-primary)); }

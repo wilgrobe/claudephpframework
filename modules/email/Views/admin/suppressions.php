@@ -37,7 +37,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 130px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -109,7 +109,7 @@
                     <td style="padding:.5rem .75rem;font-family:ui-monospace,monospace;font-size:12px"><?= e($r['email']) ?></td>
                     <td style="padding:.5rem .75rem"><?= e($r['category_slug']) ?></td>
                     <td style="padding:.5rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= e($r['reason']) ?></span>
                     </td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px;white-space:nowrap"><?= e(date('M j, Y', strtotime((string) $r['created_at']))) ?></td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500)"><?= e($r['user_username'] ?? '—') ?></td>

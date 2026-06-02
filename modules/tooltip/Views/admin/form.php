@@ -21,7 +21,7 @@
         </div>
 
         <?php if (empty($richOn)): ?>
-        <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:.5rem .75rem;border-radius:8px;font-size:13px">
+        <div style="background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);color:var(--color-warning-fg);padding:.5rem .75rem;border-radius:8px;font-size:13px">
             Rich content is off — bodies are stored + rendered as escaped plain text. Enable the <code>rich-content</code> submodule for markdown / HTML.
         </div>
         <?php endif; ?>

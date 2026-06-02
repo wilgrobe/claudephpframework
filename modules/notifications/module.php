@@ -81,7 +81,7 @@ return new class extends ModuleProvider {
 
                     $h = '<div class="card"><div class="card-header">'
                        . '<h2 style="margin:0;font-size:1rem">Recent Notifications</h2>'
-                       . '<a href="/notifications" style="font-size:12px;color:#4f46e5;text-decoration:none">View all →</a>'
+                       . '<a href="/notifications" style="font-size:12px;color:var(--color-primary);text-decoration:none">View all →</a>'
                        . '</div><div class="card-body" style="padding:0">';
 
                     if (empty($items)) {
@@ -95,19 +95,19 @@ return new class extends ModuleProvider {
                             $created = $n['created_at'] ?? null;
                             $whenStr = $created ? date('M j, g:i A', strtotime($created)) : '';
 
-                            $h .= '<div class="notif-row" data-id="' . $id . '" style="position:relative;padding:.75rem 1.25rem;border-bottom:1px solid #f3f4f6;'
-                                . ($unread ? 'background:#f5f3ff' : '') . '">';
+                            $h .= '<div class="notif-row" data-id="' . $id . '" style="position:relative;padding:.75rem 1.25rem;border-bottom:1px solid var(--bg-page);'
+                                . ($unread ? 'background:var(--color-purple-bg)' : '') . '">';
                             if (!empty($n['can_delete'])) {
                                 $h .= '<button type="button" onclick="dismissNotification(this)" '
                                     . 'title="Dismiss" aria-label="Dismiss notification" '
-                                    . 'style="position:absolute;top:.3rem;right:.5rem;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:14px;line-height:1;padding:.15rem .3rem;border-radius:4px">×</button>';
+                                    . 'style="position:absolute;top:.3rem;right:.5rem;background:none;border:none;cursor:pointer;color:var(--text-subtle);font-size:14px;line-height:1;padding:.15rem .3rem;border-radius:4px">×</button>';
                             }
-                            $h .= '<div style="font-weight:' . ($unread ? '600' : '500') . ';font-size:13px;color:#111827;padding-right:1rem">' . $title . '</div>';
+                            $h .= '<div style="font-weight:' . ($unread ? '600' : '500') . ';font-size:13px;color:var(--text-default);padding-right:1rem">' . $title . '</div>';
                             if ($body !== '') {
                                 $h .= '<div style="font-size:12px;color:var(--color-gray-500);margin-top:.15rem;line-height:1.4">' . $body . '</div>';
                             }
                             if ($whenStr !== '') {
-                                $h .= '<div style="font-size:11px;color:#9ca3af;margin-top:.25rem">' . $whenStr . '</div>';
+                                $h .= '<div style="font-size:11px;color:var(--text-subtle);margin-top:.25rem">' . $whenStr . '</div>';
                             }
                             $h .= '</div>';
                         }

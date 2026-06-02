@@ -25,7 +25,7 @@ $qs = function (array $extra) use ($filters): string {
 .al-h1 .ct { color:var(--color-gray-400); font-size:13px; font-weight:500; }
 .al-cta    { display:flex; gap:.5rem; align-items:center; }
 .al-pill   { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .6rem; border-radius:999px; font-size:11.5px; font-weight:600; }
-.al-pill-ok      { background:var(--color-success-bg); color:#047857; }
+.al-pill-ok      { background:var(--color-success-bg); color:var(--color-success-fg); }
 .al-pill-warn    { background:var(--color-danger-bg); color:var(--color-danger-fg); }
 .al-pill-unknown { background:var(--color-gray-100); color:var(--color-gray-500); }
 .al-pill a       { color:inherit; text-decoration:none; }
@@ -35,9 +35,9 @@ $qs = function (array $extra) use ($filters): string {
 
 .al-quickdates { display:flex; gap:.3rem; flex-wrap:wrap; margin-bottom:.5rem; }
 .al-qd { padding:.25rem .6rem; border-radius:4px; background:var(--color-gray-100); color:var(--color-gray-700); font-size:11.5px; font-weight:600; text-decoration:none; }
-.al-qd:hover { background:var(--color-gray-200); color:#111; }
+.al-qd:hover { background:var(--color-gray-200); color:var(--text-default); }
 
-.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
+.al-filters { display:grid; gap:.5rem; grid-template-columns: repeat(4, 1fr); margin-bottom:.85rem; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; }
 .al-filters input, .al-filters button, .al-filters .btn-secondary { padding:.5rem .65rem; border:1px solid var(--color-gray-300); border-radius:4px; font-size:13px; font-family:inherit; }
 .al-filters .span2 { grid-column: span 2; }
 .al-filters .actions { grid-column: span 4; display:flex; gap:.4rem; justify-content:flex-end; }
@@ -45,22 +45,22 @@ $qs = function (array $extra) use ($filters): string {
 .al-sidebar h3   { font-size:11.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); margin:0 0 .5rem; font-weight:700; }
 .al-sidebar .card { padding:.75rem 1rem; }
 .al-chip-list { display:flex; flex-direction:column; gap:.2rem; }
-.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
-.al-chip:hover { background:var(--color-gray-50); border-color:#c4b5fd; }
+.al-chip      { display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:4px; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); font-size:12px; text-decoration:none; color:var(--color-gray-700); }
+.al-chip:hover { background:var(--color-gray-50); border-color:var(--color-purple); }
 .al-chip .ct  { color:var(--color-gray-400); font-size:10.5px; font-weight:600; }
-.al-chip.active { background:var(--color-purple-bg); border-color:#c4b5fd; color:var(--color-purple-fg); }
+.al-chip.active { background:var(--color-purple-bg); border-color:var(--color-purple); color:var(--color-purple-fg); }
 
-.al-table { width:100%; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
+.al-table { width:100%; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; border-collapse:collapse; }
 .al-table th, .al-table td { padding:.55rem .8rem; text-align:left; font-size:12.5px; border-bottom:1px solid var(--color-gray-100); }
-.al-table th { background:#fafafa; font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
+.al-table th { background:var(--bg-page); font-size:10.5px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .al-table tr:last-child td { border-bottom:0; }
 .al-table code { font-size:11.5px; }
 .al-empty { padding:3rem 1rem; color:var(--color-gray-400); text-align:center; }
 
 .al-pager { display:flex; justify-content:space-between; align-items:center; margin-top:.85rem; font-size:12.5px; color:var(--color-gray-500); }
-.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, #fff); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
+.al-pager .nav a, .al-pager .nav span.disabled { padding:.35rem .7rem; border:1px solid var(--color-gray-300); border-radius:4px; background: var(--bg-panel, var(--bg-panel)); color:var(--color-gray-700); text-decoration:none; margin-left:.25rem; }
 .al-pager .nav span.disabled { color:var(--color-gray-300); }
-.al-pager .nav .current { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+.al-pager .nav .current { background:var(--color-primary); color:var(--bg-panel); border-color:var(--color-primary); }
 
 .badge-superadmin { display:inline-block; padding:.05rem .35rem; border-radius:3px; background:var(--color-warning-bg); color:var(--color-warning-fg); font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-left:.25rem; }
 </style>
@@ -81,7 +81,7 @@ $qs = function (array $extra) use ($filters): string {
                 <a class="al-pill al-pill-ok" href="/admin/audit-chain" title="No tampered rows<?= $cs['last_verified_at'] ? ' — last verified ' . htmlspecialchars($cs['last_verified_at'], ENT_QUOTES) : '' ?>">✓ chain ok</a>
             <?php endif; ?>
             <?php $csvQs = $qs([]); ?>
-            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background: var(--bg-panel, #fff);border:1px solid var(--color-gray-300);border-radius:4px;text-decoration:none;color:var(--color-gray-700);">⬇ Export CSV</a>
+            <a class="btn btn-secondary" href="/admin/audit-log.csv<?= $csvQs ? '?' . $csvQs : '' ?>" style="font-size:12.5px;padding:.45rem .85rem;background: var(--bg-panel, var(--bg-panel));border:1px solid var(--color-gray-300);border-radius:4px;text-decoration:none;color:var(--color-gray-700);">⬇ Export CSV</a>
         </div>
     </div>
 
@@ -113,7 +113,7 @@ $qs = function (array $extra) use ($filters): string {
         <input name="date_to"       value="<?= e((string) ($filters['date_to']   ?? '')) ?>" placeholder="to YYYY-MM-DD" aria-label="to">
         <input name="q"             value="<?= e((string) ($filters['q'] ?? '')) ?>" placeholder="search action / model / notes" class="span2" aria-label="search">
         <div class="actions">
-            <button class="btn btn-primary" style="background:var(--color-primary);color:#fff;border-color:var(--color-primary)">Filter</button>
+            <button class="btn btn-primary" style="background:var(--color-primary);color:var(--bg-panel);border-color:var(--color-primary)">Filter</button>
             <a href="/admin/audit-log" class="btn-secondary" style="text-decoration:none;color:var(--color-gray-700);">Clear</a>
         </div>
     </form>
@@ -142,7 +142,7 @@ $qs = function (array $extra) use ($filters): string {
                             <?php if (!empty($r['actor_username'])): ?>
                                 @<?= e((string) $r['actor_username']) ?>
                                 <?php if (!empty($r['emulated_username'])): ?>
-                                    <div style="font-size:11px;color:#b45309">emulated by @<?= e((string) $r['emulated_username']) ?></div>
+                                    <div style="font-size:11px;color:var(--color-warning-fg)">emulated by @<?= e((string) $r['emulated_username']) ?></div>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <span style="color:var(--color-gray-400)">system</span>

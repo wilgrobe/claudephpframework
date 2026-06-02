@@ -47,15 +47,15 @@ $fmt = function ($v): string {
 .al-show-nav a { color:var(--color-primary); text-decoration:none; font-weight:600; }
 .al-show-nav a:hover { text-decoration:underline; }
 
-.al-meta-card { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
+.al-meta-card { background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
 .al-meta-grid { display:grid; gap:.4rem 1rem; grid-template-columns:140px 1fr; font-size:13px; }
 .al-meta-grid dt { color:var(--color-gray-500); font-weight:500; }
 .al-meta-grid dd { margin:0; word-break:break-word; }
 
-.al-diff-section { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
-.al-diff-section h2 { margin:0; padding:.7rem 1rem; background:#fafafa; font-size:13px; font-weight:700; color:var(--color-gray-700); border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; }
+.al-diff-section { background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; }
+.al-diff-section h2 { margin:0; padding:.7rem 1rem; background:var(--bg-page); font-size:13px; font-weight:700; color:var(--color-gray-700); border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; }
 .al-diff-section .legend span { font-size:10.5px; padding:.1rem .4rem; border-radius:3px; margin-left:.3rem; font-weight:600; }
-.al-diff-section .legend .added    { background:var(--color-success-bg); color:#047857; }
+.al-diff-section .legend .added    { background:var(--color-success-bg); color:var(--color-success-fg); }
 .al-diff-section .legend .removed  { background:var(--color-danger-bg); color:var(--color-danger-fg); }
 .al-diff-section .legend .changed  { background:var(--color-warning-bg); color:var(--color-warning-fg); }
 
@@ -64,19 +64,19 @@ $fmt = function ($v): string {
 .al-field-row .field-name { font-family:monospace; color:var(--color-gray-700); font-weight:600; word-break:break-word; }
 .al-field-row .field-kind { display:inline-block; font-size:10.5px; padding:.05rem .35rem; border-radius:3px; font-weight:700; margin-top:.15rem; text-transform:uppercase; letter-spacing:.05em; }
 .al-field-row.changed   .field-kind { background:var(--color-warning-bg); color:var(--color-warning-fg); }
-.al-field-row.added     .field-kind { background:var(--color-success-bg); color:#047857; }
+.al-field-row.added     .field-kind { background:var(--color-success-bg); color:var(--color-success-fg); }
 .al-field-row.removed   .field-kind { background:var(--color-danger-bg); color:var(--color-danger-fg); }
 .al-field-row.unchanged .field-kind { background:var(--color-gray-100); color:var(--color-gray-500); }
 
 .al-old-val, .al-new-val { padding:.4rem .6rem; border-radius:4px; min-height:1.2rem; }
-.al-field-row.changed   .al-old-val { background:#fef2f2; color:var(--color-danger-fg); text-decoration:line-through; opacity:.85; }
-.al-field-row.changed   .al-new-val { background:#f0fdf4; color:#047857; }
-.al-field-row.added     .al-old-val { background:#fafafa; color:var(--color-gray-400); font-style:italic; }
-.al-field-row.added     .al-new-val { background:#f0fdf4; color:#047857; }
-.al-field-row.removed   .al-old-val { background:#fef2f2; color:var(--color-danger-fg); text-decoration:line-through; }
-.al-field-row.removed   .al-new-val { background:#fafafa; color:var(--color-gray-400); font-style:italic; }
+.al-field-row.changed   .al-old-val { background:var(--color-danger-bg); color:var(--color-danger-fg); text-decoration:line-through; opacity:.85; }
+.al-field-row.changed   .al-new-val { background:var(--color-success-bg); color:var(--color-success-fg); }
+.al-field-row.added     .al-old-val { background:var(--bg-page); color:var(--color-gray-400); font-style:italic; }
+.al-field-row.added     .al-new-val { background:var(--color-success-bg); color:var(--color-success-fg); }
+.al-field-row.removed   .al-old-val { background:var(--color-danger-bg); color:var(--color-danger-fg); text-decoration:line-through; }
+.al-field-row.removed   .al-new-val { background:var(--bg-page); color:var(--color-gray-400); font-style:italic; }
 .al-field-row.unchanged .al-old-val,
-.al-field-row.unchanged .al-new-val { background:#fafafa; color:var(--color-gray-500); }
+.al-field-row.unchanged .al-new-val { background:var(--bg-page); color:var(--color-gray-500); }
 
 .al-no-diff { padding:1.5rem; text-align:center; color:var(--color-gray-400); font-size:13px; font-style:italic; }
 .badge-superadmin-pill { display:inline-block; padding:.1rem .5rem; border-radius:999px; background:var(--color-warning-bg); color:var(--color-warning-fg); font-size:10.5px; font-weight:700; }
@@ -169,7 +169,7 @@ $fmt = function ($v): string {
                     <?php if ($counts['unchanged']): ?><span style="color:var(--color-gray-400);font-size:10.5px;font-weight:500;padding:.1rem .35rem"><?= $counts['unchanged'] ?> unchanged</span><?php endif; ?>
                 </span>
             </h2>
-            <div class="al-field-row" style="background:#fafafa;border-bottom:1px solid var(--color-gray-200);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-gray-400);font-weight:700">
+            <div class="al-field-row" style="background:var(--bg-page);border-bottom:1px solid var(--color-gray-200);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-gray-400);font-weight:700">
                 <div>FIELD</div>
                 <div>OLD</div>
                 <div>NEW</div>

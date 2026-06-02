@@ -55,15 +55,15 @@ return new class extends ModuleProvider {
 
                     $h = '<div class="card"><div class="card-header" style="display:flex;justify-content:space-between;align-items:center">'
                        . '<h3 style="margin:0;font-size:.95rem">Recent FAQs</h3>'
-                       . '<a href="/faq" style="font-size:12px;color:#4f46e5;text-decoration:none">Browse all →</a>'
+                       . '<a href="/faq" style="font-size:12px;color:var(--color-primary);text-decoration:none">Browse all →</a>'
                        . '</div><div class="card-body" style="padding:0">';
 
                     if (empty($rows)) {
-                        $h .= '<p style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px;margin:0">No FAQs yet.</p>';
+                        $h .= '<p style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px;margin:0">No FAQs yet.</p>';
                     } else {
                         foreach ($rows as $r) {
                             $q = htmlspecialchars((string) ($r['question'] ?? ''), ENT_QUOTES | ENT_HTML5);
-                            $h .= '<a href="/faq#faq-' . (int) $r['id'] . '" style="display:block;padding:.55rem 1.25rem;border-bottom:1px solid #f3f4f6;text-decoration:none;color:#111827;font-size:13.5px">'
+                            $h .= '<a href="/faq#faq-' . (int) $r['id'] . '" style="display:block;padding:.55rem 1.25rem;border-bottom:1px solid var(--bg-page);text-decoration:none;color:var(--text-default);font-size:13.5px">'
                                 . $q . '</a>';
                         }
                     }
@@ -91,7 +91,7 @@ return new class extends ModuleProvider {
                     $heading = (string) ($settings['heading'] ?? 'Frequently asked questions');
 
                     if (empty($ids)) {
-                        return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:#9ca3af;font-size:13px">No FAQ ids configured for this accordion.</div></div>';
+                        return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:var(--text-subtle);font-size:13px">No FAQ ids configured for this accordion.</div></div>';
                     }
 
                     try {
@@ -118,8 +118,8 @@ return new class extends ModuleProvider {
                     foreach ($rows as $r) {
                         $q = htmlspecialchars((string) $r['question'], ENT_QUOTES | ENT_HTML5);
                         $a = \Core\Validation\Validator::sanitizeHtml((string) ($r['answer'] ?? ''));
-                        $h .= '<details style="border:1px solid #e5e7eb;border-radius:6px;padding:.6rem 1rem;margin-bottom:.5rem">'
-                            . '<summary style="font-weight:600;font-size:14px;cursor:pointer;color:#111827">' . $q . '</summary>'
+                        $h .= '<details style="border:1px solid var(--border-default);border-radius:6px;padding:.6rem 1rem;margin-bottom:.5rem">'
+                            . '<summary style="font-weight:600;font-size:14px;cursor:pointer;color:var(--text-default)">' . $q . '</summary>'
                             . '<div style="font-size:13.5px;color:var(--color-gray-700);margin-top:.5rem;line-height:1.6">' . $a . '</div>'
                             . '</details>';
                     }

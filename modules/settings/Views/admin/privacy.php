@@ -14,36 +14,36 @@
         <?= csrf_field() ?>
         <div class="card-body">
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('cookieconsent_enabled', !empty($values['cookieconsent_enabled']) && $values['cookieconsent_enabled'] !== 'false') ?>
                     GDPR cookie-consent banner
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     When on, shows the banner until each visitor accepts or rejects.
                     Configure banner text + per-category descriptions on the
-                    <a href="/admin/cookieconsent" style="color:#4338ca;text-decoration:underline">Cookie Consent</a> page.
+                    <a href="/admin/cookieconsent" style="color:var(--color-primary-dark);text-decoration:underline">Cookie Consent</a> page.
                 </div>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-top:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-top:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('ccpa_enabled', !empty($values['ccpa_enabled']) && $values['ccpa_enabled'] !== 'false') ?>
                     CCPA "Do Not Sell" footer link + opt-out form
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     California compliance. Adds the link to the footer and exposes
                     <code>/do-not-sell</code>. Configure label + disclosure URL on the
-                    <a href="/admin/ccpa" style="color:#4338ca;text-decoration:underline">CCPA admin page</a>.
+                    <a href="/admin/ccpa" style="color:var(--color-primary-dark);text-decoration:underline">CCPA admin page</a>.
                 </div>
             </div>
 
-            <div class="form-group" style="padding:.85rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-top:.75rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-top:.75rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= toggle_switch('ccpa_honor_gpc_signal', !empty($values['ccpa_honor_gpc_signal']) && $values['ccpa_honor_gpc_signal'] !== 'false') ?>
                     Honor browser <code>Sec-GPC: 1</code> signal automatically
                 </label>
-                <div style="font-size:12.5px;color:#4338ca;margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
                     When the visitor's browser sends Global Privacy Control,
                     treat it as an automatic opt-out without requiring them
                     to click the form. Recommended on.

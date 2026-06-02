@@ -14,29 +14,29 @@ $pretty = $detail['payload_decoded'] !== null
 .whs-nav    { display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; font-size:13px; }
 .whs-nav a  { color:var(--color-primary); text-decoration:none; font-weight:600; }
 .whs-h1     { margin:0 0 .85rem; font-size:1.4rem; font-weight:700; }
-.whs-meta   { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
+.whs-meta   { background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; padding:1rem 1.25rem; margin-bottom:1rem; }
 .whs-grid   { display:grid; gap:.4rem 1rem; grid-template-columns:160px 1fr; font-size:13px; }
 .whs-grid dt { color:var(--color-gray-500); font-weight:500; }
 .whs-grid dd { margin:0; word-break:break-word; }
 .whs-pill   { display:inline-block; padding:.1rem .45rem; border-radius:3px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
-.whs-pill.ok      { background:#dcfce7; color:#166534; }
+.whs-pill.ok      { background:var(--color-success-bg); color:var(--color-success-fg); }
 .whs-pill.warn    { background:var(--color-warning-bg); color:var(--color-warning-fg); }
 .whs-pill.fail    { background:var(--color-danger-bg); color:var(--color-danger-fg); }
 
-.whs-payload { background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; margin-bottom:1rem; }
-.whs-payload h2 { margin:0; padding:.7rem 1rem; background:#fafafa; font-size:13px; font-weight:700; color:var(--color-gray-700); border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; }
+.whs-payload { background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; overflow:hidden; margin-bottom:1rem; }
+.whs-payload h2 { margin:0; padding:.7rem 1rem; background:var(--bg-page); font-size:13px; font-weight:700; color:var(--color-gray-700); border-bottom:1px solid var(--color-gray-200); display:flex; justify-content:space-between; align-items:center; }
 .whs-payload pre { margin:0; padding:1rem 1.25rem; font-size:11.5px; line-height:1.55; white-space:pre-wrap; word-break:break-word; font-family:ui-monospace, Menlo, Consolas, monospace; max-height:560px; overflow:auto; }
 
-.whs-actions { display:flex; gap:.5rem; justify-content:flex-end; align-items:center; margin-top:1rem; padding:.85rem 1rem; background: var(--bg-panel, #fff); border:1px solid var(--color-gray-200); border-radius:8px; }
-.btn-primary { background:var(--color-primary); color:#fff; border:1px solid var(--color-primary); padding:.5rem 1rem; border-radius:6px; font-weight:600; cursor:pointer; font-family:inherit; font-size:13px; }
+.whs-actions { display:flex; gap:.5rem; justify-content:flex-end; align-items:center; margin-top:1rem; padding:.85rem 1rem; background: var(--bg-panel, var(--bg-panel)); border:1px solid var(--color-gray-200); border-radius:8px; }
+.btn-primary { background:var(--color-primary); color:var(--bg-panel); border:1px solid var(--color-primary); padding:.5rem 1rem; border-radius:6px; font-weight:600; cursor:pointer; font-family:inherit; font-size:13px; }
 .btn-primary:disabled { background:var(--color-gray-400); border-color:var(--color-gray-400); cursor:not-allowed; }
 .btn-primary:hover:not(:disabled) { background:var(--color-primary-dark); }
-.btn-secondary { background: var(--bg-panel, #fff); color:var(--color-gray-700); border:1px solid var(--color-gray-300); padding:.5rem 1rem; border-radius:6px; font-weight:600; text-decoration:none; font-size:13px; }
+.btn-secondary { background: var(--bg-panel, var(--bg-panel)); color:var(--color-gray-700); border:1px solid var(--color-gray-300); padding:.5rem 1rem; border-radius:6px; font-weight:600; text-decoration:none; font-size:13px; }
 
-.whs-debug { background:#fafafa; border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; font-size:12.5px; margin-bottom:1rem; }
+.whs-debug { background:var(--bg-page); border:1px solid var(--color-gray-200); border-radius:8px; padding:.75rem 1rem; font-size:12.5px; margin-bottom:1rem; }
 .whs-debug h3 { margin:0 0 .5rem; font-size:11px; text-transform:uppercase; letter-spacing:.3px; color:var(--color-gray-500); font-weight:700; }
 .whs-debug ul { margin:0; padding:0 0 0 1.25rem; color:var(--color-gray-700); line-height:1.6; }
-.whs-debug code { background: var(--bg-panel, #fff); padding:.05rem .3rem; border-radius:3px; font-size:11.5px; }
+.whs-debug code { background: var(--bg-panel, var(--bg-panel)); padding:.05rem .3rem; border-radius:3px; font-size:11.5px; }
 </style>
 
 <div class="whs-shell">

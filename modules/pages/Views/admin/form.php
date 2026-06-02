@@ -81,7 +81,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 
 /* Collapsible drawers (SEO / body / grid / advanced).
    Hide the native triangle; render our own ▸/▾ instead. */
-.meta-drawer { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px;
+.meta-drawer { background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 8px;
                margin-bottom: .65rem; overflow: hidden; }
 .meta-drawer > summary {
     list-style: none; cursor: pointer; user-select: none;
@@ -105,8 +105,8 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 @media (max-width: 1100px) { .composer-pane { grid-template-columns: 1fr; } }
 
-.composer-main { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px; padding: 1rem; min-height: 360px; }
-.composer-palette { background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 8px; padding: .65rem; max-height: 70vh; overflow-y: auto; position: sticky; top: 80px; align-self: start; }
+.composer-main { background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 8px; padding: 1rem; min-height: 360px; }
+.composer-palette { background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 8px; padding: .65rem; max-height: 70vh; overflow-y: auto; position: sticky; top: 80px; align-self: start; }
 .composer-palette h3 { margin: 0 0 .5rem; font-size: 13px; font-weight: 700; color: var(--text-default); }
 .palette-cat { font-size: 10.5px; font-weight: 700; text-transform: uppercase;
                color: var(--text-muted); letter-spacing: .05em; margin: .65rem .25rem .25rem; }
@@ -116,7 +116,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     padding: .5rem .65rem; margin-bottom: .25rem; cursor: grab;
     font-size: 12.5px; transition: background .12s, border-color .12s;
 }
-.palette-tile:hover { background: var(--accent-subtle); border-color: #c7d2fe; }
+.palette-tile:hover { background: var(--accent-subtle); border-color: var(--accent-subtle); }
 .palette-tile:active { cursor: grabbing; }
 .palette-tile-label { font-weight: 600; color: var(--text-default); }
 .palette-tile-aud   { font-size: 10.5px; color: var(--text-muted); margin-top: .15rem; }
@@ -137,7 +137,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 .composer-row-rail button {
     width: 28px; height: 28px; padding: 0; cursor: pointer;
-    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 6px;
     color: var(--text-muted); font-size: 14px; line-height: 1;
     transition: border-color .12s, color .12s, background .12s;
 }
@@ -147,7 +147,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .composer-row.is-styled    { /* visual marker: row carries non-default styling */
                              outline: 1px dashed rgba(79,70,229,.35); outline-offset: 4px; }
 .composer-row.is-fullbleed { /* dotted ring + edge tag for full-bleed rows */
-                             box-shadow: inset 0 0 0 1px #c7d2fe; }
+                             box-shadow: inset 0 0 0 1px var(--accent-subtle); }
 .composer-row-grid {
     flex: 1; min-width: 0; display: grid; gap: var(--composer-gap, 12px);
 }
@@ -159,7 +159,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     display: flex; flex-direction: column;
     transition: background .15s, border-color .15s;
 }
-.composer-cell.is-styled { border-style: solid; border-color: #c7d2fe; }
+.composer-cell.is-styled { border-style: solid; border-color: var(--accent-subtle); }
 .composer-cell-toolbar {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: .35rem; gap: .25rem;
@@ -174,7 +174,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                        text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
 .placement-tile {
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 6px;
     padding: .4rem .5rem; margin-bottom: .25rem; font-size: 12.5px;
     cursor: pointer; transition: border-color .12s, box-shadow .12s;
 }
@@ -184,7 +184,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                         flex: 1; min-width: 0; }
 .placement-tile-aud   { font-size: 10px; color: var(--text-muted); margin-left: .35rem;
                         text-transform: uppercase; letter-spacing: .03em; flex-shrink: 0; }
-.placement-tile-x     { background: none; border: none; color: #dc2626; font-size: 14px;
+.placement-tile-x     { background: none; border: none; color: var(--color-danger); font-size: 14px;
                         cursor: pointer; padding: 0 .25rem; line-height: 1; flex-shrink: 0; }
 .placement-tile-x:hover { color: var(--color-danger-fg); }
 
@@ -196,7 +196,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 }
 .cb-modal-backdrop.open { display: flex; }
 .cb-modal {
-    background: var(--bg-panel, #fff); border-radius: 12px; box-shadow: 0 20px 50px -10px rgba(0,0,0,.3);
+    background: var(--bg-panel, var(--bg-panel)); border-radius: 12px; box-shadow: 0 20px 50px -10px rgba(0,0,0,.3);
     width: 100%; max-width: 640px; max-height: 80vh; display: flex; flex-direction: column;
 }
 .cb-modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-subtle);
@@ -225,7 +225,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     font-size: 12.5px; font-style: italic; text-align: center;
 }
 .cb-rep-item {
-    background: var(--bg-panel, #fff); border: 1px solid var(--border-default); border-radius: 6px;
+    background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-default); border-radius: 6px;
     counter-increment: rep-item;
 }
 .cb-rep-item-header {
@@ -240,12 +240,12 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 .cb-rep-item-title::after { content: ' #' counter(rep-item); color: var(--text-subtle); font-weight: 500; }
 .cb-rep-item-actions { display: flex; gap: .25rem; }
 .cb-rep-item-actions button {
-    background: var(--bg-panel, #fff); border: 1px solid var(--border-strong); border-radius: 4px;
+    background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--border-strong); border-radius: 4px;
     padding: .15rem .4rem; font-size: 11.5px; line-height: 1; cursor: pointer;
     color: var(--text-muted); min-width: 24px;
 }
 .cb-rep-item-actions button:hover { color: var(--color-primary); border-color: var(--color-primary); }
-.cb-rep-item-actions button[data-act="del"]:hover { color: #dc2626; border-color: #dc2626; }
+.cb-rep-item-actions button[data-act="del"]:hover { color: var(--color-danger); border-color: var(--color-danger); }
 .cb-rep-item-body { padding: .6rem; }
 .cb-rep-item-body .form-group { margin-bottom: .55rem; }
 .cb-rep-item-body .form-group:last-child { margin-bottom: 0; }
@@ -254,7 +254,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
 /* String-list items: single-line layout with the input flush to the actions. */
 .cb-rep-item.cb-strlist-item {
     display: flex; align-items: center; gap: .35rem;
-    padding: .3rem .45rem; background: var(--bg-panel, #fff);
+    padding: .3rem .45rem; background: var(--bg-panel, var(--bg-panel));
 }
 .cb-rep-item.cb-strlist-item input {
     flex: 1; padding: .3rem .55rem; font-size: 13px;
@@ -383,12 +383,12 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     <details class="meta-drawer" <?= $isCurrentHome ? 'open' : '' ?>>
         <summary>Guest home page</summary>
         <div class="meta-drawer-body">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500;color:#78350f;margin-top:.65rem">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500;color:var(--color-warning-fg);margin-top:.65rem">
                 <input type="hidden" name="is_home_page" value="0">
                 <input type="checkbox" name="is_home_page" value="1" <?= $isCurrentHome ? 'checked' : '' ?>>
                 Use as guest home page
             </label>
-            <div style="font-size:12.5px;color:#78350f;margin-top:.3rem;line-height:1.5">
+            <div style="font-size:12.5px;color:var(--color-warning-fg);margin-top:.3rem;line-height:1.5">
                 When checked, this page is shown at <code>/</code> for visitors who are not signed in.
                 <?php if ($currentHomeSlug && !$isCurrentHome): ?>
                 The current home page is <strong>/<?= e($currentHomeSlug) ?></strong>; saving with this

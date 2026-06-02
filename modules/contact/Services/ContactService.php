@@ -436,18 +436,18 @@ final class ContactService
         $appUrl = (string) ($_ENV['APP_URL'] ?? '');
         $link = rtrim($appUrl, '/') . "/admin/contact-messages/{$id}";
 
-        $rows = "<tr><td style='padding:4px 12px 4px 0;color:#6b7280;'>From:</td><td><strong>{$e($name)}</strong> &lt;{$e($email)}&gt;</td></tr>";
-        if ($phone !== null && $phone !== '')      $rows .= "<tr><td style='padding:4px 12px 4px 0;color:#6b7280;'>Phone:</td><td>{$e($phone)}</td></tr>";
-        if ($subject !== null && $subject !== '')  $rows .= "<tr><td style='padding:4px 12px 4px 0;color:#6b7280;'>Subject:</td><td>{$e($subject)}</td></tr>";
+        $rows = "<tr><td style='padding:4px 12px 4px 0;color:var(--text-muted);'>From:</td><td><strong>{$e($name)}</strong> &lt;{$e($email)}&gt;</td></tr>";
+        if ($phone !== null && $phone !== '')      $rows .= "<tr><td style='padding:4px 12px 4px 0;color:var(--text-muted);'>Phone:</td><td>{$e($phone)}</td></tr>";
+        if ($subject !== null && $subject !== '')  $rows .= "<tr><td style='padding:4px 12px 4px 0;color:var(--text-muted);'>Subject:</td><td>{$e($subject)}</td></tr>";
 
-        return "<body style='font-family:system-ui,-apple-system,sans-serif;color:#111;'>
+        return "<body style='font-family:system-ui,-apple-system,sans-serif;color:var(--text-default);'>
 <div style='max-width:600px;margin:0 auto;padding:24px;'>
   <h2 style='margin:0 0 16px;font-size:18px;'>New contact form submission</h2>
-  <p style='color:#6b7280;font-size:13px;margin:0 0 16px;'>From <strong>{$e($siteName)}</strong></p>
+  <p style='color:var(--text-muted);font-size:13px;margin:0 0 16px;'>From <strong>{$e($siteName)}</strong></p>
   <table style='border-collapse:collapse;font-size:14px;margin-bottom:16px;'>{$rows}</table>
-  <div style='background:#f9fafb;border-left:3px solid #4f46e5;padding:12px 16px;white-space:pre-wrap;font-size:14px;line-height:1.6;'>{$e($body)}</div>
-  <p style='margin-top:24px;font-size:13px;color:#6b7280;'>
-    Reply directly to this email to respond to {$e($name)}, or <a href='{$e($link)}' style='color:#4f46e5;'>open in admin</a>.
+  <div style='background:var(--bg-page);border-left:3px solid var(--color-primary);padding:12px 16px;white-space:pre-wrap;font-size:14px;line-height:1.6;'>{$e($body)}</div>
+  <p style='margin-top:24px;font-size:13px;color:var(--text-muted);'>
+    Reply directly to this email to respond to {$e($name)}, or <a href='{$e($link)}' style='color:var(--color-primary);'>open in admin</a>.
   </p>
 </div>
 </body>";

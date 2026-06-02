@@ -28,7 +28,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 110px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 110px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -46,7 +46,7 @@
         <strong style="font-size:13.5px;color:var(--color-warning-fg)">⏳ Pending erasures (grace window)</strong>
     </div>
     <table class="table" style="width:100%;font-size:13px;margin:0">
-        <thead style="background:#fafafa">
+        <thead style="background:var(--bg-page)">
             <tr>
                 <th style="text-align:left;padding:.5rem .75rem">User</th>
                 <th style="text-align:left;padding:.5rem .75rem">Requested</th>
@@ -82,7 +82,7 @@
         $active = $filter === $f;
     ?>
         <a href="?status=<?= $f ?>" style="display:inline-block;padding:.2rem .6rem;margin-left:.25rem;border-radius:999px;text-decoration:none;
-            background:<?= $active ? 'var(--color-primary)' : 'var(--color-gray-100)' ?>;color:<?= $active ? '#fff' : 'var(--color-gray-700)' ?>"><?= $f ?></a>
+            background:<?= $active ? 'var(--color-primary)' : 'var(--color-gray-100)' ?>;color:<?= $active ? 'var(--bg-panel)' : 'var(--color-gray-700)' ?>"><?= $f ?></a>
     <?php endforeach; ?>
 </div>
 
@@ -115,7 +115,7 @@
                 ];
                 $color = $statusColors[$r['status']] ?? 'var(--color-gray-500)';
             ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= $r['overdue'] ? 'background:#fef2f2' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= $r['overdue'] ? 'background:var(--color-danger-bg)' : '' ?>">
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px">#<?= (int) $r['id'] ?></td>
                     <td style="padding:.5rem .75rem;color:var(--color-gray-500);font-size:12px;white-space:nowrap"><?= htmlspecialchars(date('M j, g:ia', strtotime((string) $r['requested_at'])), ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem"><strong><?= htmlspecialchars((string) $r['kind'], ENT_QUOTES) ?></strong></td>
@@ -127,7 +127,7 @@
                         <?php endif; ?>
                     </td>
                     <td style="padding:.5rem .75rem">
-                        <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:<?= $color ?>"><?= htmlspecialchars((string) $r['status'], ENT_QUOTES) ?></span>
+                        <span style="display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:11px;font-weight:600;color:var(--bg-panel);background:<?= $color ?>"><?= htmlspecialchars((string) $r['status'], ENT_QUOTES) ?></span>
                     </td>
                     <td style="padding:.5rem .75rem;font-size:12px;<?= $r['overdue'] ? 'color:var(--color-danger);font-weight:600' : 'color:var(--color-gray-500)' ?>">
                         <?php if ($r['overdue']): ?>OVERDUE<?php else: ?>

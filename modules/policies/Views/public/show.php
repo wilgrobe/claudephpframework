@@ -22,7 +22,7 @@ $pageTitle = ($kind['label'] ?? 'Policy')
     </div>
 
     <?php if (!empty($version['summary'])): ?>
-        <div style="background:#fafafa;border-left:3px solid var(--color-primary);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:13.5px">
+        <div style="background:var(--bg-page);border-left:3px solid var(--color-primary);padding:.75rem 1rem;margin-bottom:1.5rem;font-size:13.5px">
             <strong>What changed in this version:</strong>
             <div style="margin-top:.25rem;color:var(--color-gray-700)"><?= htmlspecialchars((string) $version['summary'], ENT_QUOTES) ?></div>
         </div>

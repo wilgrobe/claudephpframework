@@ -9,7 +9,7 @@
     <div class="card-body" style="color:var(--color-gray-600);font-size:13px">
         Overrides replace the tooltip's content for a specific page path, route, or user role. Precedence: <strong>page → route → user_role</strong>.
         <?php if (!empty($conflicts)): ?>
-        <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:.5rem .75rem;border-radius:8px;margin-top:.6rem">
+        <div style="background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);color:var(--color-warning-fg);padding:.5rem .75rem;border-radius:8px;margin-top:.6rem">
             ⚠ Multiple active overrides in scope(s): <strong><?= e(implode(', ', $conflicts)) ?></strong> — the first matching value wins, the rest never apply.
         </div>
         <?php endif; ?>

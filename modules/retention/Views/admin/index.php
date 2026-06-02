@@ -40,7 +40,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -58,7 +58,7 @@ ksort($grouped);
 foreach ($grouped as $modName => $modRules):
 ?>
 <div class="card" style="margin-bottom:1rem">
-    <div class="card-header" style="padding:.75rem 1rem;background:#fafafa">
+    <div class="card-header" style="padding:.75rem 1rem;background:var(--bg-page)">
         <strong style="font-size:13px;color:var(--color-gray-700)"><?= htmlspecialchars((string) $modName, ENT_QUOTES) ?></strong>
         <span style="color:var(--color-gray-400);font-size:11.5px"> · <?= count($modRules) ?> rule<?= count($modRules) === 1 ? '' : 's' ?></span>
     </div>
@@ -93,7 +93,7 @@ foreach ($grouped as $modName => $modRules):
                     </td>
                     <td style="padding:.5rem .75rem;font-family:monospace;font-size:11.5px;color:var(--color-gray-500)"><?= htmlspecialchars((string) $r['table_name'], ENT_QUOTES) ?></td>
                     <td style="padding:.5rem .75rem">
-                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:#fff;font-size:11px;background:<?= $color ?>"><?= htmlspecialchars((string) $r['action'], ENT_QUOTES) ?></span>
+                        <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= htmlspecialchars((string) $r['action'], ENT_QUOTES) ?></span>
                     </td>
                     <td style="padding:.5rem .75rem;text-align:right;font-weight:600"><?= (int) $r['days_keep'] ?></td>
                     <td style="padding:.5rem .75rem;font-size:12px;color:var(--color-gray-500);white-space:nowrap">
@@ -147,7 +147,7 @@ foreach ($grouped as $modName => $modRules):
                         <?php elseif (!empty($r['error_message'])): ?>
                             <span style="font-size:10px;background:var(--color-danger-bg);color:var(--color-danger-fg);padding:.1rem .35rem;border-radius:999px">failed</span>
                         <?php else: ?>
-                            <span style="font-size:10px;background:#d1fae5;color:var(--color-success-fg);padding:.1rem .35rem;border-radius:999px">ok</span>
+                            <span style="font-size:10px;background:var(--color-success-bg);color:var(--color-success-fg);padding:.1rem .35rem;border-radius:999px">ok</span>
                         <?php endif; ?>
                     </td>
                 </tr>

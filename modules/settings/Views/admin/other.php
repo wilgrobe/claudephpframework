@@ -106,7 +106,7 @@
                         <!-- Inner delete form lives outside the outer save form via the
                              form attribute on the button — keeps the save POST clean. -->
                         <button type="submit" form="del-<?= e($key) ?>" class="btn btn-sm btn-secondary"
-                                style="color:#dc2626;border-color:#fecaca" title="Delete this setting"
+                                style="color:var(--color-danger);border-color:var(--color-danger-bg)" title="Delete this setting"
                                 onclick="return confirm('Delete <?= e($key) ?>?')">×</button>
                     </td>
                 </tr>

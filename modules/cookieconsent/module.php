@@ -100,7 +100,7 @@ return new class extends ModuleProvider {
                     // client-side, then reloading. The server's banner
                     // gate will then see no cookie + fire the banner.
                     return '<a href="#" onclick="document.cookie=\'cookie_consent=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT\';location.reload();return false;" '
-                         . 'style="color:var(--color-primary,#4f46e5);text-decoration:none;font-size:13px">'
+                         . 'style="color:var(--color-primary,var(--color-primary));text-decoration:none;font-size:13px">'
                          . $safe . '</a>';
                 }
             ),

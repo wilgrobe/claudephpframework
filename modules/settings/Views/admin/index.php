@@ -4,19 +4,19 @@
 <!-- Dedicated settings pages — purpose-built forms for grouped options that
      are easier to configure here than as loose key/value rows below. -->
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
-    <a href="/admin/settings/appearance" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+    <a href="/admin/settings/appearance" class="btn btn-sm btn-secondary" style="background:var(--accent-subtle);border-color:var(--accent-subtle);color:var(--color-primary-dark)">
         🎨 Appearance &rarr;
     </a>
-    <a href="/admin/settings/layout" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+    <a href="/admin/settings/layout" class="btn btn-sm btn-secondary" style="background:var(--accent-subtle);border-color:var(--accent-subtle);color:var(--color-primary-dark)">
         📐 Layout &rarr;
     </a>
-    <a href="/admin/settings/groups" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+    <a href="/admin/settings/groups" class="btn btn-sm btn-secondary" style="background:var(--accent-subtle);border-color:var(--accent-subtle);color:var(--color-primary-dark)">
         👥 Group Policy &rarr;
     </a>
-    <a href="/admin/settings/security" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+    <a href="/admin/settings/security" class="btn btn-sm btn-secondary" style="background:var(--accent-subtle);border-color:var(--accent-subtle);color:var(--color-primary-dark)">
         🔒 Security &amp; Privacy &rarr;
     </a>
-    <a href="/admin/settings/access" class="btn btn-sm btn-secondary" style="background:#eef2ff;border-color:#c7d2fe;color:#4338ca">
+    <a href="/admin/settings/access" class="btn btn-sm btn-secondary" style="background:var(--accent-subtle);border-color:var(--accent-subtle);color:var(--color-primary-dark)">
         🚪 Registration &amp; Access &rarr;
     </a>
 </div>
@@ -33,7 +33,7 @@
     $managedKeys = $managedKeys ?? []; // set by controller on scope='site'
 ?>
 <?php if ($scope === 'site' && !empty($managedKeys)): ?>
-<div style="padding:.75rem 1rem;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;margin-bottom:1rem;font-size:13px;color:#4338ca;line-height:1.5">
+<div style="padding:.75rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:1rem;font-size:13px;color:var(--color-primary-dark);line-height:1.5">
     <strong>Note:</strong> Keys managed on a dedicated page (Appearance, Layout, Group Policy, Security &amp; Privacy, Registration &amp; Access) are hidden from this grid so there's one source of truth. Edit them on their own page. The grid below is for ad-hoc or custom site settings.
 </div>
 <?php endif; ?>

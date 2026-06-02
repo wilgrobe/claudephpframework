@@ -58,14 +58,14 @@ $bool = static fn($v) => (string) $v === '1';
             </div>
 
             <?php if (!empty($resolved_recipients)): ?>
-                <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:.65rem .85rem;font-size:13px;color:#3730a3;margin-top:.35rem">
+                <div style="background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;padding:.65rem .85rem;font-size:13px;color:var(--color-primary-dark);margin-top:.35rem">
                     <strong>Currently active:</strong>
                     <?php foreach ($resolved_recipients as $r): ?>
                         <code style="background:white;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:12px;margin:0 4px 4px 0;display:inline-block"><?= e($r) ?></code>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
-                <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:.65rem .85rem;font-size:13px;color:#92400e;margin-top:.35rem">
+                <div style="background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;padding:.65rem .85rem;font-size:13px;color:var(--color-warning-fg);margin-top:.35rem">
                     ⚠ No active recipients — submissions still save to the queue but no email
                     notifications will be sent. Add an address above or set
                     <code style="background:white;padding:1px 5px;border-radius:3px;font-size:11.5px">contact_email</code>

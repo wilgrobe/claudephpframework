@@ -32,7 +32,7 @@
             <td style="font-size:12px"><?= e((string) ($t['category_name'] ?? '—')) ?></td>
             <td>
                 <div style="display:flex;align-items:center;gap:.5rem">
-                    <div style="flex:1;background:#eef2ff;border-radius:6px;height:14px;overflow:hidden"><div style="width:<?= $pct ?>%;height:100%;background:#6366f1"></div></div>
+                    <div style="flex:1;background:var(--accent-subtle);border-radius:6px;height:14px;overflow:hidden"><div style="width:<?= $pct ?>%;height:100%;background:var(--color-primary)"></div></div>
                     <span style="font-size:12px;min-width:34px;text-align:right"><?= (int) $t['view_count'] ?></span>
                 </div>
             </td>

@@ -72,7 +72,7 @@
             <?php foreach ($errors as $err): ?>
             <tr>
                 <td><?= (int) ($err['row'] ?? 0) ?></td>
-                <td style="font-size:13px;color:#b91c1c"><?= e((string) ($err['error'] ?? '')) ?></td>
+                <td style="font-size:13px;color:var(--color-danger-fg)"><?= e((string) ($err['error'] ?? '')) ?></td>
             </tr>
             <?php endforeach; ?>
             </tbody>

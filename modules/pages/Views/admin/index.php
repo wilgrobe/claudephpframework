@@ -18,7 +18,7 @@
                 <td>
                     <strong><?= e($p['title']) ?></strong>
                     <?php if ($isHome): ?>
-                    <span class="badge" style="background:var(--color-warning-bg);color:#78350f;border:1px solid #fde68a;font-size:10.5px;margin-left:.4rem;padding:.15rem .45rem;border-radius:10px" title="Shown at / for guests">🏠 HOME</span>
+                    <span class="badge" style="background:var(--color-warning-bg);color:var(--color-warning-fg);border:1px solid var(--color-warning-bg);font-size:10.5px;margin-left:.4rem;padding:.15rem .45rem;border-radius:10px" title="Shown at / for guests">🏠 HOME</span>
                     <?php endif; ?>
                 </td>
                 <td><code style="font-size:12px;background:var(--color-gray-100);padding:.1rem .35rem;border-radius:4px">/<?= e($p['slug']) ?></code></td>

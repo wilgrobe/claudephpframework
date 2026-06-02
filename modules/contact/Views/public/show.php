@@ -24,7 +24,7 @@ $e = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_HTML5, 'UTF
 
 .contact-field { margin-bottom: 1rem; }
 .contact-field label { display: block; font-size: 13.5px; font-weight: 600; color: var(--color-gray-700); margin-bottom: .35rem; }
-.contact-field label .req { color: #dc2626; margin-left: 2px; }
+.contact-field label .req { color: var(--color-danger); margin-left: 2px; }
 .contact-field input[type="text"],
 .contact-field input[type="email"],
 .contact-field input[type="tel"],
@@ -38,9 +38,9 @@ $e = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_HTML5, 'UTF
     outline: none; border-color: var(--color-primary);
     box-shadow: 0 0 0 3px var(--accent-subtle, rgba(79,70,229,.15));
 }
-.contact-field.has-error input, .contact-field.has-error textarea { border-color: #dc2626; }
+.contact-field.has-error input, .contact-field.has-error textarea { border-color: var(--color-danger); }
 .contact-field .err {
-    color: #dc2626; font-size: 12.5px; margin-top: .3rem;
+    color: var(--color-danger); font-size: 12.5px; margin-top: .3rem;
 }
 
 /* Honeypot — invisible to humans but bots auto-fill it. */
@@ -56,7 +56,7 @@ $e = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_HTML5, 'UTF
 .contact-submit:disabled { background: var(--color-gray-300); cursor: not-allowed; }
 
 .contact-disabled {
-    background: var(--bg-panel, #fff); border: 1px solid var(--color-gray-200);
+    background: var(--bg-panel, var(--bg-panel)); border: 1px solid var(--color-gray-200);
     border-radius: 8px; padding: 2rem 1.5rem; text-align: center;
 }
 .contact-disabled p { margin: 0; color: var(--color-gray-500); }

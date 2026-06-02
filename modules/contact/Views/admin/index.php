@@ -41,16 +41,16 @@ $filterUrl = static function (array $overrides = []) use ($filters): string {
 .cm-table th { background: var(--color-gray-50); padding: .55rem .75rem; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-gray-500); text-align: left; border-bottom: 1px solid var(--color-gray-200); }
 .cm-table td { padding: .65rem .75rem; font-size: 13.5px; vertical-align: top; border-bottom: 1px solid var(--color-gray-100); }
 .cm-table tr:last-child td { border-bottom: 0; }
-.cm-table tr.is-new { background: #fffbeb; }
-.cm-table tr.is-new td:first-child::before { content: '●'; color: #f59e0b; margin-right: .35rem; }
-.cm-table a.subject-link { color: #111; text-decoration: none; font-weight: 500; }
+.cm-table tr.is-new { background: var(--color-warning-bg); }
+.cm-table tr.is-new td:first-child::before { content: '●'; color: var(--color-warning); margin-right: .35rem; }
+.cm-table a.subject-link { color: var(--text-default); text-decoration: none; font-weight: 500; }
 .cm-table a.subject-link:hover { text-decoration: underline; color: var(--color-primary); }
 .cm-table .meta { color: var(--color-gray-500); font-size: 12px; }
 .cm-table .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .35px; }
-.cm-table .pill.new      { background: #fef3c7; color: #92400e; }
+.cm-table .pill.new      { background: var(--color-warning-bg); color: var(--color-warning-fg); }
 .cm-table .pill.read     { background: var(--color-gray-100); color: var(--color-gray-600); }
-.cm-table .pill.replied  { background: #d1fae5; color: #065f46; }
-.cm-table .pill.archived { background: #e0e7ff; color: #3730a3; }
+.cm-table .pill.replied  { background: var(--color-success-bg); color: var(--color-success-fg); }
+.cm-table .pill.archived { background: var(--accent-subtle); color: var(--color-primary-dark); }
 
 .cm-empty { background: white; border: 1px dashed var(--color-gray-300); border-radius: 8px; padding: 2rem 1rem; text-align: center; color: var(--color-gray-500); font-size: 13.5px; }
 

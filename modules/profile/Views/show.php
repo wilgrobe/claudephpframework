@@ -25,7 +25,7 @@
                     <img src="<?= e($user['avatar']) ?>" alt=""
                          style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--color-gray-200)">
                     <?php else: ?>
-                    <div style="width:64px;height:64px;border-radius:50%;background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">
+                    <div style="width:64px;height:64px;border-radius:50%;background:var(--color-primary);color:var(--bg-panel);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">
                         <?= e(strtoupper(substr($user['first_name']??'?',0,1))) ?>
                     </div>
                     <?php endif; ?>
@@ -33,7 +33,7 @@
                         <div style="font-size:1.1rem;font-weight:700"><?= e(($user['first_name']??'').' '.($user['last_name']??'')) ?></div>
                         <div style="color:var(--color-gray-500);font-size:13.5px"><?= e($user['email']) ?></div>
                         <?php if ($user['email_verified_at']): ?>
-                        <span style="font-size:11px;background:#d1fae5;color:var(--color-success-fg);padding:.15rem .5rem;border-radius:4px">✓ Verified</span>
+                        <span style="font-size:11px;background:var(--color-success-bg);color:var(--color-success-fg);padding:.15rem .5rem;border-radius:4px">✓ Verified</span>
                         <?php else: ?>
                         <span style="font-size:11px;background:var(--color-danger-bg);color:var(--color-danger-fg);padding:.15rem .5rem;border-radius:4px">✗ Unverified</span>
                         <?php endif; ?>

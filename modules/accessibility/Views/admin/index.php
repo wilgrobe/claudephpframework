@@ -33,7 +33,7 @@
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
-            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:#fafafa;border-radius:4px">
+            <div style="flex:1 1 140px;text-align:center;padding:.5rem;border-left:3px solid <?= $color ?>;background:var(--bg-page);border-radius:4px">
                 <div style="font-size:11px;color:var(--color-gray-500);text-transform:uppercase;letter-spacing:.04em"><?= $label ?></div>
                 <div style="font-size:1.4rem;font-weight:700"><?= $value ?></div>
             </div>
@@ -60,7 +60,7 @@
 
 <!-- Findings, grouped by file -->
 <?php if (empty($findings)): ?>
-<div style="background:#d1fae5;border:1px solid #6ee7b7;color:var(--color-success-fg);padding:1rem 1.25rem;border-radius:8px;font-size:14px;text-align:center">
+<div style="background:var(--color-success-bg);border:1px solid var(--color-success);color:var(--color-success-fg);padding:1rem 1.25rem;border-radius:8px;font-size:14px;text-align:center">
     No accessibility issues found. Clean across <?= count($roots) ?> template root(s).
 </div>
 <?php else: ?>
@@ -78,7 +78,7 @@ $basePath = defined('BASE_PATH') ? rtrim(BASE_PATH, '/\\') : '';
         : $file;
 ?>
 <div class="card" style="margin-bottom:1rem">
-    <div class="card-header" style="padding:.6rem 1rem;background:#fafafa">
+    <div class="card-header" style="padding:.6rem 1rem;background:var(--bg-page)">
         <strong style="font-size:12.5px;font-family:ui-monospace,monospace"><?= e($relFile) ?></strong>
         <span style="color:var(--color-gray-400);font-size:11.5px;margin-left:.5rem"><?= count($items) ?> finding<?= count($items) === 1 ? '' : 's' ?></span>
     </div>
@@ -91,7 +91,7 @@ $basePath = defined('BASE_PATH') ? rtrim(BASE_PATH, '/\\') : '';
                 <tr style="border-top:1px solid var(--color-gray-100)">
                     <td style="padding:.4rem .75rem;color:var(--color-gray-500);font-family:ui-monospace,monospace;font-size:11px;white-space:nowrap;width:60px;text-align:right">L<?= (int) $f['line'] ?></td>
                     <td style="padding:.4rem .75rem;width:140px">
-                        <span style="display:inline-block;padding:.05rem .4rem;border-radius:999px;color:#fff;font-size:10px;background:<?= $color ?>"><?= e($sev) ?></span>
+                        <span style="display:inline-block;padding:.05rem .4rem;border-radius:999px;color:var(--bg-panel);font-size:10px;background:<?= $color ?>"><?= e($sev) ?></span>
                         <code style="margin-left:.25rem;font-size:11px"><?= e($f['rule']) ?></code>
                     </td>
                     <td style="padding:.4rem .75rem;color:var(--color-gray-700);line-height:1.45"><?= e($f['message']) ?></td>
@@ -103,7 +103,7 @@ $basePath = defined('BASE_PATH') ? rtrim(BASE_PATH, '/\\') : '';
 <?php endforeach; ?>
 <?php endif; ?>
 
-<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
+<div style="margin:1.5rem 0;padding:1rem;background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;font-size:12.5px;color:var(--color-warning-fg);line-height:1.6">
     <strong>Note:</strong> This is a template-level static lint, not a full
     runtime accessibility audit. It catches the high-value WCAG 2.1 AA issues
     that show up in HTML source but won't catch dynamic / interaction-based

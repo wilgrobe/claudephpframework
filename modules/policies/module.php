@@ -53,7 +53,7 @@ return new class extends ModuleProvider {
                 render: function (array $context, array $settings): string {
                     if (\Core\Auth\Auth::getInstance()->guest()) return '';
                     $label = (string) ($settings['label'] ?? 'My policy acceptances');
-                    return '<a href="/account/policies" style="color:var(--color-primary,#4f46e5);text-decoration:none;font-size:13px">'
+                    return '<a href="/account/policies" style="color:var(--color-primary,var(--color-primary));text-decoration:none;font-size:13px">'
                          . htmlspecialchars($label, ENT_QUOTES | ENT_HTML5)
                          . '</a>';
                 }

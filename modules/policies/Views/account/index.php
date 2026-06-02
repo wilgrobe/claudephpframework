@@ -15,13 +15,13 @@
 </p>
 
 <?php if (!empty($pending)): ?>
-<div style="background:var(--color-warning-bg);border:1px solid #fde68a;border-radius:6px;padding:1rem 1.25rem;margin-bottom:1.25rem">
+<div style="background:var(--color-warning-bg);border:1px solid var(--color-warning-bg);border-radius:6px;padding:1rem 1.25rem;margin-bottom:1.25rem">
     <strong style="color:var(--color-warning-fg)">You have <?= count($pending) ?> updated polic<?= count($pending) === 1 ? 'y' : 'ies' ?> waiting for review.</strong>
     <p style="margin:.35rem 0 .75rem;color:var(--color-warning-fg);font-size:13px;line-height:1.5">
         We've made changes to:
         <?= htmlspecialchars(implode(', ', array_map(fn($p) => $p['kind_label'], $pending)), ENT_QUOTES) ?>.
     </p>
-    <a href="/policies/accept" class="btn btn-primary" style="font-size:13px;background:var(--color-warning);color:#fff">Review &amp; accept</a>
+    <a href="/policies/accept" class="btn btn-primary" style="font-size:13px;background:var(--color-warning);color:var(--bg-panel)">Review &amp; accept</a>
 </div>
 <?php endif; ?>
 
