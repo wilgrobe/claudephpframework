@@ -177,35 +177,12 @@ class ThemeService
      * text-* / border-* tokens directly, flipping the gray ramp in dark
      * mode is the cheapest way to make existing chrome look right.
      */
-    public const IMPLICIT_DARK_OVERRIDES = [
-        'color-gray-50'  => '#0b1220',
-        'color-gray-100' => '#1f2937',
-        'color-gray-200' => '#374151',
-        'color-gray-300' => '#4b5563',
-        'color-gray-500' => '#9ca3af',
-        'color-gray-700' => '#d1d5db',
-        'color-gray-900' => '#f9fafb',
-    ];
-
-    /**
-     * Light counterparts of IMPLICIT_DARK_OVERRIDES. Emitted under
-     * body.theme-light so an explicit "Light" preference can override
-     * the @media (prefers-color-scheme: dark) :root rule on dark-OS
-     * devices. Without this, picking Light on a dark-OS machine would
-     * leave the gray ramp at its dark-mode values - body.theme-light
-     * only re-asserts named tokens, not the implicit ramp.
-     *
-     * Values match the hardcoded :root block in app/Views/layout/header.php.
-     */
-    public const IMPLICIT_LIGHT_OVERRIDES = [
-        'color-gray-50'  => '#f9fafb',
-        'color-gray-100' => '#f3f4f6',
-        'color-gray-200' => '#e5e7eb',
-        'color-gray-300' => '#d1d5db',
-        'color-gray-500' => '#6b7280',
-        'color-gray-700' => '#374151',
-        'color-gray-900' => '#111827',
-    ];
+    /* Batch F2 (done): the IMPLICIT_DARK_OVERRIDES / IMPLICIT_LIGHT_OVERRIDES
+       gray-ramp shims were removed. The --color-gray-* ramp is now aliased
+       onto the theme's settings-driven neutral tokens in app.css
+       (--color-gray-50: var(--bg-page), … --color-gray-900: var(--text-default)),
+       so it follows the configured palette and mode-flips through those
+       tokens automatically — no hardcoded per-mode ramp values to maintain. */
 
     public const GROUP_ORDER = [
         // Theming v2 §14: the v1 Brand / Surfaces / Text / Borders / Accents
@@ -352,11 +329,10 @@ class ThemeService
                     : ($ordinalDerived[$css] ?? (string) $def['default_dark']);
                 $out[$css] = $value;
             }
-            // Implicit gray-ramp overrides for chrome that still uses the
-            // baseline gray-* vars (compatibility shim until Batch F2).
-            foreach (self::IMPLICIT_DARK_OVERRIDES as $css => $value) {
-                $out[$css] = $value;
-            }
+            // Batch F2 (done): the gray-* ramp is now aliased onto the theme
+            // neutrals in app.css (--color-gray-N: var(--bg-page|--text-*|…)),
+            // so it mode-flips through those tokens automatically — no implicit
+            // dark ramp emitted here any more.
             $this->tokenMemo[$memoKey] = $out;
             return $out;
         }
@@ -381,15 +357,10 @@ class ThemeService
                 : ($ordinalDerived[$css] ?? (string) $def['default']);
             $out[$css] = $value;
         }
-        // Implicit gray-ramp overrides for body.theme-light. These exist
-        // so an explicit Light preference on a dark-OS device can override
-        // the @media (prefers-color-scheme: dark) :root rule that sets
-        // the gray ramp to dark values - without these, picking Light on
-        // dark-OS leaves topbar nav text at the dark-mode #d1d5db value
-        // and renders as light-gray on white = unreadable.
-        foreach (self::IMPLICIT_LIGHT_OVERRIDES as $css => $value) {
-            $out[$css] = $value;
-        }
+        // Batch F2 (done): gray-* ramp aliased onto the theme neutrals in
+        // app.css, so it flips through --bg-page/--text-*/--border-* per mode.
+        // No implicit light ramp needed — picking Light re-asserts those
+        // neutral tokens, and the ramp follows.
         $this->tokenMemo[$memoKey] = $out;
         return $out;
     }
@@ -533,6 +504,19 @@ class ThemeService
             'color-danger'       => 'default-danger',
             'color-warning'      => 'default-warning',
             'color-info'         => 'default-info',
+            // Neutral gray ramp ← default palette. Emitted here (per-mode)
+            // rather than as static :root aliases in app.css so they RE-RESOLVE
+            // under body.theme-dark / @media dark — a plain `--x: var(--y)` at
+            // :root freezes to :root's (light) value and never flips. Lightest
+            // → surfaces, mid → borders/subtle text, darkest → ink.
+            'color-gray-50'      => 'default-bg',
+            'color-gray-100'     => 'default-border-subtle',
+            'color-gray-200'     => 'default-border',
+            'color-gray-300'     => 'default-border-strong',
+            'color-gray-400'     => 'default-text-subtle',
+            'color-gray-500'     => 'default-text-muted',
+            'color-gray-700'     => 'default-text',
+            'color-gray-900'     => 'default-text',
             // (legacy --surface-* helpers retired in Phase 4 — sections use
             //  data-palette now; no view references var(--surface-*) anymore.)
         ];

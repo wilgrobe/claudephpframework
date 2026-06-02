@@ -255,11 +255,23 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
                 // Without this, dark mode would render white text on the
                 // tenant's light hero panel bg. Body class theme-light
                 // explicitly opts out so don't apply.
+                //
+                // The panel is LIGHT (luminance-checked), so the ink must stay
+                // dark in BOTH modes — it can't flip with the theme. But the
+                // *value* is settings-driven: we pin it to the theme's
+                // configured LIGHT default-text / -muted (resolveTokens('light'))
+                // rather than a hardcoded hex, so a tenant that customised its
+                // text colour sees that colour on the light hero in dark mode.
+                $__hl   = (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->resolveTokens('light');
+                $__ink  = strtolower((string) ($__hl['default-text'] ?? '#1c1917'));
+                $__inkM = strtolower((string) ($__hl['default-text-muted'] ?? '#605a52'));
+                if (!preg_match('/^#[0-9a-f]{6}$/', $__ink))  $__ink  = '#1c1917';
+                if (!preg_match('/^#[0-9a-f]{6}$/', $__inkM)) $__inkM = '#605a52';
                 echo '<style>'
-                    . 'body.theme-dark .page-hero{color:#111827;}'
-                    . 'body.theme-dark .page-hero h1,body.theme-dark .page-hero .meta,body.theme-dark .page-hero p{color:#111827;}'
-                    . 'body.theme-dark .page-hero .meta{color:#4b5563;}'
-                    . '@media (prefers-color-scheme: dark){body:not(.theme-light) .page-hero{color:#111827;}body:not(.theme-light) .page-hero h1,body:not(.theme-light) .page-hero .meta,body:not(.theme-light) .page-hero p{color:#111827;}body:not(.theme-light) .page-hero .meta{color:#4b5563;}}'
+                    . 'body.theme-dark .page-hero{color:' . $__ink . ';}'
+                    . 'body.theme-dark .page-hero h1,body.theme-dark .page-hero .meta,body.theme-dark .page-hero p{color:' . $__ink . ';}'
+                    . 'body.theme-dark .page-hero .meta{color:' . $__inkM . ';}'
+                    . '@media (prefers-color-scheme: dark){body:not(.theme-light) .page-hero{color:' . $__ink . ';}body:not(.theme-light) .page-hero h1,body:not(.theme-light) .page-hero .meta,body:not(.theme-light) .page-hero p{color:' . $__ink . ';}body:not(.theme-light) .page-hero .meta{color:' . $__inkM . ';}}'
                     . '</style>';
             }
         }

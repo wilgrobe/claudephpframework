@@ -12,14 +12,11 @@
     --color-warning:      #f59e0b;
     --color-info:         #3b82f6;
     --color-purple:       #7c3aed;
-    --color-gray-50:      #f9fafb;
-    --color-gray-100:     #f3f4f6;
-    --color-gray-200:     #e5e7eb;
-    --color-gray-300:     #d1d5db;
-    --color-gray-400:     #9ca3af;
-    --color-gray-500:     #6b7280;
-    --color-gray-700:     #374151;
-    --color-gray-900:     #111827;
+    /* Neutral gray ramp (--color-gray-50…900): now emitted per-mode by
+       ThemeService's generic layer (aliased onto the default-palette neutral
+       sources), so it follows the configured palette and mode-flips. NOT
+       defined here as static :root aliases — a `--x: var(--y)` at :root freezes
+       to the light value and won't re-resolve under body.theme-dark. */
     /* Semantic tints — derived via color-mix from the (mode-flipping) base
        semantic colors + the active surface/ink, so they dark-adapt for free.
        Every var(--color-*-bg/-fg) usage now flips with the theme; the bg sits
