@@ -194,14 +194,15 @@ class ThemeService
         // hero role, and the 5 ordinal accent palettes.
         'pal_default'    => 'Default palette (surfaces · text · borders · accents)',
         'chrome'         => 'Chrome (sidebar + footer)',
-        'radius'         => 'Corner radii',
-        'font_family'    => 'Fonts',
         'pal_hero'       => 'Hero (gradient + CTA)',
         'pal_primary'    => 'Palette · Primary',
         'pal_secondary'  => 'Palette · Secondary',
         'pal_tertiary'   => 'Palette · Tertiary',
         'pal_quaternary' => 'Palette · Quaternary',
         'pal_quinary'    => 'Palette · Quinary',
+        // Non-colour groups sit at the bottom, below all the palettes.
+        'radius'         => 'Corner radii',
+        'font_family'    => 'Fonts',
     ];
 
     /**
