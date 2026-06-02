@@ -203,8 +203,8 @@ return new class extends ModuleProvider {
                         return '<div class="card"><div class="card-body" style="padding:1rem 1.25rem;color:var(--color-danger-fg);font-size:13px">System status probe failed: ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_HTML5) . '</div></div>';
                     }
 
-                    $headerBg = $snap['all_ok'] ? '#ecfdf5' : '#fef3c7';
-                    $headerFg = $snap['all_ok'] ? '#065f46' : '#92400e';
+                    $headerBg = $snap['all_ok'] ? 'var(--color-success-bg)' : 'var(--color-warning-bg)';
+                    $headerFg = $snap['all_ok'] ? 'var(--color-success-fg)' : 'var(--color-warning-fg)';
 
                     $h = '<div class="card">'
                        . '<div class="card-header" style="display:flex;justify-content:space-between;align-items:center;background:' . $headerBg . ';color:' . $headerFg . '">'
@@ -221,7 +221,7 @@ return new class extends ModuleProvider {
                     foreach ($snap['probes'] as $key => $probe) {
                         $label = $labels[$key] ?? ucfirst($key);
                         $icon  = $probe['ok'] ? '✓' : '✗';
-                        $iconColor = $probe['ok'] ? 'var(--color-success)' : '#dc2626';
+                        $iconColor = $probe['ok'] ? 'var(--color-success)' : 'var(--color-danger)';
                         $note  = htmlspecialchars((string) $probe['note'], ENT_QUOTES | ENT_HTML5);
                         $h .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 1.25rem;border-bottom:1px solid var(--bg-page);font-size:13px">'
                             . '<div><span style="color:' . $iconColor . ';font-weight:700;font-size:14px;margin-right:.4rem">' . $icon . '</span>'

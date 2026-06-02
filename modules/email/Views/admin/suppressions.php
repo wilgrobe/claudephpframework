@@ -32,8 +32,8 @@
             ['User opt-outs', (int) ($stats['user_unsub'] ?? 0), 'var(--color-info)'],
             ['Hard bounces',  (int) ($stats['bounces']    ?? 0), 'var(--color-danger)'],
             ['Complaints',    (int) ($stats['complaints'] ?? 0), 'var(--color-warning)'],
-            ['Admin manual',  (int) ($stats['manual']     ?? 0), '#8b5cf6'],
-            ['Wildcard (all)',(int) ($stats['wildcard']   ?? 0), '#dc2626'],
+            ['Admin manual',  (int) ($stats['manual']     ?? 0), 'var(--color-purple)'],
+            ['Wildcard (all)',(int) ($stats['wildcard']   ?? 0), 'var(--color-danger)'],
         ];
         foreach ($cards as [$label, $value, $color]):
         ?>
@@ -99,9 +99,9 @@
                     'user_unsubscribe' => 'var(--color-info)',
                     'hard_bounce'      => 'var(--color-danger)',
                     'complaint'        => 'var(--color-warning)',
-                    'manual_admin'     => '#8b5cf6',
+                    'manual_admin'     => 'var(--color-purple)',
                     'api'              => 'var(--color-gray-500)',
-                    'spam_report'      => '#dc2626',
+                    'spam_report'      => 'var(--color-danger)',
                 ];
                 $color = $reasonColors[$r['reason']] ?? 'var(--color-gray-500)';
             ?>

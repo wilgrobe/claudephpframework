@@ -39,8 +39,8 @@
                     'hash_mismatch'  => 'var(--color-danger)',
                     'prev_mismatch'  => 'var(--color-warning)',
                     'missing_hash'   => 'var(--color-gray-500)',
-                    'row_missing'    => '#dc2626',
-                    'tampered_field' => '#dc2626',
+                    'row_missing'    => 'var(--color-danger)',
+                    'tampered_field' => 'var(--color-danger)',
                 ];
                 $color = $reasonColors[$r['reason']] ?? 'var(--color-gray-500)';
             ?>

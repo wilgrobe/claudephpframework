@@ -138,7 +138,7 @@ return new class extends ModuleProvider {
                              . '</div></div>';
                     }
 
-                    $barColor = $pct >= 70 ? 'var(--color-success)' : ($pct >= 40 ? 'var(--color-warning)' : '#dc2626');
+                    $barColor = $pct >= 70 ? 'var(--color-success)' : ($pct >= 40 ? 'var(--color-warning)' : 'var(--color-danger)');
                     $missingShort = array_slice($missing, 0, 3);
                     $remaining = count($missing) - count($missingShort);
                     $missingTxt = htmlspecialchars(implode(', ', $missingShort) . ($remaining > 0 ? " +$remaining more" : ''), ENT_QUOTES | ENT_HTML5);

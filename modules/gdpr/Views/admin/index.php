@@ -20,7 +20,7 @@
         $cards = [
             ['Pending',     (int) ($stats['pending']     ?? 0), 'var(--color-warning)'],
             ['Verified',    (int) ($stats['verified']    ?? 0), 'var(--color-info)'],
-            ['In progress', (int) ($stats['in_progress'] ?? 0), '#8b5cf6'],
+            ['In progress', (int) ($stats['in_progress'] ?? 0), 'var(--color-purple)'],
             ['Completed',   (int) ($stats['completed']   ?? 0), 'var(--color-success)'],
             ['Denied',      (int) ($stats['denied']      ?? 0), 'var(--color-gray-500)'],
             ['OVERDUE',     (int) ($stats['overdue']     ?? 0), 'var(--color-danger)'],
@@ -108,7 +108,7 @@
                 $statusColors = [
                     'pending'     => 'var(--color-warning)',
                     'verified'    => 'var(--color-info)',
-                    'in_progress' => '#8b5cf6',
+                    'in_progress' => 'var(--color-purple)',
                     'completed'   => 'var(--color-success)',
                     'denied'      => 'var(--color-gray-500)',
                     'expired'     => 'var(--color-gray-400)',

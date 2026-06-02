@@ -2,8 +2,8 @@
 $pageTitle = 'Deliverability';
 $check = function (?array $r): string {
     if (!$r) return '';
-    $color = $r['pass'] ? '#16a34a' : '#dc2626';
-    $bg    = $r['pass'] ? '#dcfce7' : 'var(--color-danger-bg)';
+    $color = $r['pass'] ? 'var(--color-success)' : 'var(--color-danger)';
+    $bg    = $r['pass'] ? 'var(--color-success-bg)' : 'var(--color-danger-bg)';
     $label = $r['pass'] ? 'PASS' : 'FAIL';
     return "<span style=\"display:inline-block;padding:.15rem .5rem;border-radius:10px;font-size:11px;font-weight:600;background:$bg;color:$color\">$label</span>";
 };
@@ -13,7 +13,7 @@ $pct = function (int $num, int $den): string {
     return number_format($r, $r < 1 ? 2 : 1) . '%';
 };
 $rateChip = function (float $value, float $goodMax, float $warnMax): string {
-    if ($value <= $goodMax) { $bg='#dcfce7'; $col='#166534'; }
+    if ($value <= $goodMax) { $bg='var(--color-success-bg)'; $col='var(--color-success-fg)'; }
     elseif ($value <= $warnMax) { $bg='var(--color-warning-bg)'; $col='var(--color-warning-fg)'; }
     else { $bg='var(--color-danger-bg)'; $col='var(--color-danger-fg)'; }
     return "<span style=\"padding:.1rem .4rem;border-radius:8px;background:$bg;color:$col;font-size:11px;font-weight:600\">"

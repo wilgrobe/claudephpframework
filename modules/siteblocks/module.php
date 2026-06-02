@@ -296,10 +296,10 @@ return new class extends ModuleProvider {
                     if ($ctaUrl !== '' && !preg_match('#^(?:https?://|/)#i', $ctaUrl)) $ctaUrl = '';
 
                     $palette = match ($tone) {
-                        'success' => ['bg' => '#ecfdf5', 'border' => '#6ee7b7', 'fg' => '#065f46', 'btnBg' => 'var(--color-success)'],
-                        'warning' => ['bg' => '#fef3c7', 'border' => '#fcd34d', 'fg' => '#92400e', 'btnBg' => 'var(--color-warning)'],
-                        'danger'  => ['bg' => '#fee2e2', 'border' => '#fca5a5', 'fg' => '#991b1b', 'btnBg' => '#dc2626'],
-                        default   => ['bg' => 'var(--accent-subtle)', 'border' => '#c7d2fe', 'fg' => '#4338ca', 'btnBg' => 'var(--color-primary)'],
+                        'success' => ['bg' => 'var(--color-success-bg)', 'border' => 'var(--color-success)', 'fg' => 'var(--color-success-fg)', 'btnBg' => 'var(--color-success)'],
+                        'warning' => ['bg' => 'var(--color-warning-bg)', 'border' => 'var(--color-warning)', 'fg' => 'var(--color-warning-fg)', 'btnBg' => 'var(--color-warning)'],
+                        'danger'  => ['bg' => 'var(--color-danger-bg)', 'border' => 'var(--color-danger)', 'fg' => 'var(--color-danger-fg)', 'btnBg' => 'var(--color-danger)'],
+                        default   => ['bg' => 'var(--accent-subtle)', 'border' => 'var(--accent-subtle)', 'fg' => 'var(--color-primary-dark)', 'btnBg' => 'var(--color-primary)'],
                     };
 
                     $h = '<div style="background:' . $palette['bg'] . ';border:1px solid ' . $palette['border']

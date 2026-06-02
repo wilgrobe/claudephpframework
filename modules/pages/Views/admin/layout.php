@@ -160,7 +160,7 @@ document.addEventListener('change', (e) => {
         const row = t.closest('tr.placement-row');
         if (row) {
             row.style.opacity      = t.checked ? '0.55' : '';
-            row.style.background   = t.checked ? '#fef2f2' : '';
+            row.style.background   = t.checked ? 'var(--color-danger-bg)' : '';
             row.style.textDecoration = t.checked ? 'line-through' : '';
         }
     }

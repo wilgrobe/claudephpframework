@@ -30,12 +30,12 @@
                 $colors = [
                     'hard_bounce' => 'var(--color-danger)',
                     'soft_bounce' => 'var(--color-warning)',
-                    'complaint'   => '#dc2626',
-                    'spamreport'  => '#dc2626',
+                    'complaint'   => 'var(--color-danger)',
+                    'spamreport'  => 'var(--color-danger)',
                     'unsubscribe' => 'var(--color-info)',
                     'bounce'      => 'var(--color-warning)',
                     'failed'      => 'var(--color-danger)',
-                    'complained'  => '#dc2626',
+                    'complained'  => 'var(--color-danger)',
                 ];
                 $color = $colors[$r['event_type']] ?? 'var(--color-gray-500)';
             ?>

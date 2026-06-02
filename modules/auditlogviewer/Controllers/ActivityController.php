@@ -212,7 +212,7 @@ final class ActivityController
             'created_at'  => $r['created_at'],
             'icon'        => $this->iconFor((string) $r['action']),
             'badge_label' => 'audit',
-            'badge_color' => '#0891b2',
+            'badge_color' => 'var(--color-secondary)',
             'title'       => $title,
             'body'        => $body,
             'subject'     => $actorLabel,

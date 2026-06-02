@@ -9,7 +9,7 @@ use Core\Database\Migration;
  *
  *   page_layouts.row_styles    — array indexed by row number:
  *     [
- *       0 => ['bg_color'=>'#fef3c7','bg_image'=>'','full_bleed'=>true,'content_padding_px'=>32],
+ *       0 => ['bg_color'=>'var(--color-warning-bg)','bg_image'=>'','full_bleed'=>true,'content_padding_px'=>32],
  *       1 => [...]
  *     ]
  *

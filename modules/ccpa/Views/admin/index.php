@@ -23,7 +23,7 @@
         $cards = [
             ['Total (90d)',     (int) ($stats['total']        ?? 0), 'var(--color-gray-700)'],
             ['Self-service',    (int) ($stats['self_service'] ?? 0), 'var(--color-info)'],
-            ['GPC signal',      (int) ($stats['gpc_signal']   ?? 0), '#8b5cf6'],
+            ['GPC signal',      (int) ($stats['gpc_signal']   ?? 0), 'var(--color-purple)'],
             ['Admin-initiated', (int) ($stats['admin']        ?? 0), 'var(--color-warning)'],
             ['Withdrawn',       (int) ($stats['withdrawn']    ?? 0), 'var(--color-gray-500)'],
         ];
@@ -56,7 +56,7 @@
             <?php else: foreach ($recent as $r):
                 $sourceColors = [
                     'self_service' => 'var(--color-info)',
-                    'gpc_signal'   => '#8b5cf6',
+                    'gpc_signal'   => 'var(--color-purple)',
                     'admin'        => 'var(--color-warning)',
                     'api'          => 'var(--color-gray-500)',
                 ];

@@ -156,10 +156,10 @@ $totalPages = max(1, (int) ceil($total_loaded / max(1, $per_page)));
                     $chipMeta = [
                         'email:ses'      => ['SES',       'var(--color-warning-bg)', 'var(--color-warning-fg)'],
                         'email:sendgrid' => ['SendGrid',  'var(--color-info-bg)', 'var(--color-info-fg)'],
-                        'email:postmark' => ['Postmark',  '#fef9c3', '#854d0e'],
-                        'email:mailgun'  => ['Mailgun',   '#fce7f3', '#9d174d'],
-                        'email:smtp2go'  => ['SMTP2GO',   '#dcfce7', '#166534'],
-                        'stripe'         => ['Stripe',    '#cffafe', '#155e75'],
+                        'email:postmark' => ['Postmark',  'var(--color-warning-bg)', 'var(--color-warning-fg)'],
+                        'email:mailgun'  => ['Mailgun',   'var(--color-danger-bg)', 'var(--color-danger-fg)'],
+                        'email:smtp2go'  => ['SMTP2GO',   'var(--color-success-bg)', 'var(--color-success-fg)'],
+                        'stripe'         => ['Stripe',    'var(--color-info-bg)', 'var(--color-secondary)'],
                     ];
                     foreach ($chipMeta as $key => [$label, $bg, $fg]):
                         $count    = (int) ($tally[$key] ?? 0);

@@ -316,8 +316,8 @@ final class WebhookDashboardController
             default                 => '✉',
         };
         $color = match ((string) $r['event_type']) {
-            'hard_bounce', 'bounce', 'complaint', 'spam' => '#dc2626',
-            'delivered', 'opened', 'open'                => '#16a34a',
+            'hard_bounce', 'bounce', 'complaint', 'spam' => 'var(--color-danger)',
+            'delivered', 'opened', 'open'                => 'var(--color-success)',
             default                                      => 'var(--color-gray-500)',
         };
         return [
@@ -352,7 +352,7 @@ final class WebhookDashboardController
             'id'             => (int) $r['id'],
             'ts'             => $r['occurred_at'],
             'icon'           => $icon,
-            'color'          => '#0891b2',
+            'color'          => 'var(--color-secondary)',
             'provider'       => 'stripe',
             'provider_label' => 'Stripe',
             'event_type'     => $type,
