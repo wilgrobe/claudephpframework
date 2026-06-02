@@ -27,7 +27,7 @@
     foreach ($modules as $m) if ($m['state'] !== 'active') $disabledCount++;
 ?>
 <?php if ($disabledCount > 0): ?>
-<div style="padding:.75rem 1rem;background:var(--color-danger-bg);border:1px solid #fca5a5;color:var(--color-danger-fg);border-radius:6px;font-size:13.5px;margin-bottom:1rem">
+<div style="padding:.75rem 1rem;background:var(--color-danger-bg);border:1px solid var(--color-danger);color:var(--color-danger-fg);border-radius:6px;font-size:13.5px;margin-bottom:1rem">
     <strong><?= (int) $disabledCount ?></strong> module<?= $disabledCount === 1 ? '' : 's' ?>
     currently disabled. Resolve the missing dependencies to bring them back online.
 </div>
