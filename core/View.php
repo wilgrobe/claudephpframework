@@ -356,9 +356,14 @@ class View
             }
         }
 
-        // SECURITY: Validate view name — only allow alphanumeric, dots, and underscores.
-        // This prevents path traversal via '../' or absolute path injection.
-        if (!preg_match('/^[a-zA-Z0-9_.]+$/', $view)) {
+        // SECURITY: Validate view name — only allow alphanumeric, dots,
+        // underscores, and hyphens. This prevents path traversal via '../'
+        // or absolute path injection. Hyphens are permitted so kebab-case
+        // view files (e.g. 'activity-tenants') resolve instead of throwing —
+        // they're harmless for path safety (the '..' check below + the
+        // realpath containment in resolvePath handle traversal). Mirrors the
+        // namespace validator above, which already allows hyphens.
+        if (!preg_match('/^[a-zA-Z0-9_.-]+$/', $view)) {
             throw new \InvalidArgumentException("Invalid view name: [$view]");
         }
         // Reject double-dots specifically (belt-and-suspenders)
