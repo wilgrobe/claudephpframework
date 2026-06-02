@@ -5,7 +5,7 @@ namespace Core\Console\Commands;
 use Core\Console\Command;
 use Core\Container\Container;
 use Core\Database\Database;
-use Core\Http\Request;
+use Core\Request;
 use Core\Router\Router;
 
 /**
@@ -162,8 +162,8 @@ class QaAdminSmokeCommand extends Command
         ob_start();
         try {
             $response = $router->dispatch($request);
-            $body = method_exists($response, 'getContent') ? (string) $response->getContent() : (string) $response;
-            $status = method_exists($response, 'getStatus') ? (int) $response->getStatus() : 200;
+            $body = method_exists($response, 'getBody') ? (string) $response->getBody() : (string) $response;
+            $status = method_exists($response, 'status') ? (int) $response->status() : 200;
         } catch (\Throwable $e) {
             ob_end_clean();
             return [
