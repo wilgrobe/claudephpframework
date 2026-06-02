@@ -585,10 +585,11 @@ class SettingsController
 
         return Response::view('settings::admin.appearance', [
             'values'           => $values,
-            'tokenDefinitions' => \Core\Services\ThemeService::TOKEN_DEFINITIONS,
-            'groupOrder'       => \Core\Services\ThemeService::GROUP_ORDER,
-            'fontLibrary'      => \Core\Services\ThemeService::FONT_LIBRARY,
-            'colorDefaults'    => self::COLOR_DEFAULTS,
+            'tokenDefinitions'   => \Core\Services\ThemeService::TOKEN_DEFINITIONS,
+            'groupOrder'         => \Core\Services\ThemeService::GROUP_ORDER,
+            'fontLibrary'        => \Core\Services\ThemeService::FONT_LIBRARY,
+            'gradientDirections' => \Core\Services\ThemeService::GRADIENT_DIRECTIONS,
+            'colorDefaults'      => self::COLOR_DEFAULTS,
             'user'             => $this->auth->user(),
         ]);
     }

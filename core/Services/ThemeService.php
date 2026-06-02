@@ -206,6 +206,24 @@ class ThemeService
     ];
 
     /**
+     * Allowed gradient directions for the `*-grad-dir` (angle) tokens —
+     * value => arrow label. Shared by the admin appearance page + the wizard
+     * step-6 customizer so both render the same dropdown. Anything outside this
+     * set fails the 'angle' validator and falls back to the token default.
+     */
+    public const GRADIENT_DIRECTIONS = [
+        '0deg'   => '↑ Up',
+        '45deg'  => '↗ Up-right',
+        '90deg'  => '→ Right',
+        '135deg' => '↘ Down-right',
+        '160deg' => '↘ Steep down-right',
+        '180deg' => '↓ Down',
+        '225deg' => '↙ Down-left',
+        '270deg' => '← Left',
+        '315deg' => '↖ Up-left',
+    ];
+
+    /**
      * Curated allowlist of Google Fonts shipped with the framework.
      *
      * Each entry holds the friendly label, the full CSS font-family value

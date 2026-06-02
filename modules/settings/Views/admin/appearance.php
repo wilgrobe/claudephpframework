@@ -284,6 +284,17 @@
                        autocomplete="off"
                        class="form-control"
                        style="font-family: <?= e($current !== '' ? $current : $default) ?>; font-size:14px">
+                <?php elseif ($type === 'angle'): ?>
+                <?php /* Gradient direction — same dropdown the wizard step-6
+                          customizer uses (ThemeService::GRADIENT_DIRECTIONS).
+                          Blank value = "use default", which falls through the
+                          'angle' validator's empty-allowed path on save. */ ?>
+                <select id="in-<?= e($key) ?>" name="<?= e($key) ?>" class="form-control">
+                    <option value="">&mdash; Default (<?= e($default) ?>) &mdash;</option>
+                    <?php foreach (($gradientDirections ?? []) as $dVal => $dLabel): ?>
+                    <option value="<?= e($dVal) ?>" <?= $current === $dVal ? 'selected' : '' ?>><?= e($dLabel) ?></option>
+                    <?php endforeach; ?>
+                </select>
                 <?php else: ?>
                 <input type="text"
                        id="in-<?= e($key) ?>"
