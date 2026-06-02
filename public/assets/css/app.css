@@ -20,17 +20,20 @@
     --color-gray-500:     #6b7280;
     --color-gray-700:     #374151;
     --color-gray-900:     #111827;
-    /* Soft background variants — for status pills, alert tints, focus rings */
-    --color-success-bg:   #ecfdf5;
-    --color-success-fg:   #065f46;
-    --color-warning-bg:   #fef3c7;
-    --color-warning-fg:   #92400e;
-    --color-danger-bg:    #fee2e2;
-    --color-danger-fg:    #991b1b;
-    --color-info-bg:      #dbeafe;
-    --color-info-fg:      #1e40af;
-    --color-purple-bg:    #ede9fe;
-    --color-purple-fg:    #5b21b6;
+    /* Semantic tints — derived via color-mix from the (mode-flipping) base
+       semantic colors + the active surface/ink, so they dark-adapt for free.
+       Every var(--color-*-bg/-fg) usage now flips with the theme; the bg sits
+       lightly over the panel, the fg pulls the hue toward the current ink. */
+    --color-success-bg:   color-mix(in srgb, var(--color-success) 14%, var(--bg-panel));
+    --color-success-fg:   color-mix(in srgb, var(--color-success) 70%, var(--text-default));
+    --color-warning-bg:   color-mix(in srgb, var(--color-warning) 16%, var(--bg-panel));
+    --color-warning-fg:   color-mix(in srgb, var(--color-warning) 72%, var(--text-default));
+    --color-danger-bg:    color-mix(in srgb, var(--color-danger) 13%, var(--bg-panel));
+    --color-danger-fg:    color-mix(in srgb, var(--color-danger) 72%, var(--text-default));
+    --color-info-bg:      color-mix(in srgb, var(--color-info) 14%, var(--bg-panel));
+    --color-info-fg:      color-mix(in srgb, var(--color-info) 72%, var(--text-default));
+    --color-purple-bg:    var(--accent-subtle);
+    --color-purple-fg:    var(--color-primary-dark);
     --font:               'Inter', system-ui, -apple-system, sans-serif;
     --radius:             8px;
     --radius-lg:          12px;
@@ -56,6 +59,28 @@
     --style-font-h2-size:    18px;
     --style-font-body-size:  14px;
     --style-font-heading-weight: 700;
+    /* (theming v2 Phase 4: the --surface-* helper vars were retired — sections
+       use data-palette + the ordinal palettes now; nothing references them.) */
+}
+
+/* Theming v2 Phase 5 — re-resolve the semantic tints under the MANUAL theme
+   toggles. The :root color-mix defs above already adapt for the OS-preference
+   path (ThemeService flips :root's base vars via @media prefers-color-scheme),
+   but the manual body.theme-dark / body.theme-light toggles set the base vars
+   on <body>, so a :root-declared color-mix would stay frozen at its light
+   substitution. Re-declaring the identical mix here lets each var() resolve
+   against the toggled <body>'s base values (dark or light respectively). */
+body.theme-dark, body.theme-light {
+    --color-success-bg:   color-mix(in srgb, var(--color-success) 14%, var(--bg-panel));
+    --color-success-fg:   color-mix(in srgb, var(--color-success) 70%, var(--text-default));
+    --color-warning-bg:   color-mix(in srgb, var(--color-warning) 16%, var(--bg-panel));
+    --color-warning-fg:   color-mix(in srgb, var(--color-warning) 72%, var(--text-default));
+    --color-danger-bg:    color-mix(in srgb, var(--color-danger) 13%, var(--bg-panel));
+    --color-danger-fg:    color-mix(in srgb, var(--color-danger) 72%, var(--text-default));
+    --color-info-bg:      color-mix(in srgb, var(--color-info) 14%, var(--bg-panel));
+    --color-info-fg:      color-mix(in srgb, var(--color-info) 72%, var(--text-default));
+    --color-purple-bg:    var(--accent-subtle);
+    --color-purple-fg:    var(--color-primary-dark);
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -120,8 +145,8 @@ body.theme-dark [style*="background:#fef2f2"],
 body.theme-dark [style*="background: #fef2f2"] { background: rgba(185, 28, 28, .15) !important; color: var(--text-default) !important; }
 body.theme-dark [style*="background:#fffbeb"],
 body.theme-dark [style*="background: #fffbeb"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
-body.theme-dark [style*="background:#fef3c7"],
-body.theme-dark [style*="background: #fef3c7"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+body.theme-dark [style*="background:var(--color-warning-bg)"],
+body.theme-dark [style*="background: var(--color-warning-bg)"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
 body.theme-dark [style*="background:#fef9c3"],
 body.theme-dark [style*="background: #fef9c3"] { background: rgba(202, 138, 4, .15) !important; color: var(--text-default) !important; }
 body.theme-dark [style*="background:#eef2ff"],
@@ -131,8 +156,8 @@ body.theme-dark [style*="background: #eef2ff"] { background: rgba(79, 70, 229, .
     body:not(.theme-light) [style*="background: #fef2f2"] { background: rgba(185, 28, 28, .15) !important; color: var(--text-default) !important; }
     body:not(.theme-light) [style*="background:#fffbeb"],
     body:not(.theme-light) [style*="background: #fffbeb"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
-    body:not(.theme-light) [style*="background:#fef3c7"],
-    body:not(.theme-light) [style*="background: #fef3c7"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
+    body:not(.theme-light) [style*="background:var(--color-warning-bg)"],
+    body:not(.theme-light) [style*="background: var(--color-warning-bg)"] { background: rgba(180, 83, 9, .15) !important; color: var(--text-default) !important; }
     body:not(.theme-light) [style*="background:#fef9c3"],
     body:not(.theme-light) [style*="background: #fef9c3"] { background: rgba(202, 138, 4, .15) !important; color: var(--text-default) !important; }
     body:not(.theme-light) [style*="background:#eef2ff"],
@@ -140,7 +165,22 @@ body.theme-dark [style*="background: #eef2ff"] { background: rgba(79, 70, 229, .
 }
 
 a { color: var(--color-primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Content-area links (article bodies, rendered markdown, composer blocks)
+   get a richer treatment: visible underline + teal "visited" so readers can
+   tell what they've already opened. Chrome/nav links above stay clean. */
+.page-body a, .prose a, .builder-block a, .markdown-body a {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
+    text-underline-offset: 2px;
+    transition: color .12s, text-decoration-color .12s;
+}
+.page-body a:hover, .prose a:hover, .builder-block a:hover, .markdown-body a:hover {
+    color: var(--color-primary-dark); text-decoration-color: currentColor;
+}
+.page-body a:visited, .prose a:visited, .builder-block a:visited, .markdown-body a:visited {
+    color: var(--color-secondary);
+}
 img { max-width: 100%; height: auto; }
 
 /* ── Password Strength Meter ────────────────────────────────── */

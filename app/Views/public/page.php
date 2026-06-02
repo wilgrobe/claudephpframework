@@ -74,15 +74,55 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     .page-body h2 { font-size: 1.3rem; margin-top: 1.75rem; }
     .page-body h3 { font-size: 1.1rem; margin-top: 1.25rem; }
     .page-body p  { margin: 0 0 1rem; }
-    .page-body a  { color: var(--color-primary); }
+    .page-body a, .builder-block a {
+        color: var(--color-primary); text-decoration: underline;
+        text-decoration-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
+        text-decoration-thickness: 1px; text-underline-offset: 2px;
+        transition: color .12s, text-decoration-color .12s;
+    }
+    .page-body a:hover, .builder-block a:hover {
+        color: var(--color-primary-dark); text-decoration-color: currentColor; text-decoration-thickness: 2px;
+    }
+    .page-body a:visited, .builder-block a:visited { color: var(--color-secondary); }
     .page-body ul, .page-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
     </style>
 
+    <?php
+    // Per-page main wrapper spacing (added 2026-06-03). Wraps the
+    // hero + body so authed shell's <main class="content" id="main-
+    // content"> chrome stays untouched.
+    $__pmt = (int) ($page['main_margin_top_px']    ?? 0);
+    $__pmb = (int) ($page['main_margin_bottom_px'] ?? 0);
+    $__ppx = (int) ($page['main_padding_x_px']     ?? 0);
+    $__ppy = (int) ($page['main_padding_y_px']     ?? 0);
+    // Always emit the user's 6 properties (including 0s) so the
+    // framework's .content { padding:1.5rem } default can't bleed
+    // through. The user's per-page setting is authoritative —
+    // including "set everything to 0" which means truly zero.
+    $__mainStyleParts = [
+        'margin-top:'    . $__pmt . 'px',
+        'margin-bottom:' . $__pmb . 'px',
+        'padding-top:'    . $__ppy . 'px',
+        'padding-bottom:' . $__ppy . 'px',
+        'padding-left:'  . $__ppx . 'px',
+        'padding-right:' . $__ppx . 'px',
+    ];
+    $__mainStyle = ' style="' . implode(';', $__mainStyleParts) . '"';
+    ?>
+    <style>
+    /* Zero out the framework chrome's outer padding so the per-page
+       .page-main wrapper below has full control. */
+    main.content#main-content { padding: 0; }
+    </style>
+    <div class="page-main"<?= $__mainStyle ?>>
+    <?php if (empty($page['hide_title'])): ?>
     <div class="page-hero">
         <h1><?= e($page['title']) ?></h1>
     </div>
+    <?php endif; ?>
 
     <?php $__renderBody(); ?>
+    </div>
 
     <?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>
 <?php else: /* ── Guest: standalone public shell with SEO meta + marketing chrome ── */ ?>
@@ -165,7 +205,7 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     // step 7 overrides modal's allowlist. Column-guarded for tenants
     // pre-43.164.
     $__pgColorMap = [
-        'color_primary'   => '--color-primary',
+        'theme.palette.primary.bg'   => '--color-primary',
         'bg_page'         => '--bg-page',
         'bg_panel'        => '--bg-panel',
         'text_default'    => '--text-default',
@@ -259,6 +299,8 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     ?>
     <style>
     *, *::before, *::after { box-sizing: border-box; }
+    /* (theming v2 Phase 4: the --surface-* helper vars were retired — marketing
+       sections use data-palette + the ordinal palettes now.) */
     /* Phase 43.11 — public-page chrome consumes --style-* tokens from
        ThemeService::renderOverrideStyle above. Fallbacks preserve the
        pre-existing baseline for installs without admin overrides. */
@@ -314,7 +356,27 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     .page-body h2 { font-family: var(--font-family-heading, inherit); font-size: var(--style-font-h2-size, 1.4rem); font-weight: var(--style-font-heading-weight, 700); font-style: var(--style-font-heading-italic, normal); margin-top: 2rem; }
     .page-body h3 { font-family: var(--font-family-heading, inherit); font-size: calc(var(--style-font-h2-size, 1.15rem) * 0.9); font-weight: var(--style-font-heading-weight, 700); font-style: var(--style-font-heading-italic, normal); margin-top: 1.5rem; }
     .page-body p { margin: 0 0 1rem; }
-    .page-body a { color: var(--color-primary, var(--color-primary)); }
+    /* Content links (2026-06-01) — coral for new, teal for visited, so
+       there's a warm/cool read on what you've already explored. Hover
+       reveals a thicker underline with breathing room. Applies to the
+       page body AND rendered composer blocks (markdown etc.). */
+    .page-body a, .builder-block a {
+        color: var(--color-primary);
+        text-decoration: underline;
+        text-decoration-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+        transition: color .12s, text-decoration-color .12s;
+    }
+    .page-body a:hover, .builder-block a:hover {
+        color: var(--color-primary-dark);
+        text-decoration-color: currentColor;
+        text-decoration-thickness: 2px;
+    }
+    .page-body a:visited, .builder-block a:visited { color: var(--color-secondary); }
+    .page-body a:visited:hover, .builder-block a:visited:hover {
+        color: color-mix(in srgb, var(--color-secondary) 78%, #000);
+    }
     .page-body ul, .page-body ol { margin: 0 0 1rem; padding-left: 1.5rem; }
     /* Phase 43.33 — code/pre/kbd inside the page body use the mono slot's
        weight + italic tokens. The family already comes from app.css's
@@ -396,10 +458,30 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     </nav>
 </header>
 
-<main id="main-content">
+<?php
+// Per-page main wrapper spacing — guest shell variant (added 2026-06-03).
+// Always emits all 6 properties (including 0s) so the user's settings
+// are authoritative — including "all zeros" which means truly zero.
+$__pmtG = (int) ($page['main_margin_top_px']    ?? 0);
+$__pmbG = (int) ($page['main_margin_bottom_px'] ?? 0);
+$__ppxG = (int) ($page['main_padding_x_px']     ?? 0);
+$__ppyG = (int) ($page['main_padding_y_px']     ?? 0);
+$__mainStylePartsG = [
+    'margin-top:'    . $__pmtG . 'px',
+    'margin-bottom:' . $__pmbG . 'px',
+    'padding-top:'    . $__ppyG . 'px',
+    'padding-bottom:' . $__ppyG . 'px',
+    'padding-left:'  . $__ppxG . 'px',
+    'padding-right:' . $__ppxG . 'px',
+];
+$__mainStyleG = ' style="' . implode(';', $__mainStylePartsG) . '"';
+?>
+<main id="main-content"<?= $__mainStyleG ?>>
+<?php if (empty($page['hide_title'])): ?>
 <div class="page-hero">
     <h1><?= e($page['title']) ?></h1>
 </div>
+<?php endif; ?>
 
 <?php $__renderBody(); ?>
 </main>

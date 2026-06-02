@@ -29,44 +29,16 @@ class ThemeService
      * in either mode.
      */
     public const TOKEN_DEFINITIONS = [
-        // ── Brand (legacy flat keys) — same in dark; brand colors stay constant ──
-        // color_secondary removed (no consumer); add it back with a wired call
-        // site if the secondary palette starts driving something.
-        /* Trade-off note for dark mode: indigo-500 #6366f1 (white-on-it
-         * gives 4.47:1, comfortably readable for filled-button UI text
-         * per industry practice) vs indigo-400 #818cf8 (passes 4.5 for
-         * text-on-dark but drops button white-on-primary to 2.98).
-         * Keeping #6366f1 since filled-button text is the more common
-         * usage; views with text-only primary references handle it via
-         * a body.theme-dark override that swaps to indigo-300. */
-        'color_primary'      => ['css' => 'color-primary',      'default' => '#4f46e5', 'default_dark' => '#6366f1', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary',       'legacy' => true],
-        'color_primary_dark' => ['css' => 'color-primary-dark', 'default' => '#3730a3', 'default_dark' => '#4f46e5', 'validator' => 'color', 'group' => 'brand', 'label' => 'Primary (dark)','legacy' => true],
-        'color_success'      => ['css' => 'color-success',      'default' => '#10b981', 'default_dark' => '#34d399', 'validator' => 'color', 'group' => 'brand', 'label' => 'Success',       'legacy' => true],
-        'color_danger'       => ['css' => 'color-danger',       'default' => '#ef4444', 'default_dark' => '#f87171', 'validator' => 'color', 'group' => 'brand', 'label' => 'Danger',        'legacy' => true],
-        'color_warning'      => ['css' => 'color-warning',      'default' => '#f59e0b', 'default_dark' => '#fbbf24', 'validator' => 'color', 'group' => 'brand', 'label' => 'Warning',       'legacy' => true],
-        'color_info'         => ['css' => 'color-info',         'default' => '#3b82f6', 'default_dark' => '#60a5fa', 'validator' => 'color', 'group' => 'brand', 'label' => 'Info',          'legacy' => true],
-
-        // ── Surfaces — flip from light to dark ──
-        // bg.block / bg.cell / bg.overlay removed (no consumer in chrome or
-        // page composer; aspirational tokens from an earlier composer design).
-        'theme.color.bg.page'    => ['css' => 'bg-page',    'default' => '#f9fafb', 'default_dark' => '#0b1220', 'validator' => 'color', 'group' => 'surfaces', 'label' => 'Page background'],
-        'theme.color.bg.panel'   => ['css' => 'bg-panel',   'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'surfaces', 'label' => 'Panel / card background'],
-
-        // ── Text — invert ──
-        // text.inverse removed (no consumer; accent-contrast covers
-        // "text on primary" which is the only inverse-on-dark case).
-        'theme.color.text.default' => ['css' => 'text-default', 'default' => '#111827', 'default_dark' => '#f9fafb', 'validator' => 'color', 'group' => 'text', 'label' => 'Body text'],
-        'theme.color.text.muted'   => ['css' => 'text-muted',   'default' => '#6b7280', 'default_dark' => '#9ca3af', 'validator' => 'color', 'group' => 'text', 'label' => 'Muted / secondary text'],
-        'theme.color.text.subtle'  => ['css' => 'text-subtle',  'default' => '#9ca3af', 'default_dark' => '#6b7280', 'validator' => 'color', 'group' => 'text', 'label' => 'Subtle / tertiary text'],
-
-        // ── Borders ──
-        'theme.color.border.default' => ['css' => 'border-default', 'default' => '#e5e7eb', 'default_dark' => '#374151', 'validator' => 'color', 'group' => 'borders', 'label' => 'Default border'],
-        'theme.color.border.strong'  => ['css' => 'border-strong',  'default' => '#d1d5db', 'default_dark' => '#4b5563', 'validator' => 'color', 'group' => 'borders', 'label' => 'Strong border'],
-        'theme.color.border.subtle'  => ['css' => 'border-subtle',  'default' => '#f3f4f6', 'default_dark' => '#1f2937', 'validator' => 'color', 'group' => 'borders', 'label' => 'Subtle border'],
-
-        // ── Accents ──
-        'theme.color.accent.subtle'   => ['css' => 'accent-subtle',   'default' => '#eef2ff', 'default_dark' => '#312e81', 'validator' => 'color', 'group' => 'accents', 'label' => 'Accent tint (hover, selection)'],
-        'theme.color.accent.contrast' => ['css' => 'accent-contrast', 'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'accents', 'label' => 'Text on primary backgrounds'],
+        // ── Brand / Surfaces / Text / Borders / Accents ──
+        // Theming v2 §14: the v1 flat keys (color_primary/_dark/_secondary,
+        // color_success/warning/danger/info, theme.color.bg/text/border/accent.*)
+        // are RETIRED. Their component CSS vars (--color-primary, --bg-page, …)
+        // are now emitted by renderGenericLayerVars() from the v2 sources below
+        // (theme.palette.primary.* + theme.palette.default.*), so these defs
+        // were fully redundant. The default palette's TOKEN_DEFINITIONS defaults
+        // (theme.palette.default.* + primary/secondary, further down) carry the
+        // shipped look. Chrome keeps its theme.color.chrome.* namespace — it's
+        // its own v2 role, not a v1↔v2 duality.
 
         // ── Chrome (sidebar + footer always-dark surfaces) ──
         // Defaults match the legacy hardcoded indigo palette so nothing
@@ -79,6 +51,15 @@ class ThemeService
         'theme.color.chrome.sidebar_text' => ['css' => 'chrome-sidebar-text', 'default' => '#c7d2fe', 'default_dark' => '#c7d2fe', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Sidebar text'],
         'theme.color.chrome.footer_bg'    => ['css' => 'chrome-footer-bg',    'default' => '#1e1b4b', 'default_dark' => '#1e1b4b', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Footer background'],
         'theme.color.chrome.footer_text'  => ['css' => 'chrome-footer-text',  'default' => '#c7d2fe', 'default_dark' => '#c7d2fe', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Footer text'],
+        // Phase 43.13 — header bar (admin topbar + public site-header)
+        // gets its own tokens so it can be styled independently of the
+        // sidebar/footer pair. Defaults match the existing light topbar
+        // look (white bg + near-black text) so installs that haven't
+        // customized see zero change. BrandColorDeriver overrides these
+        // when a brand color is picked, producing a brand-tinted dark
+        // header to match the rest of the chrome.
+        'theme.color.chrome.header_bg'    => ['css' => 'chrome-header-bg',    'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header background'],
+        'theme.color.chrome.header_text'  => ['css' => 'chrome-header-text',  'default' => '#111827', 'default_dark' => '#f9fafb', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header text'],
 
         // ── Radius ──
         // radius.sm/md/full removed (no consumer). Only --radius-lg is
@@ -93,6 +74,98 @@ class ThemeService
         // (aliased to --font in renderOverrideStyle for the chrome's
         // hardcoded `var(--font)` ramp).
         'theme.font.family.body' => ['css' => 'font-family-body', 'default' => "'Inter', system-ui, sans-serif", 'validator' => 'font_family', 'group' => 'font_family', 'label' => 'Body / paragraph'],
+
+        // ════════════════════════════════════════════════════════════════
+        // Theming v2 — palette-slot source tokens (docs/theming-v2-spec.md).
+        // These are the SOURCE palettes. The generic "active" layer
+        // (renderGenericLayerVars) maps the legacy consumed var names
+        // (--bg-page, --color-primary, --accent-subtle, --surface-*, …) onto
+        // these, so existing components keep working unchanged. Phase 1 is
+        // additive — the legacy tokens above still emit but are overridden
+        // by the generic layer; Phase 3 removes them + migrates settings.
+        // Default values reproduce the current coral/teal look exactly.
+        // ════════════════════════════════════════════════════════════════
+
+        // ── default palette (neutral base: 2 surfaces + text + borders + accent + line + semantics) ──
+        'theme.palette.default.bg'              => ['css' => 'default-bg',              'default' => '#faf7f2', 'default_dark' => '#1c1917', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Page background'],
+        'theme.palette.default.surface'         => ['css' => 'default-surface',         'default' => '#ffffff', 'default_dark' => '#292524', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Panel / card surface'],
+        'theme.palette.default.text'            => ['css' => 'default-text',            'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Body text'],
+        'theme.palette.default.text-muted'      => ['css' => 'default-text-muted',      'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Muted text'],
+        'theme.palette.default.text-subtle'     => ['css' => 'default-text-subtle',     'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Subtle text'],
+        'theme.palette.default.border'          => ['css' => 'default-border',          'default' => '#e7e2da', 'default_dark' => '#44403c', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Border'],
+        'theme.palette.default.border-strong'   => ['css' => 'default-border-strong',   'default' => '#d6d0c6', 'default_dark' => '#57534e', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Border (strong)'],
+        'theme.palette.default.border-subtle'   => ['css' => 'default-border-subtle',   'default' => '#f2efe9', 'default_dark' => '#292524', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Border (subtle)'],
+        'theme.palette.default.accent'          => ['css' => 'default-accent',          'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Accent (links / focus)'],
+        'theme.palette.default.accent-contrast' => ['css' => 'default-accent-contrast', 'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Text on accent'],
+        'theme.palette.default.accent-tint'     => ['css' => 'default-accent-tint',     'default' => '#fbeae2', 'default_dark' => '#3a241c', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Accent tint (hover / selection)'],
+        'theme.palette.default.line'            => ['css' => 'default-line',            'default' => '#78716c24', 'default_dark' => '#e7e2da1a', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Hairline divider'],
+        'theme.palette.default.success'         => ['css' => 'default-success',         'default' => '#15803d', 'default_dark' => '#4ade80', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Success'],
+        'theme.palette.default.warning'         => ['css' => 'default-warning',         'default' => '#b45309', 'default_dark' => '#fbbf24', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Warning'],
+        'theme.palette.default.danger'          => ['css' => 'default-danger',          'default' => '#dc2626', 'default_dark' => '#f87171', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Danger'],
+        'theme.palette.default.info'            => ['css' => 'default-info',            'default' => '#0d9488', 'default_dark' => '#2dd4bf', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Info'],
+
+        // ── hero role (its own surface, with gradient + CTA pair) ──
+        'theme.palette.hero.bg'         => ['css' => 'hero-bg',         'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero background / stop 1'],
+        'theme.palette.hero.grad'       => ['css' => 'hero-grad',       'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero gradient stop 2 (blank = solid)'],
+        'theme.palette.hero.grad-dir'   => ['css' => 'hero-grad-dir',   'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_hero', 'label' => 'Hero gradient direction'],
+        'theme.palette.hero.text'       => ['css' => 'hero-text',       'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero text'],
+        'theme.palette.hero.text-muted' => ['css' => 'hero-text-muted', 'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero subheading'],
+        'theme.palette.hero.cta-bg'     => ['css' => 'hero-cta-bg',     'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero CTA button bg'],
+        'theme.palette.hero.cta-text'   => ['css' => 'hero-cta-text',   'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero CTA button label'],
+
+        // ── ordinal accent palettes (pickable per section): primary…quinary ──
+        'theme.palette.primary.bg'          => ['css' => 'primary-bg',          'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary background / stop 1'],
+        'theme.palette.primary.grad'        => ['css' => 'primary-grad',        'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary gradient stop 2'],
+        'theme.palette.primary.grad-dir'    => ['css' => 'primary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_primary', 'label' => 'Primary gradient direction'],
+        'theme.palette.primary.text'        => ['css' => 'primary-text',        'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text'],
+        'theme.palette.primary.text-muted'  => ['css' => 'primary-text-muted',  'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text muted'],
+        'theme.palette.primary.text-subtle' => ['css' => 'primary-text-subtle', 'default' => '#ffffffb3', 'default_dark' => '#ffffffb3', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text subtle'],
+
+        'theme.palette.secondary.bg'          => ['css' => 'secondary-bg',          'default' => '#0d9488', 'default_dark' => '#0f766e', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary background / stop 1'],
+        'theme.palette.secondary.grad'        => ['css' => 'secondary-grad',        'default' => '#0f766e', 'default_dark' => '#115e59', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary gradient stop 2'],
+        'theme.palette.secondary.grad-dir'    => ['css' => 'secondary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_secondary', 'label' => 'Secondary gradient direction'],
+        'theme.palette.secondary.text'        => ['css' => 'secondary-text',        'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text'],
+        'theme.palette.secondary.text-muted'  => ['css' => 'secondary-text-muted',  'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text muted'],
+        'theme.palette.secondary.text-subtle' => ['css' => 'secondary-text-subtle', 'default' => '#ffffffb3', 'default_dark' => '#ffffffb3', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text subtle'],
+
+        'theme.palette.tertiary.bg'          => ['css' => 'tertiary-bg',          'default' => '#fbeae2', 'default_dark' => '#3a241c', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary background / stop 1'],
+        'theme.palette.tertiary.grad'        => ['css' => 'tertiary-grad',        'default' => '#fdf4ee', 'default_dark' => '#2a201b', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient stop 2'],
+        'theme.palette.tertiary.grad-dir'    => ['css' => 'tertiary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient direction'],
+        'theme.palette.tertiary.text'        => ['css' => 'tertiary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text'],
+        'theme.palette.tertiary.text-muted'  => ['css' => 'tertiary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text muted'],
+        'theme.palette.tertiary.text-subtle' => ['css' => 'tertiary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text subtle'],
+
+        'theme.palette.quaternary.bg'          => ['css' => 'quaternary-bg',          'default' => '#e2f3f1', 'default_dark' => '#173d3a', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary background / stop 1'],
+        'theme.palette.quaternary.grad'        => ['css' => 'quaternary-grad',        'default' => '#f0faf8', 'default_dark' => '#16302e', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient stop 2'],
+        'theme.palette.quaternary.grad-dir'    => ['css' => 'quaternary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient direction'],
+        'theme.palette.quaternary.text'        => ['css' => 'quaternary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text'],
+        'theme.palette.quaternary.text-muted'  => ['css' => 'quaternary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text muted'],
+        'theme.palette.quaternary.text-subtle' => ['css' => 'quaternary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text subtle'],
+
+        'theme.palette.quinary.bg'          => ['css' => 'quinary-bg',          'default' => '#f5f1ea', 'default_dark' => '#262220', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary background / stop 1'],
+        'theme.palette.quinary.grad'        => ['css' => 'quinary-grad',        'default' => '#ece7df', 'default_dark' => '#211e1b', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary gradient stop 2'],
+        'theme.palette.quinary.grad-dir'    => ['css' => 'quinary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quinary', 'label' => 'Quinary gradient direction'],
+        'theme.palette.quinary.text'        => ['css' => 'quinary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text'],
+        'theme.palette.quinary.text-muted'  => ['css' => 'quinary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text muted'],
+        'theme.palette.quinary.text-subtle' => ['css' => 'quinary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text subtle'],
+    ];
+
+    /**
+     * Theming v2 — v2-internal fallback (theming v2 §14: the v1 keys are
+     * retired; this REPLACES the old v1-compat bridge). A v2 source token falls
+     * back to another v2 token when its own setting is unset, so the brand
+     * (theme.palette.primary.*) propagates to the hero + the default accent
+     * without the user setting each. Everything else (default surfaces / text /
+     * borders / semantics + the bold/secondary ordinals) resolves from its own
+     * migrated setting or its shipped TOKEN_DEFINITIONS default — no fallback
+     * needed. The const name is kept (callers reference self::LEGACY_FALLBACK);
+     * its contents are now purely v2→v2.
+     */
+    public const LEGACY_FALLBACK = [
+        'theme.palette.hero.bg'        => 'theme.palette.primary.bg',
+        'theme.palette.hero.grad'      => 'theme.palette.primary.grad',
+        'theme.palette.hero.cta-text'  => 'theme.palette.primary.bg',
+        'theme.palette.default.accent' => 'theme.palette.primary.bg',
     ];
 
     /**
@@ -135,14 +208,21 @@ class ThemeService
     ];
 
     public const GROUP_ORDER = [
-        'brand'         => 'Brand colors',
-        'surfaces'      => 'Surface colors',
-        'text'          => 'Text colors',
-        'borders'       => 'Border colors',
-        'accents'       => 'Accents',
-        'chrome'        => 'Chrome (sidebar + footer)',
-        'radius'        => 'Corner radii',
-        'font_family'   => 'Fonts',
+        // Theming v2 §14: the v1 Brand / Surfaces / Text / Borders / Accents
+        // groups are gone (their flat keys were retired). The default palette
+        // (theme.palette.default.* — surfaces, text, borders, accents + the
+        // semantic colours) is now the editable base, followed by chrome, the
+        // hero role, and the 5 ordinal accent palettes.
+        'pal_default'    => 'Default palette (surfaces · text · borders · accents)',
+        'chrome'         => 'Chrome (sidebar + footer)',
+        'radius'         => 'Corner radii',
+        'font_family'    => 'Fonts',
+        'pal_hero'       => 'Hero (gradient + CTA)',
+        'pal_primary'    => 'Palette · Primary',
+        'pal_secondary'  => 'Palette · Secondary',
+        'pal_tertiary'   => 'Palette · Tertiary',
+        'pal_quaternary' => 'Palette · Quaternary',
+        'pal_quinary'    => 'Palette · Quinary',
     ];
 
     /**
@@ -184,6 +264,10 @@ class ThemeService
         // Monospace
         'fira-code'       => ['label' => 'Fira Code',       'family' => "'Fira Code', ui-monospace, monospace",  'category' => 'Monospace',  'link' => 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap'],
         'jetbrains-mono'  => ['label' => 'JetBrains Mono',  'family' => "'JetBrains Mono', ui-monospace, monospace",'category' => 'Monospace','link' => 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap'],
+        // Display / decorative — Phase 43.30
+        'archivo-black'   => ['label' => 'Archivo Black',   'family' => "'Archivo Black', Impact, sans-serif",   'category' => 'Display',    'link' => 'https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap'],
+        'bebas-neue'      => ['label' => 'Bebas Neue',      'family' => "'Bebas Neue', Impact, sans-serif",      'category' => 'Display',    'link' => 'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap'],
+        'pacifico'        => ['label' => 'Pacifico',        'family' => "'Pacifico', cursive",                   'category' => 'Display',    'link' => 'https://fonts.googleapis.com/css2?family=Pacifico&display=swap'],
     ];
 
     private SettingsService $settings;
@@ -248,16 +332,25 @@ class ThemeService
             return $this->tokenMemo[$memoKey];
         }
         $out = [];
+        // Tenant ordinal-tint derivation (tertiary/quaternary/quinary) from the
+        // tenant's brand. Empty on apex / framework-only installs, so it only
+        // overrides the 6 ordinal-tint defaults for tenant renders.
+        $ordinalDerived = $this->resolveOrdinalDerived($mode);
         if ($mode === 'dark') {
             // Always emit a full dark palette. Color tokens use `<key>.dark`
             // (or default_dark); length/unitless tokens are mode-agnostic
             // so we don't include them in the dark block.
             foreach (self::TOKEN_DEFINITIONS as $settingKey => $def) {
                 if (($def['validator'] ?? '') !== 'color') continue;
-                $raw = (string) $this->settings->get($settingKey . '.dark', '', 'site');
-                $raw = trim($raw);
-                $value = ($raw !== '' && $this->validate($raw, 'color')) ? $raw : (string) $def['default_dark'];
-                $out[(string) $def['css']] = $value;
+                $raw = trim((string) $this->settings->get($settingKey . '.dark', '', 'site'));
+                if ($raw === '' && isset(self::LEGACY_FALLBACK[$settingKey])) {
+                    $raw = trim((string) $this->settings->get(self::LEGACY_FALLBACK[$settingKey] . '.dark', '', 'site'));
+                }
+                $css = (string) $def['css'];
+                $value = ($raw !== '' && $this->validate($raw, 'color'))
+                    ? $raw
+                    : ($ordinalDerived[$css] ?? (string) $def['default_dark']);
+                $out[$css] = $value;
             }
             // Implicit gray-ramp overrides for chrome that still uses the
             // baseline gray-* vars (compatibility shim until Batch F2).
@@ -278,12 +371,15 @@ class ThemeService
         // customization. Always emitting defaults makes both modes
         // self-consistent and lets var(--bg-page) etc. always resolve.
         foreach (self::TOKEN_DEFINITIONS as $settingKey => $def) {
-            $raw = (string) $this->settings->get($settingKey, '', 'site');
-            $raw = trim($raw);
+            $raw = trim((string) $this->settings->get($settingKey, '', 'site'));
+            if ($raw === '' && isset(self::LEGACY_FALLBACK[$settingKey])) {
+                $raw = trim((string) $this->settings->get(self::LEGACY_FALLBACK[$settingKey], '', 'site'));
+            }
+            $css = (string) $def['css'];
             $value = ($raw !== '' && $this->validate($raw, (string) $def['validator']))
                 ? $raw
-                : (string) $def['default'];
-            $out[(string) $def['css']] = $value;
+                : ($ordinalDerived[$css] ?? (string) $def['default']);
+            $out[$css] = $value;
         }
         // Implicit gray-ramp overrides for body.theme-light. These exist
         // so an explicit Light preference on a dark-OS device can override
@@ -296,6 +392,45 @@ class ThemeService
         }
         $this->tokenMemo[$memoKey] = $out;
         return $out;
+    }
+
+    /**
+     * Derive the tenant's ordinal LIGHT-TINT palettes (tertiary / quaternary /
+     * quinary) from its brand so a tenant section set to one of those ordinals
+     * harmonises with the tenant's own colors instead of the apex's hand-tuned
+     * coral / mint / cream defaults.
+     *
+     * Gated on tenant context: the APEX (and framework-only / CLI installs,
+     * where the builder tenancy layer is absent or no tenant is current) gets
+     * an empty map → the static TOKEN_DEFINITIONS defaults stand. The bold
+     * ordinals (primary, secondary) are NOT here — they already track the brand
+     * via the color_primary / color_secondary LEGACY_FALLBACK. An explicit
+     * per-ordinal-tint setting still wins (this only fills the unset fallback).
+     *
+     * @return array<string,string> css-var-name => hex (6 ordinal-tint keys), or []
+     */
+    private function resolveOrdinalDerived(string $mode): array
+    {
+        if (!class_exists(\App\Tenancy\Tenant::class) || \App\Tenancy\Tenant::current() === null) {
+            return [];
+        }
+        $dark   = $mode === 'dark';
+        $defKey = $dark ? 'default_dark' : 'default';
+        // The brand HUE is mode-independent (a teal brand is teal in both
+        // modes; deriveOrdinalTints supplies the dark/light lightness band). So
+        // in dark mode prefer an explicit color_primary.dark, then fall back to
+        // the light color_primary the tenant actually set, then the default.
+        $brandFor = function (string $base) use ($dark, $defKey): string {
+            $v = $dark ? trim((string) $this->settings->get($base . '.dark', '', 'site')) : '';
+            if ($v === '') $v = trim((string) $this->settings->get($base, '', 'site'));
+            if ($v === '') $v = (string) self::TOKEN_DEFINITIONS[$base][$defKey];
+            return $v;
+        };
+        return \App\Theme\BrandColorDeriver::deriveOrdinalTints(
+            $brandFor('theme.palette.primary.bg'),
+            $brandFor('theme.palette.secondary.bg'),
+            $dark
+        );
     }
 
     /**
@@ -323,6 +458,12 @@ class ThemeService
             $lightVars .= "    --" . $this->cssEscape($name)
                         . ": " . $this->cssEscape($value) . ";\n";
         }
+        // Theming v2 generic "active" layer — maps the legacy consumed var
+        // names onto the v2 source palettes. Appended AFTER the token vars so
+        // it overrides the legacy literals (Phase 1 keeps both). The values
+        // are var() references that flip per mode, so the same block is added
+        // to light + dark.
+        $lightVars .= $this->renderGenericLayerVars();
         if ($lightVars !== '') {
             // Emit a --font alias so existing chrome that uses var(--font)
             // (header.php hardcoded font ramp) flips to the admin's body
@@ -345,6 +486,7 @@ class ThemeService
             $darkVars .= "    --" . $this->cssEscape($name)
                        . ": " . $this->cssEscape($value) . ";\n";
         }
+        $darkVars .= $this->renderGenericLayerVars();
         if ($darkVars !== '') {
             $out .= "<style>\n/* Theme - dark (OS preference + body.theme-dark) */\n"
                   . "@media (prefers-color-scheme: dark) {\n  :root {\n" . $darkVars . "  }\n}\n"
@@ -352,6 +494,52 @@ class ThemeService
                   . "</style>\n";
         }
 
+        return $out;
+    }
+
+    /**
+     * Theming v2 — the generic "active" layer (docs/theming-v2-spec.md §2).
+     *
+     * Maps the variable names components already consume onto the v2 source
+     * palettes. Because these are `var(--…)` references (not literals), the
+     * same block is emitted under both the light and dark selectors and each
+     * reference resolves to the active-mode value automatically — so a
+     * section that later remaps, say, `--bg-page` to `var(--tertiary-bg)` is
+     * correct in both modes with no dark-specific rule.
+     *
+     * Phase 1: appended after the legacy token vars so it overrides them
+     * (the legacy `theme.color.*` tokens still emit but are now inert).
+     * Phase 3 removes the legacy tokens + migrates settings to theme.palette.*.
+     */
+    private function renderGenericLayerVars(): string
+    {
+        static $map = [
+            // neutral surfaces / text / borders / accent / line ← default palette
+            'bg-page'        => 'default-bg',
+            'bg-panel'       => 'default-surface',
+            'text-default'   => 'default-text',
+            'text-muted'     => 'default-text-muted',
+            'text-subtle'    => 'default-text-subtle',
+            'border-default' => 'default-border',
+            'border-strong'  => 'default-border-strong',
+            'border-subtle'  => 'default-border-subtle',
+            'accent-subtle'  => 'default-accent-tint',
+            'accent-contrast'=> 'default-accent-contrast',
+            // brand color names ← primary/secondary ordinals + semantics ← default
+            'color-primary'      => 'primary-bg',
+            'color-primary-dark' => 'primary-grad',
+            'color-secondary'    => 'secondary-bg',
+            'color-success'      => 'default-success',
+            'color-danger'       => 'default-danger',
+            'color-warning'      => 'default-warning',
+            'color-info'         => 'default-info',
+            // (legacy --surface-* helpers retired in Phase 4 — sections use
+            //  data-palette now; no view references var(--surface-*) anymore.)
+        ];
+        $out = '';
+        foreach ($map as $generic => $source) {
+            $out .= "    --{$generic}: var(--{$source});\n";
+        }
         return $out;
     }
 
@@ -387,6 +575,8 @@ class ThemeService
             'length'      => $this->isValidCssLength($value),
             'unitless'    => $this->isValidUnitless($value),
             'font_family' => $this->isValidFontFamily($value),
+            'font_style'  => $this->isValidFontStyle($value),
+            'angle'       => $this->isValidAngle($value),
             default       => false,
         };
     }
@@ -412,6 +602,20 @@ class ThemeService
     }
 
     /**
+     * Gradient-direction validator (theming v2 `*-grad-dir` tokens). Accepts
+     * an angle like `135deg` / `.5turn` / `0.25rad` OR a `to <side>` keyword
+     * phrase like `to bottom right`. Mode-agnostic (no dark variant).
+     */
+    private function isValidAngle(string $v): bool
+    {
+        $v = strtolower(trim($v));
+        if (strlen($v) > 24) return false;
+        if (preg_match('/^-?\d{1,3}(\.\d{1,3})?(deg|grad|rad|turn)$/', $v)) return true;
+        if (preg_match('/^to (top|bottom|left|right)( (top|bottom|left|right))?$/', $v)) return true;
+        return false;
+    }
+
+    /**
      * Permissive font-family validator. Accepts the tokens that legitimate
      * font-family values use (letters, digits, single + double quotes,
      * commas, hyphens, spaces, dots) and rejects everything that could
@@ -422,6 +626,17 @@ class ThemeService
     {
         if ($v === '' || strlen($v) > 200) return false;
         return (bool) preg_match("/^[A-Za-z0-9\s,'\".\-]+$/", $v);
+    }
+
+    /**
+     * Phase 43.33 — restricted-keyword validator for font-style tokens.
+     * Accepts only the three CSS keywords we want to expose; rejects
+     * anything else (including the `oblique <angle>` form, which has
+     * inconsistent rendering support across web fonts).
+     */
+    private function isValidFontStyle(string $v): bool
+    {
+        return in_array(strtolower(trim($v)), ['normal', 'italic', 'oblique'], true);
     }
 
     /**

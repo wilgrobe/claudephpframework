@@ -815,13 +815,13 @@ INSERT INTO settings (`scope`, `key`, `value`, `type`, is_public) VALUES
 -- render time, so a missing / empty setting falls back cleanly.
 -- Toggle via /admin/settings/appearance.
 ('site', 'layout_orientation',  'sidebar',   'string', 1),
-('site', 'color_primary',       '#4f46e5',   'string', 1),
-('site', 'color_primary_dark',  '#3730a3',   'string', 1),
-('site', 'color_secondary',     '#0ea5e9',   'string', 1),
-('site', 'color_success',       '#10b981',   'string', 1),
-('site', 'color_danger',        '#ef4444',   'string', 1),
-('site', 'color_warning',       '#f59e0b',   'string', 1),
-('site', 'color_info',          '#3b82f6',   'string', 1),
+('site', 'theme.palette.primary.bg',       '#4f46e5',   'string', 1),
+('site', 'theme.palette.primary.grad',  '#3730a3',   'string', 1),
+('site', 'theme.palette.secondary.bg',     '#0ea5e9',   'string', 1),
+('site', 'theme.palette.default.success',       '#10b981',   'string', 1),
+('site', 'theme.palette.default.danger',        '#ef4444',   'string', 1),
+('site', 'theme.palette.default.warning',       '#f59e0b',   'string', 1),
+('site', 'theme.palette.default.info',          '#3b82f6',   'string', 1),
 
 -- Footer configuration. Admins tune these via /admin/settings/footer.
 -- {{year}} is substituted at render time so the copyright ticks over
