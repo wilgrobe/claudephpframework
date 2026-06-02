@@ -105,49 +105,51 @@ class ThemeService
         'theme.palette.default.info'            => ['css' => 'default-info',            'default' => '#0d9488', 'default_dark' => '#2dd4bf', 'validator' => 'color', 'group' => 'pal_default', 'label' => 'Info'],
 
         // ── hero role (its own surface, with gradient + CTA pair) ──
+        // Solid colours first; the gradient pair (stop 2 + direction) renders
+        // last in the section (cf. appearance + wizard step 6 layouts).
         'theme.palette.hero.bg'         => ['css' => 'hero-bg',         'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero background / stop 1'],
-        'theme.palette.hero.grad'       => ['css' => 'hero-grad',       'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero gradient stop 2 (blank = solid)'],
-        'theme.palette.hero.grad-dir'   => ['css' => 'hero-grad-dir',   'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_hero', 'label' => 'Hero gradient direction'],
         'theme.palette.hero.text'       => ['css' => 'hero-text',       'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero text'],
         'theme.palette.hero.text-muted' => ['css' => 'hero-text-muted', 'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero subheading'],
         'theme.palette.hero.cta-bg'     => ['css' => 'hero-cta-bg',     'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero CTA button bg'],
         'theme.palette.hero.cta-text'   => ['css' => 'hero-cta-text',   'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero CTA button label'],
+        'theme.palette.hero.grad'       => ['css' => 'hero-grad',       'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero gradient stop 2 (blank = solid)'],
+        'theme.palette.hero.grad-dir'   => ['css' => 'hero-grad-dir',   'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_hero', 'label' => 'Hero gradient direction'],
 
         // ── ordinal accent palettes (pickable per section): primary…quinary ──
         'theme.palette.primary.bg'          => ['css' => 'primary-bg',          'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary background / stop 1'],
-        'theme.palette.primary.grad'        => ['css' => 'primary-grad',        'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary gradient stop 2'],
-        'theme.palette.primary.grad-dir'    => ['css' => 'primary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_primary', 'label' => 'Primary gradient direction'],
         'theme.palette.primary.text'        => ['css' => 'primary-text',        'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text'],
         'theme.palette.primary.text-muted'  => ['css' => 'primary-text-muted',  'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text muted'],
         'theme.palette.primary.text-subtle' => ['css' => 'primary-text-subtle', 'default' => '#ffffffb3', 'default_dark' => '#ffffffb3', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary text subtle'],
+        'theme.palette.primary.grad'        => ['css' => 'primary-grad',        'default' => '#9a3412', 'default_dark' => '#b8431a', 'validator' => 'color', 'group' => 'pal_primary', 'label' => 'Primary gradient stop 2'],
+        'theme.palette.primary.grad-dir'    => ['css' => 'primary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_primary', 'label' => 'Primary gradient direction'],
 
         'theme.palette.secondary.bg'          => ['css' => 'secondary-bg',          'default' => '#0d9488', 'default_dark' => '#0f766e', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary background / stop 1'],
-        'theme.palette.secondary.grad'        => ['css' => 'secondary-grad',        'default' => '#0f766e', 'default_dark' => '#115e59', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary gradient stop 2'],
-        'theme.palette.secondary.grad-dir'    => ['css' => 'secondary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_secondary', 'label' => 'Secondary gradient direction'],
         'theme.palette.secondary.text'        => ['css' => 'secondary-text',        'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text'],
         'theme.palette.secondary.text-muted'  => ['css' => 'secondary-text-muted',  'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text muted'],
         'theme.palette.secondary.text-subtle' => ['css' => 'secondary-text-subtle', 'default' => '#ffffffb3', 'default_dark' => '#ffffffb3', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary text subtle'],
+        'theme.palette.secondary.grad'        => ['css' => 'secondary-grad',        'default' => '#0f766e', 'default_dark' => '#115e59', 'validator' => 'color', 'group' => 'pal_secondary', 'label' => 'Secondary gradient stop 2'],
+        'theme.palette.secondary.grad-dir'    => ['css' => 'secondary-grad-dir',    'default' => '135deg',  'validator' => 'angle', 'group' => 'pal_secondary', 'label' => 'Secondary gradient direction'],
 
         'theme.palette.tertiary.bg'          => ['css' => 'tertiary-bg',          'default' => '#fbeae2', 'default_dark' => '#3a241c', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary background / stop 1'],
-        'theme.palette.tertiary.grad'        => ['css' => 'tertiary-grad',        'default' => '#fdf4ee', 'default_dark' => '#2a201b', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient stop 2'],
-        'theme.palette.tertiary.grad-dir'    => ['css' => 'tertiary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient direction'],
         'theme.palette.tertiary.text'        => ['css' => 'tertiary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text'],
         'theme.palette.tertiary.text-muted'  => ['css' => 'tertiary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text muted'],
         'theme.palette.tertiary.text-subtle' => ['css' => 'tertiary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary text subtle'],
+        'theme.palette.tertiary.grad'        => ['css' => 'tertiary-grad',        'default' => '#fdf4ee', 'default_dark' => '#2a201b', 'validator' => 'color', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient stop 2'],
+        'theme.palette.tertiary.grad-dir'    => ['css' => 'tertiary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_tertiary', 'label' => 'Tertiary gradient direction'],
 
         'theme.palette.quaternary.bg'          => ['css' => 'quaternary-bg',          'default' => '#e2f3f1', 'default_dark' => '#173d3a', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary background / stop 1'],
-        'theme.palette.quaternary.grad'        => ['css' => 'quaternary-grad',        'default' => '#f0faf8', 'default_dark' => '#16302e', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient stop 2'],
-        'theme.palette.quaternary.grad-dir'    => ['css' => 'quaternary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient direction'],
         'theme.palette.quaternary.text'        => ['css' => 'quaternary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text'],
         'theme.palette.quaternary.text-muted'  => ['css' => 'quaternary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text muted'],
         'theme.palette.quaternary.text-subtle' => ['css' => 'quaternary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary text subtle'],
+        'theme.palette.quaternary.grad'        => ['css' => 'quaternary-grad',        'default' => '#f0faf8', 'default_dark' => '#16302e', 'validator' => 'color', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient stop 2'],
+        'theme.palette.quaternary.grad-dir'    => ['css' => 'quaternary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quaternary', 'label' => 'Quaternary gradient direction'],
 
         'theme.palette.quinary.bg'          => ['css' => 'quinary-bg',          'default' => '#f5f1ea', 'default_dark' => '#262220', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary background / stop 1'],
-        'theme.palette.quinary.grad'        => ['css' => 'quinary-grad',        'default' => '#ece7df', 'default_dark' => '#211e1b', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary gradient stop 2'],
-        'theme.palette.quinary.grad-dir'    => ['css' => 'quinary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quinary', 'label' => 'Quinary gradient direction'],
         'theme.palette.quinary.text'        => ['css' => 'quinary-text',        'default' => '#1c1917', 'default_dark' => '#f5f5f4', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text'],
         'theme.palette.quinary.text-muted'  => ['css' => 'quinary-text-muted',  'default' => '#605a52', 'default_dark' => '#a8a29e', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text muted'],
         'theme.palette.quinary.text-subtle' => ['css' => 'quinary-text-subtle', 'default' => '#857d75', 'default_dark' => '#78716c', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary text subtle'],
+        'theme.palette.quinary.grad'        => ['css' => 'quinary-grad',        'default' => '#ece7df', 'default_dark' => '#211e1b', 'validator' => 'color', 'group' => 'pal_quinary', 'label' => 'Quinary gradient stop 2'],
+        'theme.palette.quinary.grad-dir'    => ['css' => 'quinary-grad-dir',    'default' => '160deg',  'validator' => 'angle', 'group' => 'pal_quinary', 'label' => 'Quinary gradient direction'],
     ];
 
     /**

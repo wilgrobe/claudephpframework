@@ -215,7 +215,7 @@
     foreach ($groupOrder as $groupKey => $groupLabel):
         $tokens = array_filter($tokenDefinitions, fn($d) => ($d['group'] ?? '') === $groupKey);
         if (empty($tokens)) continue;
-        $isOpen = ($groupKey === 'brand');  // brand colors stay open by default for familiarity
+        $isOpen = ($groupKey === 'pal_default');  // the default palette stays open by default for familiarity
     ?>
     <details class="app-section" <?= $isOpen ? 'open' : '' ?>>
         <summary><?= e($groupLabel) ?></summary>
