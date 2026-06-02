@@ -72,13 +72,13 @@
     }
     .banner-verify-email {
         background: var(--color-warning-bg); color: var(--color-warning-fg);
-        border-bottom: 1px solid #fde68a;
+        border-bottom: 1px solid var(--color-warning);
         padding: .6rem 1rem; font-size: 13.5px;
         display: flex; align-items: center; justify-content: center; gap: .75rem; flex-wrap: wrap;
     }
     .banner-verify-email form { margin: 0; }
     .banner-verify-email button {
-        background: #d97706; color: #fff; border: none;
+        background: var(--color-warning); color: #fff; border: none;
         padding: .3rem .75rem; border-radius: 4px;
         font-size: 12.5px; font-weight: 600; cursor: pointer;
     }
@@ -148,10 +148,10 @@
         padding: .85rem 1rem; border-radius: var(--radius); margin-bottom: 1rem;
         font-size: 13.5px; display: flex; align-items: center; gap: .5rem;
     }
-    .alert-success { background: var(--color-success-bg); color: var(--color-success-fg); border: 1px solid #6ee7b7; }
-    .alert-error   { background: var(--color-danger-bg);  color: var(--color-danger-fg);  border: 1px solid #fca5a5; }
-    .alert-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); border: 1px solid #fcd34d; }
-    .alert-info    { background: var(--color-info-bg);    color: var(--color-info-fg);    border: 1px solid #93c5fd; }
+    .alert-success { background: var(--color-success-bg); color: var(--color-success-fg); border: 1px solid var(--color-success); }
+    .alert-error   { background: var(--color-danger-bg);  color: var(--color-danger-fg);  border: 1px solid var(--color-danger); }
+    .alert-warning { background: var(--color-warning-bg); color: var(--color-warning-fg); border: 1px solid var(--color-warning); }
+    .alert-info    { background: var(--color-info-bg);    color: var(--color-info-fg);    border: 1px solid var(--color-info); }
 
     /* Forms */
     .form-group { margin-bottom: 1rem; }
