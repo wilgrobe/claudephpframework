@@ -117,7 +117,7 @@ return new class extends Migration {
             // Notifications
             ['Send Notifications',   'notifications.send', 'notifications', 'Broadcast notifications'],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO permissions (`name`, slug, module, `description`) VALUES (?, ?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -133,7 +133,7 @@ return new class extends Migration {
             ['Editor',        'editor',      'Create and edit content',                      0],
             ['Viewer',        'viewer',      'Read-only access',                             0],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO roles (`name`, slug, `description`, is_system) VALUES (?, ?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -176,7 +176,7 @@ return new class extends Migration {
             ['Marketing',   'marketing',   'Marketing team',   0],
             ['Management',  'management',  'Management team',  0],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO `groups` (`name`, slug, `description`, is_public) VALUES (?, ?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -194,7 +194,7 @@ return new class extends Migration {
         $groups = $this->db->fetchAll(
             "SELECT id FROM `groups` WHERE slug IN ('engineering','marketing','management') ORDER BY id"
         );
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO group_roles (group_id, `name`, slug, `description`, base_role, is_system)
              VALUES (?, ?, ?, ?, ?, 1)"
         );
@@ -216,7 +216,7 @@ return new class extends Migration {
             ['editor', 'editor@example.com', $pw, 'Jane',   'Editor', 1, 0],
             ['viewer', 'viewer@example.com', $pw, 'John',   'Viewer', 1, 0],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO users
                 (username, email, `password`, first_name, last_name, is_active, is_superadmin, email_verified_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, NOW())"
@@ -305,7 +305,7 @@ return new class extends Migration {
             ['site', 'footer_show_menu',     'true',                            'boolean', 1],
             ['site', 'footer_menu_location', 'footer',                          'string',  1],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO settings (`scope`, `key`, `value`, `type`, is_public) VALUES (?, ?, ?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -319,7 +319,7 @@ return new class extends Migration {
             ['Main Navigation', 'header', 'Primary site navigation'],
             ['Footer Links',    'footer', 'Footer navigation links'],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO menus (`name`, location, `description`) VALUES (?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -336,7 +336,7 @@ return new class extends Migration {
             ['Footer Links',    'Privacy',   '/privacy-policy',   2, 'always',     null],
             ['Footer Links',    'Terms',     '/terms-of-service', 3, 'always',     null],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO menu_items (menu_id, parent_id, label, url, sort_order, visibility, condition_value)
              SELECT m.id, NULL, ?, ?, ?, ?, ? FROM menus m WHERE m.`name` = ?"
         );
@@ -354,7 +354,7 @@ return new class extends Migration {
             ['Terms of Service', 'terms-of-service', '<h1>Terms of Service</h1><p>By using this service you agree to these terms.</p>', 'published', 1],
             ['About Us',         'about',            '<h1>About Us</h1><p>Welcome to our platform.</p>',                                'published', 1],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO pages (title, slug, `body`, `status`, is_public) VALUES (?, ?, ?, ?, ?)"
         );
         foreach ($rows as $r) $stmt->execute($r);
@@ -365,7 +365,7 @@ return new class extends Migration {
     private function seedFaq(): void
     {
         $cats = [['General', 'general', 1], ['Account', 'account', 2]];
-        $stmtCat = $this->db->prepare(
+        $stmtCat = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO faq_categories (`name`, slug, sort_order) VALUES (?, ?, ?)"
         );
         foreach ($cats as $r) $stmtCat->execute($r);
@@ -375,7 +375,7 @@ return new class extends Migration {
             ['account', 'How do I reset my password?',      'Click "Forgot Password" on the login page to receive a reset link.',                     1],
             ['account', 'Can I belong to multiple groups?', 'Yes! You can be a member of multiple groups and have different roles in each.',         2],
         ];
-        $stmtFaq = $this->db->prepare(
+        $stmtFaq = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO faqs (category_id, question, answer, sort_order, is_public)
              SELECT c.id, ?, ?, ?, 1 FROM faq_categories c WHERE c.slug = ?"
         );
@@ -402,7 +402,7 @@ return new class extends Migration {
                 '0 3 * * *',
             ],
         ];
-        $stmt = $this->db->prepare(
+        $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO scheduled_tasks
                 (name, class, payload, schedule_expression, queue, enabled, next_run_at)
              VALUES (?, ?, ?, ?, 'default', 1, NOW())"

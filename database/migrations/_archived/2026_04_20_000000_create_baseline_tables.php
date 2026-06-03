@@ -346,21 +346,26 @@ CREATE TABLE menu_items (
 -- PUBLIC STATIC PAGES
 -- ============================================================
 CREATE TABLE pages (
-    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    title           VARCHAR(500) NOT NULL,
-    slug            VARCHAR(500) NOT NULL UNIQUE,
-    `body`          LONGTEXT,
-    layout          VARCHAR(100) DEFAULT 'default',
-    `status`        ENUM('draft','published') DEFAULT 'draft',
-    is_public       TINYINT(1) DEFAULT 1 COMMENT '1=visible to guests',
-    seo_title       VARCHAR(255),
-    seo_description VARCHAR(500),
-    seo_keywords    VARCHAR(500),
-    sort_order      INT DEFAULT 0,
-    created_by      INT UNSIGNED NULL,
-    published_at    TIMESTAMP NULL,
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title                VARCHAR(500) NOT NULL,
+    slug                 VARCHAR(500) NOT NULL UNIQUE,
+    `body`               LONGTEXT,
+    background_image_url VARCHAR(1000) NULL,
+    rendered_html        LONGTEXT NULL
+                         COMMENT 'cached output of section layout; NULL = no layout, render body instead',
+    layout               VARCHAR(100) DEFAULT 'default',
+    `status`             ENUM('draft','published') DEFAULT 'draft',
+    is_public            TINYINT(1) DEFAULT 1 COMMENT '1=visible to guests',
+    seo_title            VARCHAR(255),
+    seo_description      VARCHAR(500),
+    og_image_url         VARCHAR(1000) NULL
+                         COMMENT 'OpenGraph social-share image for this page',
+    seo_keywords         VARCHAR(500),
+    sort_order           INT DEFAULT 0,
+    created_by           INT UNSIGNED NULL,
+    published_at         TIMESTAMP NULL,
+    created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_slug   (slug(191)),
     INDEX idx_status (`status`),
@@ -685,6 +690,39 @@ CREATE TABLE system_block_placements (
 );
 
 -- ============================================================
+-- PAGE SECTIONS — Phase 23 layout composer (one or more sections per
+-- page, each holding a grid of placement blocks).
+-- ============================================================
+CREATE TABLE page_sections (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    page_id    INT UNSIGNED NOT NULL,
+    sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0
+               COMMENT 'vertical position within the page (low = top)',
+    settings   JSON NULL
+               COMMENT 'col_count, gap_px, padding_y_px, background (color|image|none), background_value',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE CASCADE,
+    INDEX idx_page_sections_page_order (page_id, sort_order)
+);
+
+CREATE TABLE section_blocks (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    section_id INT UNSIGNED NOT NULL,
+    sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0
+               COMMENT 'horizontal position within the section (low = left)',
+    block_key  VARCHAR(120) NOT NULL
+               COMMENT 'matches BlockDescriptor::key (e.g. siteblocks.hero)',
+    settings   JSON NULL
+               COMMENT 'per-placement settings; shape per the BlockDescriptor settingsSchema',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (section_id) REFERENCES page_sections(id) ON DELETE CASCADE,
+    INDEX idx_section_blocks_section_order (section_id, sort_order),
+    INDEX idx_section_blocks_block_key     (block_key)
+);
+
+-- ============================================================
 -- SEED DATA
 -- ============================================================
 
@@ -913,6 +951,10 @@ SQL;
     {
         return <<<'SQL'
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- Phase 23 layout composer
+DROP TABLE IF EXISTS section_blocks;
+DROP TABLE IF EXISTS page_sections;
 
 -- System layout composer surfaces
 DROP TABLE IF EXISTS system_block_placements;
