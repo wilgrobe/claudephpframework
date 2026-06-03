@@ -178,21 +178,21 @@ class SettingsController
     // the picker as a convenience).
     private const APPEARANCE_KEYS = [
         'layout_orientation' => 'string',
-        'color_primary'      => 'string',
-        'color_primary_dark' => 'string',
-        'color_success'      => 'string',
-        'color_danger'       => 'string',
-        'color_warning'      => 'string',
-        'color_info'         => 'string',
+        'theme.palette.primary.bg'      => 'string',
+        'theme.palette.primary.grad' => 'string',
+        'theme.palette.default.success'      => 'string',
+        'theme.palette.default.danger'       => 'string',
+        'theme.palette.default.warning'      => 'string',
+        'theme.palette.default.info'         => 'string',
     ];
 
     public const COLOR_DEFAULTS = [
-        'color_primary'      => 'var(--color-primary)',
-        'color_primary_dark' => 'var(--color-primary-dark)',
-        'color_success'      => 'var(--color-success)',
-        'color_danger'       => 'var(--color-danger)',
-        'color_warning'      => 'var(--color-warning)',
-        'color_info'         => 'var(--color-info)',
+        'theme.palette.primary.bg'      => 'var(--color-primary)',
+        'theme.palette.primary.grad' => 'var(--color-primary-dark)',
+        'theme.palette.default.success'      => 'var(--color-success)',
+        'theme.palette.default.danger'       => 'var(--color-danger)',
+        'theme.palette.default.warning'      => 'var(--color-warning)',
+        'theme.palette.default.info'         => 'var(--color-info)',
     ];
 
     private SettingsService $settings;
@@ -589,7 +589,7 @@ class SettingsController
             'groupOrder'         => \Core\Services\ThemeService::GROUP_ORDER,
             'fontLibrary'        => \Core\Services\ThemeService::FONT_LIBRARY,
             'gradientDirections' => \Core\Services\ThemeService::GRADIENT_DIRECTIONS,
-            'colorDefaults'      => self::COLOR_DEFAULTS,
+            'colorDefaults'    => self::COLOR_DEFAULTS,
             'presets'          => \Core\Theme\PresetLibrary::all(),
             'appliedPreset'    => (string) ($this->settings->get('theme.applied_preset', null, 'site') ?? ''),
             'user'             => $this->auth->user(),
