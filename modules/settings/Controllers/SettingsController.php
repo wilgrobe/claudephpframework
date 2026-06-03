@@ -620,15 +620,24 @@ class SettingsController
         // dotted-key save from Batch B onward until 2026-04-28.
         $theme = new \Core\Services\ThemeService($this->settings);
         $postKey = fn(string $k): string => str_replace('.', '_', $k);
+        // Empty (no override) → DELETE the row rather than store '' so a cleared
+        // token leaves no stale empty row behind (matches the wizard step-6 save).
+        $writeOrDelete = function (string $key, string $value): void {
+            if ($value === '') {
+                $this->settings->delete($key, 'site', null);
+            } else {
+                $this->settings->set($key, $value, 'site', null, 'string');
+            }
+        };
         foreach (\Core\Services\ThemeService::TOKEN_DEFINITIONS as $key => $def) {
             $raw   = trim((string) $request->post($postKey($key), ''));
             $valid = $raw === '' || $theme->validate($raw, (string) $def['validator']);
-            $this->settings->set($key, $valid ? $raw : '', 'site', null, 'string');
+            $writeOrDelete($key, $valid ? $raw : '');
 
             if (($def['validator'] ?? '') === 'color') {
                 $darkRaw   = trim((string) $request->post($postKey($key . '.dark'), ''));
                 $darkValid = $darkRaw === '' || $theme->validate($darkRaw, 'color');
-                $this->settings->set($key . '.dark', $darkValid ? $darkRaw : '', 'site', null, 'string');
+                $writeOrDelete($key . '.dark', $darkValid ? $darkRaw : '');
             }
         }
 
@@ -638,7 +647,11 @@ class SettingsController
         // admin can re-edit; rendering applies the per-line filter.
         $customLinks = trim((string) $request->post('theme_font_custom_links', ''));
         if (strlen($customLinks) > 4000) $customLinks = substr($customLinks, 0, 4000);
-        $this->settings->set('theme.font.custom_links', $customLinks, 'site', null, 'text');
+        if ($customLinks === '') {
+            $this->settings->delete('theme.font.custom_links', 'site', null);
+        } else {
+            $this->settings->set('theme.font.custom_links', $customLinks, 'site', null, 'text');
+        }
 
         $this->auth->auditLog('settings.appearance.save', null, null, null, ['scope' => 'site']);
         return Response::redirect('/admin/settings/appearance')->withFlash('success', 'Appearance settings saved.');
