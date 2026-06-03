@@ -205,39 +205,120 @@ class DatabaseQueue
     }
 
     /**
-     * Phase 43.195a C3 — release jobs stuck at status='running' because
-     * the worker crashed mid-handle() (PHP fatal / OOM / SIGKILL / deploy
-     * mid-batch). Without this they'd sit invisible to reserve() forever
-     * (which filters on status='pending').
+     * Phase 43.95 — delete a failed job permanently (operator discard).
+     * Refuses to delete pending/running/completed jobs so an admin
+     * misfire can't accidentally cancel an in-flight job. Returns true
+     * on successful delete.
+     */
+    public function deleteFailed(int $jobId): bool
+    {
+        $affected = $this->db->delete('jobs', 'id = ? AND status = ?', [$jobId, 'failed']);
+        return $affected === 1;
+    }
+
+    /**
+     * Phase 43.95 — full row read for the admin detail view. Includes
+     * the JSON payload + full last_error (not the recent() summary).
+     * Returns null when the job doesn't exist.
+     */
+    public function findFull(int $jobId): ?array
+    {
+        $row = $this->db->fetchOne(
+            "SELECT id, queue, class, payload, status, attempts, max_attempts,
+                    available_at, reserved_at, reserved_by, last_error,
+                    completed_at, created_at
+               FROM jobs WHERE id = ? LIMIT 1",
+            [$jobId]
+        );
+        return $row ?: null;
+    }
+
+    /**
+     * Phase 43.96 — bulk retry every failed job. Atomic — one UPDATE
+     * covers the whole set so partial-progress can't leave half the
+     * jobs in inconsistent state. Returns affected row count.
+     */
+    public function retryAllFailed(): int
+    {
+        return $this->db->update('jobs',
+            [
+                'status'       => 'pending',
+                'attempts'     => 0,
+                'available_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'reserved_by'  => null,
+                'reserved_at'  => null,
+                'last_error'   => null,
+            ],
+            'status = ?', ['failed']
+        );
+    }
+
+    /**
+     * Phase 43.96 — bulk delete every failed job. Destructive; caller
+     * (admin UI) is responsible for the confirm() dialog. Returns
+     * deleted row count.
+     */
+    public function deleteAllFailed(): int
+    {
+        return $this->db->delete('jobs', 'status = ?', ['failed']);
+    }
+
+    /**
+     * Phase 43.109 — scoped bulk variants: only failed jobs whose class
+     * matches $class. Operator triage pattern: pattern detector flagged
+     * 90% of failures share a class; retry/delete just those without
+     * touching the legit transient errors of other classes.
+     */
+    public function retryAllFailedByClass(string $class): int
+    {
+        if ($class === '') return 0;
+        return $this->db->update('jobs',
+            [
+                'status'       => 'pending',
+                'attempts'     => 0,
+                'available_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'reserved_by'  => null,
+                'reserved_at'  => null,
+                'last_error'   => null,
+            ],
+            'status = ? AND class = ?', ['failed', $class]
+        );
+    }
+
+    public function deleteAllFailedByClass(string $class): int
+    {
+        if ($class === '') return 0;
+        return $this->db->delete('jobs', 'status = ? AND class = ?', ['failed', $class]);
+    }
+
+    /**
+     * Phase 43.100 — release reserved-but-idle-too-long jobs back to
+     * pending so a crashed/killed worker doesn't leave them stuck
+     * forever. The health check already surfaces the count; this is
+     * the actuator that fixes it.
      *
-     * attempts is NOT reset — the worker that picked the job already
-     * bumped it on reserve(); releasing preserves that count so a
-     * flapping job still hits max_attempts and lands at 'failed' for
-     * triage rather than retrying forever.
-     *
-     * Originally shipped in claudephpbuilder Phase 43.100 as the helper
-     * behind `php artisan queue:recover-stale`; mirroring upstream to
-     * the framework so future merges can't drop it.
-     *
-     * NB: framework status enum has 'pending'/'running'/'completed'/
-     * 'failed' — no 'reserved'. reserve() sets status='running'.
+     * `$minutesIdle` matches the threshold SystemHealthChecker uses
+     * (10 minutes default) so the operator sees the same set the
+     * health page warned about.
      *
      * Returns released row count.
      */
     public function recoverStaleReserved(int $minutesIdle = 10): int
     {
         $minutesIdle = max(1, $minutesIdle);
-        // Phase 43.200b H4 — decrement attempts when releasing a stale-
-        // reserved row. Pre-fix the worker that picked up the row
-        // already bumped attempts on reserve() but never actually ran
-        // handle() (killed by SIGTERM / OOM / deploy mid-batch). After
-        // 10 min the recovery sweep released the row but its attempts
-        // counter was now at 1 of 3 without ever executing once. Two
-        // unlucky deploys in 30 min could burn the whole retry budget
-        // on a job that never ran. Now: subtract 1 from attempts
-        // (clamped at 0) since the prior bump was a phantom.
-        // Skip the decrement if rows.attempts is already 0 — defensive
-        // for any future code path that doesn't bump on reserve.
+        // Phase 43.200b H4 — decrement attempts when releasing stale-
+        // reserved rows. Pre-fix the worker that picked the job up
+        // already bumped attempts on reserve(); if killed mid-batch
+        // (SIGTERM/OOM/deploy) attempts incremented without ever
+        // calling handle(). After 10 min recovery the row came back
+        // to pending but its attempts counter was 1 of 3 without
+        // any execution. Two unlucky deploys in 30 min could burn
+        // the entire retry budget on a job that never ran. Now:
+        // GREATEST(0, attempts - 1) since the prior bump was phantom.
+        //
+        // NB: in-flight jobs use status='running' (set by reserve()),
+        // not 'reserved' — the framework's status enum has no
+        // 'reserved' value.
         $stmt = $this->db->pdo()->prepare(
             "UPDATE jobs
                 SET status       = 'pending',
@@ -253,8 +334,9 @@ class DatabaseQueue
     }
 
     /**
-     * Phase 43.195a C3 — preview-only counterpart to recoverStaleReserved.
-     * Same WHERE as the recovery so the count matches what gets released.
+     * Phase 43.100 — count stale-reserved jobs (preview before
+     * calling recoverStaleReserved). Same WHERE as the recovery so
+     * the count matches what gets released.
      */
     public function countStaleReserved(int $minutesIdle = 10): int
     {
@@ -264,6 +346,22 @@ class DatabaseQueue
             [$minutesIdle]
         );
         return (int) ($row['n'] ?? 0);
+    }
+
+    /**
+     * Phase 43.95 — counts by status for the admin queue header. One
+     * query, four numbers; cheap on the existing PK + status index.
+     */
+    public function statusCounts(): array
+    {
+        $rows = $this->db->fetchAll(
+            "SELECT status, COUNT(*) AS n FROM jobs GROUP BY status"
+        );
+        $out = ['pending' => 0, 'running' => 0, 'completed' => 0, 'failed' => 0];
+        foreach ($rows as $r) {
+            $out[(string) $r['status']] = (int) $r['n'];
+        }
+        return $out;
     }
 
     // ── internals ─────────────────────────────────────────────────────────

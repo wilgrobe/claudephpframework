@@ -83,6 +83,61 @@ class MenuService
         return $this->db->fetchAll("SELECT * FROM menus ORDER BY location, name");
     }
 
+    /**
+     * Phase 43.157 — get a fully nested, visibility-filtered menu tree by
+     * handle (Phase 43.152 wizard-side identifier; mirrors getMenu but
+     * looks up via the menus.handle column). Used by the siteblocks.menu
+     * block to render the menu picked in its settings.
+     *
+     * Returns [] if the menus.handle column isn't present (pre-43.157
+     * tenant DBs) or the handle doesn't match any active menu.
+     */
+    public function getMenuByHandle(string $handle, string $currentPath = '/'): array
+    {
+        if ($handle === '') return [];
+        // Defensive: degrade silently on pre-migration tenants instead
+        // of throwing a 1054 "Unknown column" error.
+        $hasHandle = (int) $this->db->fetchColumn("
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = DATABASE() AND table_name = 'menus' AND column_name = 'handle'
+        ", []) > 0;
+        if (!$hasHandle) return [];
+
+        $memoKey = 'h:' . $this->memoKey($handle, $currentPath);
+        if (isset($this->treeMemo[$memoKey])) {
+            return $this->treeMemo[$memoKey];
+        }
+
+        $menu = $this->db->fetchOne(
+            "SELECT * FROM menus WHERE handle = ? AND is_active = 1",
+            [$handle]
+        );
+        if (!$menu) return $this->treeMemo[$memoKey] = [];
+
+        $allItems = $this->db->fetchAll(
+            "SELECT * FROM menu_items WHERE menu_id = ? AND is_active = 1 ORDER BY sort_order ASC",
+            [$menu['id']]
+        );
+        $visible = array_filter($allItems, fn($item) => $this->isVisible($item, $currentPath));
+        return $this->treeMemo[$memoKey] = $this->buildTree($visible);
+    }
+
+    /**
+     * Phase 43.157 — fetch the raw menu row by handle (without items)
+     * so callers can read format_settings + other top-level fields.
+     */
+    public function getMenuMetaByHandle(string $handle): ?array
+    {
+        if ($handle === '') return null;
+        $hasHandle = (int) $this->db->fetchColumn("
+            SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = DATABASE() AND table_name = 'menus' AND column_name = 'handle'
+        ", []) > 0;
+        if (!$hasHandle) return null;
+        $row = $this->db->fetchOne("SELECT * FROM menus WHERE handle = ? AND is_active = 1", [$handle]);
+        return $row ?: null;
+    }
+
     public function getMenuItems(int $menuId): array
     {
         return $this->db->fetchAll(

@@ -57,17 +57,27 @@ class Validator
      *   a    → href (http/https only), title
      *   *    → (no other attributes)
      */
-    public static function sanitizeHtml(string $html): string
+    public static function sanitizeHtml(string $html, ?array $allowedTags = null, ?array $allowedAttrs = null): string
     {
         if (trim($html) === '') return '';
 
-        // Allowed tags (no img — too many XSS vectors via onerror/data:/src)
-        $allowedTags = ['p','br','strong','em','u','ul','ol','li','h2','h3','h4','blockquote','a'];
-
-        // Per-tag attribute allowlists
-        $allowedAttrs = [
-            'a' => ['href', 'title'],
-        ];
+        // Phase 43.181 — optional allowlist override. Default behavior
+        // unchanged for existing single-arg callers. Surfaces that need
+        // richer markup (siteblocks.faq answers + siteblocks.tabs panel
+        // content — admin-authored WYSIWYG) pass an expanded tag + attr
+        // set covering tables, code, headings beyond h2-h4, images, and
+        // class attrs for styling. img src + a href get the scheme
+        // allowlist applied in sanitizeNode.
+        if ($allowedTags === null) {
+            // Default — tight allowlist (no img — too many XSS vectors via onerror/data:/src)
+            $allowedTags = ['p','br','strong','em','u','ul','ol','li','h2','h3','h4','blockquote','a'];
+        }
+        if ($allowedAttrs === null) {
+            // Per-tag attribute allowlists (default — tight)
+            $allowedAttrs = [
+                'a' => ['href', 'title'],
+            ];
+        }
 
         // Use DOMDocument for structural parsing instead of regex.
         // The <html><head><body> scaffold is ours, not the user's — we must
@@ -121,12 +131,30 @@ class Validator
                         $attrsToRemove[] = $attr->name;
                         continue;
                     }
-                    // Extra validation for href: only allow http/https
+                    // Extra validation for href: only allow http/https,
+                    // path-absolute, fragment-only (#anchor), or mailto:.
                     if ($attrName === 'href') {
                         $val = trim($attr->value);
                         // Strip whitespace and control chars used to bypass checks
                         $val = preg_replace('/[\x00-\x1F\x7F]/u', '', $val);
-                        if (!preg_match('#^https?://#i', $val) && strncmp($val, '/', 1) !== 0) {
+                        if (!preg_match('#^https?://#i', $val)
+                            && strncmp($val, '/', 1) !== 0
+                            && strncmp($val, '#', 1) !== 0
+                            && !preg_match('#^mailto:#i', $val)) {
+                            $attrsToRemove[] = $attr->name;
+                        }
+                    }
+                    // Phase 43.181 — same shape for src on img/iframe/etc.
+                    // Allow http(s), path-absolute, OR data:image/* (the
+                    // last one supports embedded base64 thumbnails without
+                    // opening the door to data:text/html XSS payloads).
+                    if ($attrName === 'src') {
+                        $val = trim($attr->value);
+                        $val = preg_replace('/[\x00-\x1F\x7F]/u', '', $val);
+                        if (!preg_match('#^https?://#i', $val)
+                            && strncmp($val, '/', 1) !== 0
+                            && !preg_match('#^data:image/(?:png|jpe?g|gif|webp);base64,#i', $val)) {
+                            // Deliberately no svg+xml — SVG can carry <script>.
                             $attrsToRemove[] = $attr->name;
                         }
                     }
