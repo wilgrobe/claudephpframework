@@ -171,7 +171,13 @@
             <a href="/admin/settings" style="color:var(--color-primary);text-decoration:none">&larr; All settings</a>
         </div>
         <h1 style="margin:.25rem 0 0;font-size:1.3rem;font-weight:700">Appearance</h1>
+        <?php if (!empty($appliedPreset) && isset($presets[$appliedPreset])): ?>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:.2rem">
+                Based on the <strong style="color:var(--text-default)"><?= htmlspecialchars($presets[$appliedPreset]['label']) ?></strong> preset
+            </div>
+        <?php endif; ?>
     </div>
+    <button type="button" class="btn btn-primary" onclick="openPresetModal()" style="white-space:nowrap">🎨 Theme presets</button>
 </div>
 
 <div class="appearance-wrap">
@@ -509,5 +515,114 @@
 </script>
 
 </main></div>
+
+<!-- ── Theme preset picker modal ──────────────────────────────────────── -->
+<div id="presetModal" class="preset-modal" style="display:none" aria-hidden="true">
+    <div class="preset-modal-backdrop" onclick="closePresetModal()"></div>
+    <div class="preset-modal-card" role="dialog" aria-modal="true" aria-label="Theme presets">
+        <div class="preset-modal-head">
+            <div>
+                <h2 style="margin:0;font-size:1.1rem;font-weight:700">🎨 Theme presets</h2>
+                <p style="margin:.3rem 0 0;font-size:12.5px;color:var(--text-muted);line-height:1.5">
+                    One click paints every colour alias — surfaces, text, borders, accents,
+                    semantics, hero, sections, and chrome — for both light + dark. You can fine-tune
+                    any token afterward, then Save.
+                </p>
+            </div>
+            <button type="button" class="preset-modal-x" onclick="closePresetModal()" aria-label="Close">&times;</button>
+        </div>
+        <div class="preset-modal-body">
+            <?php
+            $byTier = ['free' => [], 'premium' => []];
+            foreach (($presets ?? []) as $slug => $p) {
+                $byTier[($p['tier'] ?? 'free') === 'premium' ? 'premium' : 'free'][$slug] = $p;
+            }
+            $renderGroup = function (string $heading, array $group) use ($appliedPreset) {
+                if (!$group) return;
+                echo '<div class="preset-group-h">' . htmlspecialchars($heading) . '</div>';
+                echo '<div class="preset-grid">';
+                foreach ($group as $slug => $p) {
+                    $sw = \Core\Theme\PresetLibrary::palette($p);
+                    $isApplied = ($slug === $appliedPreset);
+                    echo '<div class="preset-card' . ($isApplied ? ' is-applied' : '') . '">';
+                    echo '<div class="preset-swatches">';
+                    foreach ($sw as $hex) {
+                        echo '<span style="background:' . htmlspecialchars($hex) . '"></span>';
+                    }
+                    echo '</div>';
+                    echo '<div class="preset-name">' . htmlspecialchars($p['label'] ?? $slug);
+                    if (($p['tier'] ?? 'free') === 'premium') echo ' <span class="preset-badge">Premium</span>';
+                    if ($isApplied) echo ' <span class="preset-badge preset-badge--on">Applied</span>';
+                    echo '</div>';
+                    echo '<div class="preset-desc">' . htmlspecialchars($p['description'] ?? '') . '</div>';
+                    echo '<form method="POST" action="/admin/settings/appearance/preset" '
+                       . 'onsubmit="return confirm(\'Apply this preset? It overwrites every colour token (you can still fine-tune + Save afterward).\')">';
+                    echo csrf_field();
+                    echo '<input type="hidden" name="preset" value="' . htmlspecialchars($slug) . '">';
+                    echo '<button type="submit" class="btn ' . ($isApplied ? 'btn-secondary' : 'btn-primary') . ' preset-apply">'
+                       . ($isApplied ? 'Re-apply' : 'Apply') . '</button>';
+                    echo '</form>';
+                    echo '</div>';
+                }
+                echo '</div>';
+            };
+            $renderGroup('Basic', $byTier['free']);
+            $renderGroup('Premium', $byTier['premium']);
+            ?>
+        </div>
+    </div>
+</div>
+
+<style>
+.preset-modal { position: fixed; inset: 0; z-index: 1000; }
+.preset-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.preset-modal-card {
+    position: relative; max-width: 960px; margin: 4vh auto 0; max-height: 90vh;
+    background: var(--bg-panel); border: 1px solid var(--border-default); border-radius: 12px;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+.preset-modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-default); background: var(--bg-page);
+}
+.preset-modal-x { background: none; border: 0; font-size: 1.6rem; line-height: 1; cursor: pointer; color: var(--text-muted); }
+.preset-modal-body { padding: 1rem 1.25rem 1.5rem; overflow-y: auto; }
+.preset-group-h {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--text-muted); margin: 1rem 0 .6rem; padding-bottom: .3rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.preset-group-h:first-child { margin-top: 0; }
+.preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .85rem; }
+.preset-card {
+    border: 1px solid var(--border-default); border-radius: 10px; padding: .75rem; background: var(--bg-page);
+    display: flex; flex-direction: column; gap: .5rem;
+}
+.preset-card.is-applied { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
+.preset-swatches { display: flex; height: 30px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-subtle); }
+.preset-swatches span { flex: 1; }
+.preset-name { font-size: 13.5px; font-weight: 600; color: var(--text-default); display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+.preset-badge {
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+    padding: .1rem .35rem; border-radius: 4px; background: var(--accent-subtle); color: var(--color-primary);
+}
+.preset-badge--on { background: var(--color-primary); color: var(--accent-contrast); }
+.preset-desc { font-size: 12px; color: var(--text-muted); line-height: 1.45; flex: 1; }
+.preset-apply { width: 100%; }
+</style>
+<script>
+function openPresetModal() {
+    var m = document.getElementById('presetModal');
+    if (m) { m.style.display = 'block'; m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+}
+function closePresetModal() {
+    var m = document.getElementById('presetModal');
+    if (m) { m.style.display = 'none'; m.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+}
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePresetModal();
+});
+</script>
 
 <?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

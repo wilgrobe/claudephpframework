@@ -28,6 +28,8 @@ $router->get ('/admin/settings/appearance', 'Modules\Settings\Controllers\Settin
     [AuthMiddleware::class, RequireSuperadmin::class]);
 $router->post('/admin/settings/appearance', 'Modules\Settings\Controllers\SettingsController@saveAppearance',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireSuperadmin::class]);
+$router->post('/admin/settings/appearance/preset', 'Modules\Settings\Controllers\SettingsController@applyPreset',
+    [CsrfMiddleware::class, AuthMiddleware::class, RequireSuperadmin::class]);
 $router->get ('/admin/settings/security',   'Modules\Settings\Controllers\SettingsController@security',
     [AuthMiddleware::class, RequireSuperadmin::class]);
 $router->post('/admin/settings/security',   'Modules\Settings\Controllers\SettingsController@saveSecurity',

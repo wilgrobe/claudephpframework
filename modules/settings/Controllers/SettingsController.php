@@ -590,6 +590,8 @@ class SettingsController
             'fontLibrary'        => \Core\Services\ThemeService::FONT_LIBRARY,
             'gradientDirections' => \Core\Services\ThemeService::GRADIENT_DIRECTIONS,
             'colorDefaults'      => self::COLOR_DEFAULTS,
+            'presets'          => \Core\Theme\PresetLibrary::all(),
+            'appliedPreset'    => (string) ($this->settings->get('theme.applied_preset', null, 'site') ?? ''),
             'user'             => $this->auth->user(),
         ]);
     }
@@ -655,6 +657,58 @@ class SettingsController
 
         $this->auth->auditLog('settings.appearance.save', null, null, null, ['scope' => 'site']);
         return Response::redirect('/admin/settings/appearance')->withFlash('success', 'Appearance settings saved.');
+    }
+
+    /**
+     * Apply a theme preset — one click paints every colour alias. The preset's
+     * small CORE map is expanded (PresetExpander) into the full v2 token set so
+     * surfaces, text, borders, accents, the four semantic colours, hero, the
+     * five ordinal palettes, and chrome all get consistent light + dark values.
+     *
+     * Writes each expanded token as an override; a `.dark` sibling is written
+     * only where the dark value differs from light (and cleared otherwise so a
+     * stale dark override can't linger). Stamps `theme.applied_preset`.
+     */
+    public function applyPreset(Request $request): Response
+    {
+        if (!$this->auth->isSuperAdmin()) return $this->denied();
+
+        $slug = trim((string) $request->post('preset', ''));
+        $expanded = \Core\Theme\PresetLibrary::expanded($slug);
+        if ($expanded === null) {
+            return Response::redirect('/admin/settings/appearance')
+                ->withFlash('error', 'Unknown theme preset.');
+        }
+
+        $theme = new \Core\Services\ThemeService($this->settings);
+        $defs  = \Core\Services\ThemeService::TOKEN_DEFINITIONS;
+        $light = $expanded['tokens'];
+        $dark  = $expanded['tokens_dark'];
+
+        foreach ($light as $key => $value) {
+            if (!isset($defs[$key])) continue; // only persist known tokens
+            $value = trim((string) $value);
+            if ($value === '' || !$theme->validate($value, (string) $defs[$key]['validator'])) continue;
+            $this->settings->set($key, $value, 'site', null, 'string');
+
+            // Dark sibling only for colour tokens; write when it diverges from
+            // the light value, otherwise clear any prior dark override.
+            if (($defs[$key]['validator'] ?? '') === 'color') {
+                $darkVal = trim((string) ($dark[$key] ?? ''));
+                if ($darkVal !== '' && $darkVal !== $value && $theme->validate($darkVal, 'color')) {
+                    $this->settings->set($key . '.dark', $darkVal, 'site', null, 'string');
+                } else {
+                    $this->settings->delete($key . '.dark', 'site', null);
+                }
+            }
+        }
+
+        $this->settings->set('theme.applied_preset', $slug, 'site', null, 'string');
+        $this->auth->auditLog('settings.appearance.preset', null, null, null, ['preset' => $slug]);
+
+        $label = (string) (\Core\Theme\PresetLibrary::get($slug)['label'] ?? $slug);
+        return Response::redirect('/admin/settings/appearance')
+            ->withFlash('success', "Applied the “{$label}” preset — every colour alias is set. Tweak any token below, then Save.");
     }
 
     // ── New-shell panel handlers ─────────────────────────────────────────
