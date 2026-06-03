@@ -76,17 +76,25 @@
        so the body's theme-dark class doesn't bleed into it; only the
        preview's own Light/Dark sub-toggle should swap these values
        (via JS setting inline style.setProperty on this element). */
-    --color-primary: var(--color-primary);
-    --color-primary-dark: var(--color-primary-dark);
-    --color-secondary: var(--color-secondary);
-    --color-success: var(--color-success);
-    --color-danger: var(--color-danger);
-    --color-warning: var(--color-warning);
-    --color-info: var(--color-info);
-    --bg-page: var(--color-gray-50); --bg-panel: var(--bg-panel);
-    --text-default: var(--color-gray-900); --text-muted: var(--color-gray-500); --text-subtle: var(--color-gray-400);
-    --border-default: var(--color-gray-200); --border-strong: var(--color-gray-300); --border-subtle: var(--color-gray-100);
-    --accent-subtle: var(--accent-subtle); --accent-contrast: var(--bg-panel);
+    /* v2 source-palette defaults (straight from TOKEN_DEFINITIONS). The
+       live-update JS overwrites these inline as the admin edits each token;
+       declared here so the per-group example bands have a value on first
+       paint. */
+<?php foreach (($tokenDefinitions ?? []) as $__pk => $__pd):
+        if (($__pd['validator'] ?? '') !== 'color') continue; ?>
+    --<?= $__pd['css'] ?>: <?= $__pd['default'] ?>;
+<?php endforeach; ?>
+    /* Generic bridge — the component vars the cards / buttons / forms read
+       resolve from the v2 sources (mirrors ThemeService::renderGenericLayerVars),
+       so editing a source token cascades into the legacy-named consumers. */
+    --color-primary: var(--primary-bg); --color-primary-dark: var(--primary-grad);
+    --color-secondary: var(--secondary-bg);
+    --color-success: var(--default-success); --color-danger: var(--default-danger);
+    --color-warning: var(--default-warning); --color-info: var(--default-info);
+    --bg-page: var(--default-bg); --bg-panel: var(--default-surface);
+    --text-default: var(--default-text); --text-muted: var(--default-text-muted); --text-subtle: var(--default-text-subtle);
+    --border-default: var(--default-border); --border-strong: var(--default-border-strong); --border-subtle: var(--default-border-subtle);
+    --accent-subtle: var(--default-accent-tint); --accent-contrast: var(--default-accent-contrast);
     --radius-md: 8px; --radius-sm: 4px; --radius-lg: 12px;
     --font-family-body: 'Inter', system-ui, sans-serif;
     --font-family-heading: 'Inter', system-ui, sans-serif;
@@ -163,6 +171,34 @@
 }
 #theme-preview .preview-table th { color: var(--text-subtle); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: var(--font-size-tiny); }
 #theme-preview .preview-mono { font-family: var(--font-family-mono); font-size: var(--font-size-small); color: var(--text-muted); }
+
+/* Per-palette example groups — one block per override section on the left,
+   in the same order, so a colour edit is visible on its own example. */
+#theme-preview .pv-group { margin-bottom: 1.1rem; }
+#theme-preview .pv-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--text-subtle); margin: 0 0 .4rem;
+}
+#theme-preview .pv-band {
+    border-radius: var(--radius-md); padding: .85rem 1rem; overflow: hidden;
+}
+#theme-preview .pv-band h4 { margin: 0 0 .25rem; font-size: 1.05rem; font-family: var(--font-family-heading); }
+#theme-preview .pv-band .pv-muted  { margin: 0; font-size: 12.5px; line-height: 1.5; }
+#theme-preview .pv-band .pv-subtle { display: inline-block; margin-top: .4rem; font-size: 11px; }
+#theme-preview .pv-cta {
+    margin-top: .6rem; padding: .4rem .9rem; border: none; border-radius: var(--radius-sm);
+    font-weight: 600; font-size: 12.5px; cursor: pointer; font-family: var(--font-family-button, var(--font-family-body));
+}
+#theme-preview .pv-chip-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem; }
+#theme-preview .pv-chip {
+    display: inline-block; padding: .15rem .55rem; border-radius: 999px;
+    font-size: 11px; font-weight: 600; color: #fff;
+}
+#theme-preview .pv-chrome { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-subtle); }
+#theme-preview .pv-chrome-bar { padding: .5rem .8rem; font-size: 12.5px; font-weight: 600; }
+#theme-preview .pv-chrome-body { display: flex; }
+#theme-preview .pv-chrome-side { padding: .65rem .8rem; font-size: 11.5px; min-width: 92px; line-height: 1.5; }
+#theme-preview .pv-chrome-main { flex: 1; padding: .65rem .8rem; font-size: 11.5px; background: var(--bg-panel); color: var(--text-muted); }
 </style>
 
 <div style="max-width:1280px;margin:0 auto 1rem;display:flex;justify-content:space-between;align-items:center">
@@ -362,40 +398,90 @@
             <button type="button" class="preview-tab"           data-preview-mode="dark">Dark</button>
         </div>
 
-        <h3 class="preview-h">How it looks</h3>
-        <p class="preview-p">
-            This panel updates as you edit. Sample text uses the body font and color.
-            <a href="#" class="preview-a">A link</a> picks up the primary color.
-        </p>
-
-        <div class="preview-btn-row">
-            <button type="button" class="preview-btn preview-btn-primary">Primary</button>
-            <button type="button" class="preview-btn">Secondary</button>
-            <button type="button" class="preview-btn preview-btn-danger">Delete</button>
-        </div>
-
-        <div class="preview-card">
-            <div class="preview-card-header">Card header</div>
-            <div class="preview-card-body">
-                Cards use the panel background, default border, medium radius. Headings inherit the heading font.
+        <!-- Default palette — surfaces / text / borders / accents / semantics -->
+        <div class="pv-group">
+            <div class="pv-label">Default palette — surfaces · text · borders · semantics</div>
+            <h3 class="preview-h">How it looks</h3>
+            <p class="preview-p">
+                This panel updates as you edit. Sample text uses the body font and colour.
+                <a href="#" class="preview-a">A link</a> picks up the primary colour.
+            </p>
+            <div class="preview-btn-row">
+                <button type="button" class="preview-btn preview-btn-primary">Primary</button>
+                <button type="button" class="preview-btn">Secondary</button>
+                <button type="button" class="preview-btn preview-btn-danger">Delete</button>
+            </div>
+            <div class="preview-card">
+                <div class="preview-card-header">Card header</div>
+                <div class="preview-card-body">
+                    Cards use the panel background, default border, medium radius. Headings inherit the heading font.
+                </div>
+            </div>
+            <div class="preview-form">
+                <label>Email</label>
+                <input type="email" placeholder="you@example.com" disabled aria-label="you@example.com">
+                <label>Message</label>
+                <textarea rows="2" placeholder="Sample textarea" aria-label="Sample textarea"></textarea>
+                <button type="button" class="preview-btn preview-btn-primary">Submit</button>
+            </div>
+            <table class="preview-table" style="margin-top:.85rem">
+                <thead><tr><th>Name</th><th>Status</th></tr></thead>
+                <tbody>
+                    <tr><td>Sample row</td><td><span class="preview-mono">active</span></td></tr>
+                    <tr><td>Another row</td><td><span class="preview-mono">pending</span></td></tr>
+                </tbody>
+            </table>
+            <div class="pv-chip-row">
+                <span class="pv-chip" style="background:var(--color-success)">Success</span>
+                <span class="pv-chip" style="background:var(--color-warning)">Warning</span>
+                <span class="pv-chip" style="background:var(--color-danger)">Danger</span>
+                <span class="pv-chip" style="background:var(--color-info)">Info</span>
             </div>
         </div>
 
-        <div class="preview-form">
-            <label>Email</label>
-            <input type="email" placeholder="you@example.com" disabled aria-label="you@example.com">
-            <label>Message</label>
-            <textarea rows="2" placeholder="Sample textarea" aria-label="Sample textarea"></textarea>
-            <button type="button" class="preview-btn preview-btn-primary">Submit</button>
+        <!-- Chrome — header / sidebar / footer band -->
+        <div class="pv-group">
+            <div class="pv-label">Chrome — header · sidebar · footer</div>
+            <div class="pv-chrome">
+                <div class="pv-chrome-bar" style="background:var(--chrome-header-bg);color:var(--chrome-header-text)">Header bar</div>
+                <div class="pv-chrome-body">
+                    <div class="pv-chrome-side" style="background:var(--chrome-sidebar-bg);color:var(--chrome-sidebar-text)">Dashboard<br>Settings<br>Reports</div>
+                    <div class="pv-chrome-main">Content area on the page surface.</div>
+                </div>
+                <div class="pv-chrome-bar" style="background:var(--chrome-footer-bg);color:var(--chrome-footer-text);font-size:11px;font-weight:400">Footer · © Your site</div>
+            </div>
         </div>
 
-        <table class="preview-table" style="margin-top:.85rem">
-            <thead><tr><th>Name</th><th>Status</th></tr></thead>
-            <tbody>
-                <tr><td>Sample row</td><td><span class="preview-mono">active</span></td></tr>
-                <tr><td>Another row</td><td><span class="preview-mono">pending</span></td></tr>
-            </tbody>
-        </table>
+        <!-- Hero — gradient band + CTA -->
+        <div class="pv-group">
+            <div class="pv-label">Hero — gradient + CTA</div>
+            <div class="pv-band" style="background:linear-gradient(var(--hero-grad-dir,135deg), var(--hero-bg), var(--hero-grad, var(--hero-bg)));color:var(--hero-text)">
+                <h4 style="color:var(--hero-text)">Hero heading</h4>
+                <p class="pv-muted" style="color:var(--hero-text-muted)">Supporting hero subtext in the muted hero tone.</p>
+                <button type="button" class="pv-cta" style="background:var(--hero-cta-bg);color:var(--hero-cta-text)">Call to action</button>
+            </div>
+        </div>
+
+        <?php
+        // Primary / Secondary / Tertiary / Quaternary / Quinary — the section
+        // palettes, each rendered as its own gradient band in the same order
+        // as the override sections on the left.
+        foreach ([
+            'primary'    => 'Primary',
+            'secondary'  => 'Secondary',
+            'tertiary'   => 'Tertiary',
+            'quaternary' => 'Quaternary',
+            'quinary'    => 'Quinary',
+        ] as $g => $glabel): ?>
+        <div class="pv-group">
+            <div class="pv-label"><?= $glabel ?></div>
+            <div class="pv-band" style="background:linear-gradient(var(--<?= $g ?>-grad-dir,135deg), var(--<?= $g ?>-bg), var(--<?= $g ?>-grad, var(--<?= $g ?>-bg)));color:var(--<?= $g ?>-text)">
+                <h4 style="color:var(--<?= $g ?>-text)"><?= $glabel ?> section</h4>
+                <p class="pv-muted" style="color:var(--<?= $g ?>-text-muted)">Muted body text on the <?= strtolower($glabel) ?> palette.</p>
+                <span class="pv-subtle" style="color:var(--<?= $g ?>-text-subtle)">Subtle caption / metadata</span>
+            </div>
+        </div>
+        <?php endforeach; ?>
     </div>
 </aside>
 
