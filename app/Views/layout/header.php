@@ -297,19 +297,25 @@
         display: flex; align-items: center; gap: .15rem .35rem;
         flex-wrap: wrap; flex: 1; min-width: 0;
     }
+    /* The topbar bar is painted with --chrome-header-bg, which a theme
+       preset derives as a deep brand band — so the logo + nav links must
+       read against the chrome band, NOT the page ink. --chrome-header-text
+       is always the correct contrast for --chrome-header-bg (dark text on
+       the default white header, light text on a preset's dark band). */
     .topbar-logo {
-        font-weight: 700; font-size: 1.05rem; color: var(--text-default);
+        font-weight: 700; font-size: 1.05rem; color: var(--chrome-header-text, var(--text-default));
         text-decoration: none; padding: 0 1rem 0 0;
-        border-right: 1px solid var(--border-default); margin-right: .5rem;
-        white-space: nowrap;
+        border-right: 1px solid color-mix(in srgb, var(--chrome-header-text, var(--border-default)) 28%, transparent);
+        margin-right: .5rem; white-space: nowrap;
     }
     .topbar-nav > a, .topbar-nav .topbar-dd-toggle {
-        color: var(--color-gray-700); text-decoration: none;
+        color: var(--chrome-header-text, var(--color-gray-700)); text-decoration: none;
         font-size: 13.5px; padding: .4rem .7rem; border-radius: 6px;
         background: none; border: none; cursor: pointer; white-space: nowrap;
     }
     .topbar-nav > a:hover, .topbar-nav .topbar-dd-toggle:hover {
-        color: var(--color-primary); background: var(--accent-subtle);
+        color: var(--chrome-header-text, var(--color-primary));
+        background: color-mix(in srgb, var(--chrome-header-text, var(--color-primary)) 14%, transparent);
     }
     .topbar-dd           { position: relative; }
     .topbar-dd-menu {
