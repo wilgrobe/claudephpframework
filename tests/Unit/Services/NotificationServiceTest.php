@@ -50,6 +50,15 @@ final class FakeNotifDb extends Database
             public function __construct() {}
         };
     }
+
+    // setPreferences() was wrapped in a managed transaction (Phase 43.197c M3).
+    // Stub the tx methods so the fake doesn't fall through to the real Database
+    // (which would touch an uninitialized $pdo). Signatures match
+    // Core\Database\Database exactly (inTransaction(): bool, the rest : void).
+    public function inTransaction(): bool { return false; }
+    public function beginTransaction(): void {}
+    public function commit(): void {}
+    public function rollback(): void {}
 }
 
 final class NotificationServiceTest extends TestCase
@@ -129,19 +138,21 @@ final class NotificationServiceTest extends TestCase
             'social.followed' => ['in_app' => true,  'email' => false],
             'comment.reply'   => ['in_app' => false, 'email' => true],
         ]);
-        // Should have one query call per (type, channel) listed in TYPES.
-        $expected = 0;
+        // Phase 43.197c M3 — setPreferences now issues ONE batched multi-row
+        // INSERT covering every (type, channel) in TYPES (was one query each).
+        $pairs = 0;
         foreach (NotificationService::TYPES as $meta) {
-            $expected += count($meta['channels']);
+            $pairs += count($meta['channels']);
         }
-        $this->assertCount($expected, $this->db->inserts);
-        // Every captured call should be the upsert SQL with 4 bindings.
-        foreach ($this->db->inserts as $row) {
-            $this->assertArrayHasKey('sql', $row);
-            $this->assertStringContainsString('INSERT INTO notification_preferences', $row['sql']);
-            $this->assertCount(4, $row['bindings']);
-            $this->assertSame(7, $row['bindings'][0]);
-        }
+        // Exactly one captured query — the batched upsert.
+        $this->assertCount(1, $this->db->inserts);
+        $row = $this->db->inserts[0];
+        $this->assertArrayHasKey('sql', $row);
+        $this->assertStringContainsString('INSERT INTO notification_preferences', $row['sql']);
+        $this->assertStringContainsString('ON DUPLICATE KEY UPDATE', $row['sql']);
+        // One (?, ?, ?, ?) tuple per (type, channel) → 4 bindings each.
+        $this->assertCount($pairs * 4, $row['bindings']);
+        $this->assertSame(7, $row['bindings'][0]); // user_id on the first tuple
     }
 
     public function test_preferences_for_returns_full_grid_with_defaults(): void

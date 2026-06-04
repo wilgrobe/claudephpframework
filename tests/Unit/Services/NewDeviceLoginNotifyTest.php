@@ -163,13 +163,17 @@ final class NewDeviceLoginNotifyTest extends TestCase
         // Exactly one sessions-table probe, then early-return (no mail path).
         $this->assertSame(1, $this->callCountMatching('FROM sessions'));
 
-        // Bind vars on the sessions lookup — user id + UA
+        // Bind vars on the sessions lookup — user id only. Phase 43.195c L3
+        // changed this to `SELECT DISTINCT user_agent FROM sessions WHERE
+        // user_id = ?` and compares device SIGNATURES in PHP (so a browser
+        // minor-version bump isn't flagged as a new device), rather than
+        // binding the raw UA into the SQL. The UA is no longer a bound param.
         $sessionCall = null;
         foreach ($this->calls as $c) {
             if (str_contains($c['sql'], 'FROM sessions')) { $sessionCall = $c; break; }
         }
         $this->assertSame(true, $sessionCall !== null, 'A sessions-table query must have been recorded');
-        $this->assertSame([42, 'Mozilla/5.0 TestBrowser'], $sessionCall['bind']);
+        $this->assertSame([42], $sessionCall['bind']);
 
         unset($_SERVER['HTTP_USER_AGENT']);
     }
