@@ -680,6 +680,20 @@ class AuthController
         }
 
         $email = strtolower($v->get('email'));
+
+        // AUTH-M3 — rate-limit password-reset requests (pre-fix: none). Stops
+        // inbox flooding + email enumeration via send-timing/cost. Key by
+        // 'pwreset:'+email (independent of login attempts); increment BEFORE
+        // the user lookup so bots can't enumerate by counting pre-lockout
+        // hits. Mirror the constant-success-message so a rate-limited reply
+        // doesn't leak "exists but throttled" vs "doesn't exist".
+        $ip = $request->ip();
+        $rateKey = 'pwreset:' . $email;
+        if ($this->limiter->tooManyAttempts($rateKey, $ip)) {
+            return Response::redirect('/login')->withFlash('success', 'If that email exists, a reset link has been sent.');
+        }
+        $this->limiter->hit($rateKey, $ip);
+
         $user  = $this->db->fetchOne("SELECT id, first_name FROM users WHERE email = ?", [$email]);
 
         if ($user) {

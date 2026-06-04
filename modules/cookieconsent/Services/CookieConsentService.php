@@ -235,9 +235,17 @@ class CookieConsentService
 
     private function signingKey(): string
     {
-        // Reuse APP_KEY when present; fall back to a derived value so
-        // dev installs don't crash before the key is generated.
+        // SECRETS-H1 — never fall back to a hardcoded, source-published key.
+        // A globally-known HMAC secret lets anyone forge consent cookies and
+        // bypass the GDPR consent audit trail. Fail fast instead (matches
+        // TrackingTokenService::secret + CredentialBox::deriveKey).
         $k = (string) ($_ENV['APP_KEY'] ?? getenv('APP_KEY') ?? '');
-        return $k !== '' ? $k : 'cookieconsent-fallback-key-change-me';
+        if ($k === '') {
+            throw new \RuntimeException(
+                'CookieConsentService: APP_KEY is empty in env — required to sign consent cookies. '
+                . 'Run `php artisan key:generate` to populate APP_KEY in .env.'
+            );
+        }
+        return $k;
     }
 }

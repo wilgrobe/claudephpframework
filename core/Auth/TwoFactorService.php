@@ -54,6 +54,15 @@ class TwoFactorService
      */
     public function enrollTotp(int $userId): array
     {
+        // AUTH-H1 — refuse to overwrite an already-confirmed TOTP secret so a
+        // hijacked session can't mint a fresh secret over the victim's working
+        // one (GET /profile/2fa/setup?method=totp). Re-enrolling requires
+        // disabling 2FA first, which requires the password.
+        $confirmed = $this->db->fetchOne("SELECT two_factor_confirmed FROM users WHERE id = ?", [$userId]);
+        if ($confirmed && (int) ($confirmed['two_factor_confirmed'] ?? 0) === 1) {
+            throw new \RuntimeException('Two-factor authentication is already enabled. Disable it first (you will be asked for your password) before re-enrolling.');
+        }
+
         $user   = $this->db->fetchOne("SELECT email, username, first_name FROM users WHERE id = ?", [$userId]);
         $secret = $this->generateTotpSecret();
         $issuer = urlencode(config('app.name', 'App'));

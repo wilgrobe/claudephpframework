@@ -273,7 +273,8 @@ class ImportExportService
             foreach (($handler['exportRows'])($filter) as $row) {
                 $line = [];
                 foreach ($fields as $f) $line[] = $row[$f] ?? '';
-                fputcsv($out, $line, $delim);
+                // XSS-M1 — neutralize CSV formula injection in exported cells.
+                fputcsv($out, \Core\Support\Csv::safeRow($line), $delim);
             }
         } finally {
             fclose($out);

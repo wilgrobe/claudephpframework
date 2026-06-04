@@ -49,6 +49,8 @@ $router->get('/api/users/search', function (\Core\Request $req) {
     }
     $q  = trim($req->query('q', ''));
     if (strlen($q) < 2) return \Core\Response::json([]);
+    // SQL-L1 — escape LIKE wildcards (value is bound; wildcard hygiene).
+    $q  = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q);
     $db = \Core\Database\Database::getInstance();
     $rows = $db->fetchAll(
         "SELECT id, username, email, first_name, last_name FROM users

@@ -114,6 +114,14 @@ class FileUploadService
             // file at default (private) → 403 to public readers. Also
             // explicit fopen-then-fclose since Flysystem driver-by-driver
             // ownership of passed streams varies.
+            // FileUpload no-GD — refuse in production rather than store a
+            // non-re-encoded image (re-encoding strips a PHP-in-JPEG polyglot
+            // payload). MIME is validated upstream + the name randomized, so
+            // dev soft-falls-back; production should install ext-gd.
+            $env = strtolower((string) ($_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: ''));
+            if ($env === 'production' || $env === 'prod') {
+                throw new \RuntimeException('Image upload unavailable: server is missing the GD extension required to safely process images. Install ext-gd.');
+            }
             error_log('[FileUploadService] GD extension not available; image not re-encoded. Install ext-gd for full security.');
             $stream = fopen($tmpPath, 'rb');
             if ($stream === false) {

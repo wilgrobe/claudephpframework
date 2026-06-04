@@ -35,6 +35,8 @@ class UserController
         $sql = "SELECT u.* FROM users u WHERE 1=1";
         $b   = [];
         if ($search) {
+            // SQL-L1 — escape LIKE wildcards (bound value; wildcard hygiene).
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
             $sql .= " AND (u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)";
             $b = ["%$search%", "%$search%", "%$search%"];
         }

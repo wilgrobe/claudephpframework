@@ -60,13 +60,17 @@
                 <div style="font-weight:600;font-size:14px;margin-bottom:.5rem">Enter the 6-digit code to confirm</div>
                 <?php $error = \Core\Session::flash('error'); ?>
                 <?php if ($error): ?><div style="background:var(--color-danger-bg);color:var(--color-danger-fg);border:1px solid #fca5a5;padding:.6rem .85rem;border-radius:6px;font-size:13px;margin-bottom:.75rem"><?= e($error) ?></div><?php endif; ?>
-                <form method="POST" action="/profile/2fa/confirm-totp" style="display:flex;gap:.6rem;align-items:flex-start">
+                <form method="POST" action="/profile/2fa/confirm-totp" style="display:flex;flex-direction:column;gap:.6rem;align-items:stretch;max-width:320px">
                     <?= csrf_field() ?>
                     <input type="text" name="code" class="form-control"
                            inputmode="numeric" autocomplete="one-time-code"
                            placeholder="000000" maxlength="6" pattern="[0-9]{6}" required autofocus
-                           style="text-align:center;font-size:1.15rem;font-family:monospace;letter-spacing:.2rem;max-width:160px" aria-label="000000">
-                    <button type="submit" class="btn btn-primary" style="flex-shrink:0;padding:.55rem 1.1rem">Activate</button>
+                           style="text-align:center;font-size:1.15rem;font-family:monospace;letter-spacing:.2rem" aria-label="000000">
+                    <!-- AUTH-H1 — password re-auth required to activate TOTP. -->
+                    <label for="confirm_totp_pw" style="font-weight:600;font-size:13px">Confirm your password</label>
+                    <input type="password" id="confirm_totp_pw" name="current_password" class="form-control"
+                           autocomplete="current-password" required>
+                    <button type="submit" class="btn btn-primary" style="padding:.55rem 1.1rem">Activate</button>
                 </form>
             </div>
         </div>
@@ -131,6 +135,11 @@
                     </span>
                 </label>
                 <?php endforeach; ?>
+            </div>
+            <!-- AUTH-M4 — password re-auth required before any 2FA change. -->
+            <div style="margin-bottom:1rem">
+                <label for="enable_2fa_pw" style="display:block;font-weight:600;font-size:13px;margin-bottom:.35rem">Confirm your password</label>
+                <input type="password" id="enable_2fa_pw" name="current_password" class="form-control" autocomplete="current-password" required>
             </div>
             <button type="submit" class="btn btn-primary">Continue</button>
         </form>

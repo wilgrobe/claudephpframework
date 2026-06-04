@@ -174,6 +174,11 @@ class WebhookService
                 'content'       => $body,
                 'timeout'       => 10,
                 'ignore_errors' => true, // so 4xx/5xx come back as strings, not false
+                // SSRF-M1 — don't follow redirects. urlIsPublic() validates the
+                // original URL, but the http wrapper follows up to 20 redirects
+                // by default, so a public host could 302 to an internal target.
+                'follow_location' => 0,
+                'max_redirects'   => 0,
             ],
         ]);
 

@@ -231,6 +231,10 @@ class Markdown
     {
         $u = trim($url);
         if ($u === '') return 'about:blank';
+        // XSS-M2 — reject protocol-relative URLs (`//evil.com/x`). Browsers
+        // resolve these cross-origin (open-redirect / off-site resource); the
+        // `/` branch below would otherwise return them verbatim.
+        if (str_starts_with($u, '//')) return 'about:blank';
         // Phase 43.199c M1 — explicit colon-before-slash reject. Pre-fix
         // the `[a-z0-9._-]+(/|$)` branch accepted `data.foo/bar;...`
         // (data.foo matches the class, then /). Tighter check below

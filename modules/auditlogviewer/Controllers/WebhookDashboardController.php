@@ -180,7 +180,9 @@ final class WebhookDashboardController
             }
             Session::flash('success', 'Replayed Stripe event #' . $id . ' — idempotent on event_id, so a redelivery doesn\'t double-process.');
         } catch (\Throwable $e) {
-            Session::flash('error', 'Replay failed: ' . $e->getMessage());
+            // SECRETS-L2 — generic message; exception detail to the log.
+            error_log('[WebhookDashboard] replay failed: ' . $e->getMessage());
+            Session::flash('error', 'Replay failed — see server log for details.');
         }
 
         return Response::redirect("/admin/webhooks/$source/$id");

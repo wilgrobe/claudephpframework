@@ -39,6 +39,8 @@ class User
 
     public function search(string $q, int $limit = 20): array
     {
+        // SQL-L1 — escape LIKE wildcards (value is bound; wildcard hygiene).
+        $q = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q);
         return $this->db->fetchAll(
             "SELECT id, username, email, first_name, last_name
              FROM users

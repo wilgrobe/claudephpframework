@@ -76,11 +76,12 @@ class SuperadminController
 
         if ($filter['user']) {
             $sql .= " AND u.username LIKE ?";
-            $bindings[] = "%{$filter['user']}%";
+            // SQL-L1 — escape LIKE wildcards (bound value; wildcard hygiene).
+            $bindings[] = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], (string) $filter['user']) . '%';
         }
         if ($filter['action']) {
             $sql .= " AND al.action LIKE ?";
-            $bindings[] = "%{$filter['action']}%";
+            $bindings[] = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], (string) $filter['action']) . '%';
         }
         if ($filter['model']) {
             $sql .= " AND al.model = ?";
@@ -118,6 +119,8 @@ class SuperadminController
         $bindings = [];
 
         if ($search) {
+            // SQL-L1 — escape LIKE wildcards (bound value; wildcard hygiene).
+            $search = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
             $sql .= " WHERE u.username LIKE ? OR u.email LIKE ? OR u.first_name LIKE ?";
             $bindings = ["%$search%", "%$search%", "%$search%"];
         }

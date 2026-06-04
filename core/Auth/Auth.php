@@ -319,7 +319,7 @@ class Auth
     public function startEmulating(int $targetUserId): bool
     {
         if (!$this->isSuperadminModeOn()) return false;
-        $target = $this->db->fetchOne("SELECT * FROM users WHERE id = ?", [$targetUserId]);
+        $target = $this->db->fetchOne("SELECT * FROM users WHERE id = ? AND is_active = 1", [$targetUserId]); // AUTH-L1 — don't emulate deactivated users
         if (!$target) return false;
 
         // Save real user

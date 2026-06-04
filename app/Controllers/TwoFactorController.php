@@ -219,7 +219,15 @@ class TwoFactorController
         // If TOTP method requested, generate secret and QR now
         $totpData = null;
         if ($method === 'totp') {
-            $totpData = $this->twoFactor->enrollTotp($this->auth->id());
+            // AUTH-H1 — enrollTotp throws when TOTP is already confirmed
+            // (prevents silent overwrite via session-hijack/CSRF on this GET).
+            // Surface as a flash + redirect rather than a 500.
+            try {
+                $totpData = $this->twoFactor->enrollTotp($this->auth->id());
+            } catch (\RuntimeException $e) {
+                Session::flash('warning', $e->getMessage());
+                return Response::redirect('/profile/2fa');
+            }
         }
 
         return Response::view('auth.2fa_setup', [
@@ -238,6 +246,18 @@ class TwoFactorController
         if ($this->auth->guest()) return Response::redirect('/login');
 
         $method = $request->post('method', '');
+
+        // AUTH-M4 — require password re-auth before any 2FA change, matching
+        // disable()/regenerateRecoveryCodes(). Pre-fix only the session was
+        // checked, so a hijacked session could enable/downgrade the victim's
+        // 2FA method. Fetch the hash from the DB (loadUser omits it from the
+        // session-cached shape).
+        $password = (string) $request->post('current_password', '');
+        $pwRow = $this->db->fetchOne('SELECT password FROM users WHERE id = ?', [$this->auth->id()]);
+        if (!$pwRow || empty($pwRow['password']) || !password_verify($password, (string) $pwRow['password'])) {
+            Session::flash('error', 'Please enter your current password to change 2FA settings.');
+            return Response::redirect('/profile/2fa/setup');
+        }
 
         if ($method === 'totp') {
             // Redirect to TOTP setup page where they'll scan QR and confirm
@@ -271,6 +291,17 @@ class TwoFactorController
     public function confirmTotp(Request $request): Response
     {
         if ($this->auth->guest()) return Response::redirect('/login');
+
+        // AUTH-H1 — require password re-auth to ACTIVATE TOTP. The enroll GET
+        // (setupForm) bypasses enableMethod's password gate; this is the
+        // chokepoint where an unconfirmed secret becomes the live second
+        // factor, so a hijacked session must prove the password here.
+        $password = (string) $request->post('current_password', '');
+        $pwRow = $this->db->fetchOne('SELECT password FROM users WHERE id = ?', [$this->auth->id()]);
+        if (!$pwRow || empty($pwRow['password']) || !password_verify($password, (string) $pwRow['password'])) {
+            Session::flash('error', 'Please enter your current password to enable two-factor authentication.');
+            return Response::redirect('/profile/2fa/setup?method=totp');
+        }
 
         $code = trim($request->post('code', ''));
         if (!$code) {
