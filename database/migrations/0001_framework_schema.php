@@ -279,6 +279,7 @@ return new class extends Migration {
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `scope` enum(\'site\',\'page\',\'function\',\'group\') COLLATE utf8mb4_unicode_ci DEFAULT \'site\',
   `scope_key` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT \'page slug, function name, group id, etc.\',
+  `scope_key_norm` varchar(255) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (COALESCE(`scope_key`, \'\')) STORED COMMENT \'COALESCE(scope_key,"") so the UNIQUE dedupes site-scope rows — MySQL treats each NULL as distinct\',
   `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `value` longtext COLLATE utf8mb4_unicode_ci,
   `type` enum(\'string\',\'integer\',\'boolean\',\'json\',\'text\') COLLATE utf8mb4_unicode_ci DEFAULT \'string\',
@@ -286,7 +287,7 @@ return new class extends Migration {
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_scope_key` (`scope`,`scope_key`,`key`),
+  UNIQUE KEY `uq_scope_key_norm` (`scope`,`scope_key_norm`,`key`),
   KEY `idx_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
             $this->db->query('CREATE TABLE IF NOT EXISTS `menus` (
