@@ -331,7 +331,7 @@ return new class extends Migration {
             ['Main Navigation', 'Home',      '/',                 1, 'always',     null],
             ['Main Navigation', 'Dashboard', '/dashboard',        2, 'logged_in',  null],
             ['Main Navigation', 'Groups',    '/groups',           3, 'logged_in',  null],
-            ['Main Navigation', 'Admin',     '/admin',            4, 'role',       'admin'],
+            ['Main Navigation', 'Admin',     '/admin/superadmin', 4, 'role',       'admin'],
             ['Footer Links',    'FAQ',       '/faq',              1, 'always',     null],
             ['Footer Links',    'Privacy',   '/privacy-policy',   2, 'always',     null],
             ['Footer Links',    'Terms',     '/terms-of-service', 3, 'always',     null],
