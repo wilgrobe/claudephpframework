@@ -66,6 +66,22 @@ class QaAdminSmokeCommand extends Command
         $jsonOut       = in_array('--json', $argv, true);
 
         $router = $this->container->make(Router::class);
+
+        // CLI boot doesn't load HTTP routes, so the Router singleton is empty
+        // here. Load them now — mirroring public/index.php's order (module
+        // routes first, then routes/web.php, then module boot) — so the smoke
+        // has the full admin surface to probe and `php artisan qa:admin-smoke`
+        // works standalone without an external route-loading harness.
+        if (empty($router->routes()) && $this->container->has(\Core\Module\ModuleRegistry::class)) {
+            $modules   = $this->container->get(\Core\Module\ModuleRegistry::class);
+            $container = $this->container; // routes/web.php closures may reference $container
+            $modules->loadRoutes($router);
+            if (is_file(BASE_PATH . '/routes/web.php')) {
+                require BASE_PATH . '/routes/web.php';
+            }
+            $modules->boot($router);
+        }
+
         $db     = $this->container->make(Database::class);
 
         // Resolve the actor: explicit email if passed, otherwise the
@@ -99,14 +115,21 @@ class QaAdminSmokeCommand extends Command
             return 0;
         }
 
-        // In-process auth: mutate session so controllers behave like
-        // we're a logged-in superadmin. No session row is written.
+        // In-process superadmin auth. Mutating $_SESSION['user_id'] alone is
+        // NOT enough: the Auth singleton was constructed during CLI boot with
+        // no loaded user, so AuthMiddleware::guest() redirects every probe
+        // (302) BEFORE the controller runs — defeating the point of catching
+        // controller-body fatals. loginAs() populates the singleton's loaded
+        // user (same instance AuthMiddleware reads via Auth::getInstance()), so
+        // probes reach the controllers. Costs one audit row per run.
         if (session_status() === PHP_SESSION_NONE) {
-            // CLI has no native session; fake the superglobal directly.
-            $_SESSION = $_SESSION ?? [];
+            @session_start(); // CLI: lets loginAs's session_regenerate_id work
         }
-        $_SESSION['user_id']         = $actorId;
-        $_SESSION['superadmin_mode'] = 1;
+        if (!\Core\Auth\Auth::getInstance()->loginAs($actorId, 'qa.admin_smoke')) {
+            $this->line('  ERROR: loginAs failed for user_id=' . $actorId . ' (inactive user?)');
+            return 1;
+        }
+        $_SESSION['superadmin_mode'] = 1; // satisfy RequireSuperadmin-gated routes
 
         $results = [];
         $failedCount = 0;

@@ -98,11 +98,22 @@ spl_autoload_register(function (string $class) use ($__testsRoots) {
 // the same config/modules.php list the runtime registry uses so the
 // behaviors stay aligned. config/modules.php returns absolute paths,
 // so we just iterate them.
+// Never attempt a real mail() send during tests (localhost:25 is unreachable
+// in CI and emits a warning that trips phpunit's failOnWarning). Force the log
+// driver unless a test sets its own. Must run before any test's send().
+$_ENV['MAIL_DRIVER'] = $_ENV['MAIL_DRIVER'] ?? 'log';
+putenv('MAIL_DRIVER=' . $_ENV['MAIL_DRIVER']);
+
 $__moduleRoots = [];
 if (is_file(BASE_PATH . '/config/modules.php')) {
     $cfg = require BASE_PATH . '/config/modules.php';
-    if (is_array($cfg['paths'] ?? null)) {
-        $__moduleRoots = $cfg['paths'];
+    foreach ((array) ($cfg['paths'] ?? []) as $entry) {
+        // Entries are either a plain path string OR a richer
+        // ['root' => path, 'allow' => [...]] descriptor (Phase 20/43.51). Use
+        // the root either way — the old code assigned the array verbatim, so
+        // the autoloader did `$root . '/'` on an array → "Array to string".
+        $root = is_array($entry) ? ($entry['root'] ?? null) : $entry;
+        if (is_string($root) && $root !== '') $__moduleRoots[] = $root;
     }
 }
 if (empty($__moduleRoots)) {
