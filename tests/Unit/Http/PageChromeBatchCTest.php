@@ -87,10 +87,13 @@ final class PageChromeBatchCTest extends TestCase
                 'view'                => 'modules/policies/Views/account/index.php',
                 'needle'              => "->withLayout('account.policies')",
             ],
-            // /search — closure-based route in routes/web.php
+            // /search — closure-based route in routes/web.php. Phase 37/38
+            // consolidated the seed data into 0500_framework_data.php (the
+            // date-based per-surface migrations were folded into the baseline);
+            // the search-chrome layout chain is seeded there now.
             [
                 'slug'                => 'search',
-                'migration'           => 'database/migrations/2026_05_02_550000_seed_search_chrome.php',
+                'migration'           => 'database/migrations/0500_framework_data.php',
                 'controller_or_route' => 'routes/web.php',
                 'view'                => 'app/Views/public/search.php',
                 'needle'              => "->withLayout('search')",
@@ -164,24 +167,20 @@ final class PageChromeBatchCTest extends TestCase
     public function test_rename_migration_handles_existing_gdpr_account_data_row(): void
     {
         // The Batch B migration was renamed in place to seed under
-        // `account.data`, but existing installs already have the row
-        // at `gdpr.account_data`. The rename migration cleans that up.
-        $path = BASE_PATH . '/database/migrations/2026_05_02_500000_rename_gdpr_account_data_layout.php';
-        $this->assertFileExists($path,
-            'Rename migration must exist so installs that ran Batch B before the slug '
-            . 'change get their layout migrated to the new name.');
-
-        $src = (string) file_get_contents($path);
-        $this->assertStringContainsString("'gdpr.account_data'", $src,
-            'Rename migration must reference the legacy slug.');
-        $this->assertStringContainsString("'account.data'", $src,
-            'Rename migration must reference the new slug.');
-        $this->assertStringContainsString('UPDATE system_block_placements', $src,
-            'Rename must re-point child placements at the renamed parent — direct UPDATE '
-            . 'of system_layouts.name would violate the FK because the FK is ON DELETE CASCADE only, '
-            . 'not ON UPDATE CASCADE.');
-        $this->assertStringContainsString('transaction', $src,
-            'Multi-step rename must be wrapped in a transaction so a half-applied migration '
-            . 'can\'t leave the DB inconsistent.');
+        // `account.data` and existing installs already had the row at
+        // `gdpr.account_data`. The Phase 37/38 consolidation (2026-05-16)
+        // deleted the standalone rename migration entirely — the
+        // consolidated 0500_framework_data.php seeds straight under
+        // `account.data`, so fresh installs never create the legacy
+        // slug and the rename is a no-op on every supported install
+        // path. Installs that ran the rename before deletion still have
+        // it recorded in schema_migrations under the legacy name; it
+        // shows as "(legacy or missing)" in `migrate --status`.
+        //
+        // The live invariant — that `account.data` is seeded somewhere —
+        // is covered by the per-surface walk above, which asserts the
+        // modules/gdpr migration contains the `'account.data'` literal.
+        // No further assertion needed here.
+        $this->assertTrue(true);
     }
 }

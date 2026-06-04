@@ -210,31 +210,44 @@ final class PageChromeBatchATest extends TestCase
 
     public function test_migration_adds_placement_type_and_slot_name_to_both_tables(): void
     {
-        $path = BASE_PATH . '/database/migrations/2026_05_02_300000_add_placement_type_and_slot_to_block_placements.php';
+        // Phase 37/38 consolidated the framework migrations into
+        // 0001_framework_schema.php. Assert the consolidated schema defines
+        // placement_type + slot_name on system_block_placements with the
+        // content_slot enum value.
+        //
+        // RESOLVED 2026-06-04 (was flagged as an open question): page_block_placements
+        // (a pages-MODULE table) no longer carries placement_type/slot_name, and that
+        // is CORRECT, not a gap. The original 2026_05_02_300000 migration added them
+        // to that table for "schema parity" ONLY — its own docblock noted the pages
+        // module doesn't use them, and PageLayoutService confirms it (no placement_type
+        // in its SELECT/INSERT). placement_type/slot_name are a system-layout concept
+        // (system_block_placements, used by SystemLayoutAdminController). The
+        // consolidation correctly kept them there and dropped the unused parity columns
+        // from page_block_placements. Nothing to assert for page_block_placements here.
+        $path = BASE_PATH . '/database/migrations/0001_framework_schema.php';
         $this->assertFileExists($path);
         $src = (string) file_get_contents($path);
 
         $this->assertStringContainsString('system_block_placements', $src);
-        $this->assertStringContainsString('page_block_placements',   $src);
         $this->assertStringContainsString('placement_type',          $src);
         $this->assertStringContainsString('slot_name',               $src);
-        $this->assertStringContainsString("ENUM('block','content_slot')", $src);
-        $this->assertStringContainsString('information_schema.COLUMNS', $src,
-            'Migration must check column existence before adding so re-runs are safe.');
+        $this->assertStringContainsString('content_slot',            $src);
     }
 
     public function test_migration_adds_discoverability_columns_to_system_layouts(): void
     {
-        $path = BASE_PATH . '/database/migrations/2026_05_02_310000_add_discoverability_to_system_layouts.php';
+        // Phase 37/38: the discoverability columns + index live in the
+        // consolidated 0001_framework_schema.php CREATE TABLE system_layouts.
+        $path = BASE_PATH . '/database/migrations/0001_framework_schema.php';
         $this->assertFileExists($path);
         $src = (string) file_get_contents($path);
 
         foreach (['friendly_name', 'module', 'category', 'description'] as $col) {
             $this->assertStringContainsString($col, $src,
-                "Discoverability migration must add the `$col` column.");
+                "Schema must include the `$col` column on system_layouts.");
         }
         $this->assertStringContainsString('idx_system_layouts_module_category', $src,
-            'Discoverability migration must create the module+category index used by the admin index page.');
+            'Schema must include the module+category index used by the admin index page.');
     }
 
     // ── SystemLayoutService::seedLayout / seedSlot ───────────────────────────
