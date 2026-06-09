@@ -45,6 +45,7 @@ use Core\Console\Commands\{
     CleanupCommand,
     RetryMessagesCommand,
     StorageCheckCommand,
+    SentryTestCommand,
     MigrateCommand,
     MigrateRollbackCommand,
     MigrateStatusCommand,
@@ -73,6 +74,7 @@ $container->instance(CommandRegistry::class, $registry);
 $registry->register(CleanupCommand::class);
 $registry->register(RetryMessagesCommand::class);
 $registry->register(StorageCheckCommand::class);
+$registry->register(SentryTestCommand::class);
 
 $registry->register(MigrateCommand::class);
 $registry->register(MigrateRollbackCommand::class);
