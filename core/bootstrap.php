@@ -16,6 +16,17 @@
 
 use Core\Container\Container;
 
+// ── Error reporting (Sentry) ──────────────────────────────────────────────
+// Initialize Sentry first thing so any throwable during the rest of boot —
+// or anywhere in a CLI command / queue worker / cron run that goes through
+// bootstrap but NOT public/index.php — is captured. Idempotent: the web path
+// (public/index.php) calls init() earlier too, before the container exists,
+// so its exception handler is armed even if bootstrap itself throws; the
+// second call here is a no-op. No-op entirely when SENTRY_DSN is unset.
+if (class_exists(\Core\Services\SentryService::class)) {
+    \Core\Services\SentryService::init();
+}
+
 $container = new Container();
 Container::setGlobal($container);
 

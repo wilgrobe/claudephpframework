@@ -3,40 +3,75 @@
 namespace Core\Services;
 
 /**
- * Lightweight HTTP-only Sentry client.
+ * Sentry error-reporting facade.
  *
- * No SDK dependency — posts directly to Sentry's store endpoint using the
- * configured DSN. Enough for error/exception capture; does NOT implement
- * performance tracing, breadcrumbs, or the fuller envelope protocol.
+ * Two code paths behind one stable API:
  *
- * Enabled when SENTRY_DSN is set. Otherwise every method is a no-op.
+ *   1. Official SDK (sentry/sentry) — used whenever the package is installed
+ *      (the normal production path since it's in composer.json). Gives the
+ *      full envelope protocol, fatal-error capture via a shutdown handler,
+ *      source-context stack frames, breadcrumbs, and optional performance
+ *      tracing (SENTRY_TRACES_SAMPLE_RATE).
  *
- * The bootstrap (public/index.php) calls captureException() from its
- * exception handler, so any uncaught throwable automatically reaches
- * Sentry when configured — application code rarely needs to call this
- * directly.
+ *   2. Hand-rolled HTTP fallback — used when the SDK isn't installed (a
+ *      checkout that skipped `composer install`, or a stripped deploy). Posts
+ *      directly to the legacy /store/ endpoint. Error/exception capture only;
+ *      no tracing or breadcrumbs.
+ *
+ * Either way: enabled when SENTRY_DSN is set, every method a no-op otherwise.
+ * init() is hooked from core/bootstrap.php so both the web (public/index.php)
+ * and CLI (artisan, queue worker, cron) paths initialize Sentry. The web
+ * exception handler in public/index.php also calls captureException() directly,
+ * so any uncaught throwable reaches Sentry when configured.
+ *
+ * Privacy posture (preserved across both paths): we attach the authenticated
+ * user's id + email + ip_address and nothing else — send_default_pii stays
+ * false so the SDK doesn't auto-collect cookies / headers / request bodies.
  */
 class SentryService
 {
-    /** Cache parsed DSN so we don't re-parse on every capture. */
+    /** Cache parsed DSN so we don't re-parse on every capture (HTTP fallback only). */
     private static ?array $parsedDsn = null;
     private static bool   $initAttempted = false;
 
+    /** True once \Sentry\init() has run successfully (DSN set + SDK installed). */
+    private static bool $usingSdk = false;
+
     /**
-     * Hook handler to be called early in bootstrap. Memoizes the parsed DSN;
-     * safe to call repeatedly.
+     * Initialize Sentry. Memoized + safe to call repeatedly — bootstrap.php
+     * calls it for every request/command; public/index.php calls it again
+     * before the container is built (so its exception handler is armed even
+     * if bootstrap later throws). Both calls collapse to one real init.
      */
     public static function init(): void
     {
         if (self::$initAttempted) return;
         self::$initAttempted = true;
+
+        $dsn = trim((string) ($_ENV['SENTRY_DSN'] ?? ''));
+        if ($dsn === '') return;   // disabled
+
+        // Prefer the official SDK when present.
+        if (function_exists('\Sentry\init')) {
+            try {
+                self::initSdk($dsn);
+                self::$usingSdk = true;
+                return;
+            } catch (\Throwable $e) {
+                // SDK init failed (bad option, transport build error). Fall
+                // through to the hand-rolled path rather than losing reporting.
+                error_log('[sentry] SDK init failed, falling back to HTTP: ' . $e->getMessage());
+            }
+        }
+
+        // Fallback: hand-rolled HTTP client.
         self::parseDsn();
     }
 
     public static function isEnabled(): bool
     {
-        self::parseDsn();
-        return self::$parsedDsn !== null;
+        self::init();
+        return self::$usingSdk || self::$parsedDsn !== null;
     }
 
     /**
@@ -45,11 +80,17 @@ class SentryService
      */
     public static function captureException(\Throwable $e): void
     {
-        if (!self::isEnabled()) return;
+        self::init();
+
+        if (self::$usingSdk) {
+            try { \Sentry\captureException($e); } catch (\Throwable $_) {}
+            return;
+        }
+
+        if (self::$parsedDsn === null) return;
 
         try {
-            $payload = self::buildExceptionPayload($e);
-            self::send($payload);
+            self::send(self::buildExceptionPayload($e));
         } catch (\Throwable $_) {
             // Swallow — Sentry delivery failure must never mask the original error.
         }
@@ -62,7 +103,26 @@ class SentryService
      */
     public static function captureMessage(string $message, string $level = 'info', array $context = []): void
     {
-        if (!self::isEnabled()) return;
+        self::init();
+
+        if (self::$usingSdk) {
+            try {
+                $severity = self::toSeverity($level);
+                if ($context !== []) {
+                    \Sentry\withScope(static function ($scope) use ($message, $severity, $context): void {
+                        foreach ($context as $k => $v) {
+                            $scope->setExtra((string) $k, $v);
+                        }
+                        \Sentry\captureMessage($message, $severity);
+                    });
+                } else {
+                    \Sentry\captureMessage($message, $severity);
+                }
+            } catch (\Throwable $_) {}
+            return;
+        }
+
+        if (self::$parsedDsn === null) return;
 
         try {
             $payload = [
@@ -76,7 +136,72 @@ class SentryService
         }
     }
 
-    // ── Internals ────────────────────────────────────────────────────────────
+    /**
+     * Flush any buffered events to Sentry. The SDK's transport can defer the
+     * actual HTTP send; long-running CLI processes (queue worker, scheduler)
+     * should call this after a capture or before exit so events aren't held
+     * until the process dies. No-op on the HTTP fallback (it sends inline) and
+     * when Sentry is disabled.
+     */
+    public static function flush(): void
+    {
+        if (!self::$usingSdk) return;
+        try { \Sentry\flush(); } catch (\Throwable $_) {}
+    }
+
+    // ── SDK path ──────────────────────────────────────────────────────────────
+
+    private static function initSdk(string $dsn): void
+    {
+        $tracesRaw = $_ENV['SENTRY_TRACES_SAMPLE_RATE'] ?? '0.0';
+        $traces    = is_numeric($tracesRaw) ? max(0.0, min(1.0, (float) $tracesRaw)) : 0.0;
+        $release   = trim((string) ($_ENV['APP_VERSION'] ?? ''));
+
+        $options = [
+            'dsn'                   => $dsn,
+            'environment'           => (string) ($_ENV['SENTRY_ENVIRONMENT'] ?? ($_ENV['APP_ENV'] ?? 'production')),
+            'release'               => $release !== '' ? $release : null,
+            'traces_sample_rate'    => $traces,
+            // We attach user context (id/email/ip) deliberately in before_send;
+            // keep auto-PII off so cookies / headers / request bodies aren't
+            // collected. See the class docblock for the privacy rationale.
+            'send_default_pii'      => false,
+            'attach_stacktrace'     => true,
+            'max_request_body_size' => 'medium',
+            'before_send'           => static function (\Sentry\Event $event): ?\Sentry\Event {
+                try {
+                    $user = self::userContext();
+                    if ($user !== null) {
+                        $event->setUser(\Sentry\UserDataBag::createFromArray($user));
+                    }
+                } catch (\Throwable $_) {
+                    // Never let user-context enrichment drop the event.
+                }
+                return $event;
+            },
+        ];
+
+        if (defined('BASE_PATH')) {
+            // Don't blame framework/vendor frames as the app's own — keeps the
+            // "in app" stack frames pointing at our code.
+            $options['in_app_exclude'] = [BASE_PATH . '/vendor'];
+        }
+
+        \Sentry\init($options);
+    }
+
+    private static function toSeverity(string $level): \Sentry\Severity
+    {
+        return match ($level) {
+            'fatal'   => \Sentry\Severity::fatal(),
+            'error'   => \Sentry\Severity::error(),
+            'warning' => \Sentry\Severity::warning(),
+            'debug'   => \Sentry\Severity::debug(),
+            default   => \Sentry\Severity::info(),
+        };
+    }
+
+    // ── HTTP fallback internals ────────────────────────────────────────────────
 
     private static function parseDsn(): void
     {

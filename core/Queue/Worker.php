@@ -54,6 +54,10 @@ class Worker
                     // avoid flooding: attempt-1 failures are usually just
                     // hiccups that backoff + retry resolves.
                     \Core\Services\SentryService::captureException($e);
+                    // Flush now rather than at process exit — a long-running
+                    // worker would otherwise hold the event buffered until it
+                    // dies, delaying the alert (no-op on the HTTP fallback).
+                    \Core\Services\SentryService::flush();
                     $this->queue->fail($id, $msg);
                     $stats['failed']++;
                 } else {
