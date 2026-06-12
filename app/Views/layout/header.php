@@ -596,30 +596,104 @@ $__renderBrand = static function (): string {
                     $adminNavRendered[] = $section;
                 }
             }
+
+            // Menu-driven admin nav. When the `admin_sidebar` menu is seeded
+            // (2026_06_12_020000), render the nav from it so admins can reorder
+            // / hide / group it via /admin/menus; otherwise fall back to the
+            // hardcoded $adminNavRendered + superadmin blocks below so the nav
+            // can never be left broken. menu() already applies the per-item
+            // visibility filter (admin / superadmin / module kinds), so we just
+            // partition the visible holders into the two surfaces the chrome
+            // has always shown.
+            $__adminMenuSeeded = function_exists('menu_exists') && menu_exists('admin_sidebar');
+            $__adminHolders = [];
+            $__saHolders    = [];
+            if ($__adminMenuSeeded) {
+                foreach (menu('admin_sidebar') as $__h) {
+                    if (($__h['kind'] ?? 'link') !== 'holder') continue;
+                    $__kids = array_values(array_filter(
+                        $__h['children'] ?? [],
+                        fn($c) => ($c['kind'] ?? 'link') === 'link'
+                    ));
+                    if (empty($__kids)) continue; // drop holders with no visible children
+                    $__h['children'] = $__kids;
+                    if (($__h['visibility'] ?? '') === 'superadmin') {
+                        $__saHolders[] = $__h;
+                    } else {
+                        $__adminHolders[] = $__h;
+                    }
+                }
+                if (empty($__adminHolders) && empty($__saHolders)) {
+                    $__adminMenuSeeded = false;
+                }
+            }
             ?>
 
-            <?php if ($auth->check() && $auth->hasRole(['super-admin','admin'])): ?>
-            <div class="sidebar-section">Admin</div>
-            <?php foreach ($adminNavRendered as $section): ?>
-            <details class="sidebar-accordion" open>
-                <summary><?= $section['icon'] ?> <?= e($section['label']) ?></summary>
-                <?php foreach ($section['items'] as $item): ?>
-                <a href="<?= e($item[1]) ?>" class="sidebar-accordion-item"><?= e($item[0]) ?></a>
-                <?php endforeach; ?>
-            </details>
-            <?php endforeach; ?>
-            <?php endif; ?>
+            <?php if ($__adminMenuSeeded): ?>
+                <?php /* Menu-driven admin nav (admin-editable via /admin/menus). */ ?>
+                <?php if (!empty($__adminHolders)): ?>
+                <div class="sidebar-section">Admin</div>
+                <?php foreach ($__adminHolders as $__h): ?>
+                <details class="sidebar-accordion js-admin-accordion" data-acc-key="a:<?= e($__h['label']) ?>" data-acc-default="open">
+                    <summary><?= e($__h['icon'] ?? '') ?> <?= e($__h['label']) ?></summary>
+                    <?php foreach ($__h['children'] as $__c): ?>
+                    <a href="<?= e($__c['url'] ?? '#') ?>" class="sidebar-accordion-item"><?= e($__c['label']) ?></a>
+                    <?php endforeach; ?>
+                </details>
+                <?php endforeach; unset($__h, $__c); ?>
+                <?php endif; ?>
 
-            <?php if ($auth->isSuperAdmin()): ?>
-            <div class="sidebar-section">Superadmin</div>
-            <a href="/admin/superadmin">SA Dashboard</a>
-            <a href="/admin/superadmin/users">All Users</a>
-            <a href="/admin/superadmin/audit-log">Audit Log</a>
-            <a href="/admin/superadmin/message-log">Message Log</a>
-            <a href="/admin/settings">Site Settings</a>
-            <?php if (module_active('integrations')): ?><a href="/admin/integrations">Integrations</a><?php endif; ?>
-            <a href="/admin/modules">Modules</a>
-            <a href="/admin/system-layouts">System Layouts</a>
+                <?php if (!empty($__saHolders)): ?>
+                <div class="sidebar-section">Superadmin</div>
+                <?php foreach ($__saHolders as $__h): ?>
+                <details class="sidebar-accordion js-admin-accordion" data-acc-key="s:<?= e($__h['label']) ?>" data-acc-default="closed">
+                    <summary><?= e($__h['icon'] ?? '') ?> <?= e($__h['label']) ?></summary>
+                    <?php foreach ($__h['children'] as $__c): ?>
+                    <a href="<?= e($__c['url'] ?? '#') ?>" class="sidebar-accordion-item"><?= e($__c['label']) ?></a>
+                    <?php endforeach; ?>
+                </details>
+                <?php endforeach; unset($__h, $__c); ?>
+                <?php endif; ?>
+
+                <script>
+                /* Persist each admin accordion's open/closed state per-section.
+                   Default: admin sections open, superadmin sections closed. */
+                (function () {
+                    document.querySelectorAll('details.js-admin-accordion').forEach(function (d) {
+                        var key = 'adminacc:' + (d.dataset.accKey || '');
+                        var s = null; try { s = localStorage.getItem(key); } catch (e) {}
+                        d.open = (s === 'open') ? true : (s === 'closed' ? false : (d.dataset.accDefault === 'open'));
+                        d.addEventListener('toggle', function () {
+                            try { localStorage.setItem(key, d.open ? 'open' : 'closed'); } catch (e) {}
+                        });
+                    });
+                })();
+                </script>
+            <?php else: ?>
+                <?php /* Fallback: hardcoded nav (menu not seeded). */ ?>
+                <?php if ($auth->check() && $auth->hasRole(['super-admin','admin'])): ?>
+                <div class="sidebar-section">Admin</div>
+                <?php foreach ($adminNavRendered as $section): ?>
+                <details class="sidebar-accordion" open>
+                    <summary><?= $section['icon'] ?> <?= e($section['label']) ?></summary>
+                    <?php foreach ($section['items'] as $item): ?>
+                    <a href="<?= e($item[1]) ?>" class="sidebar-accordion-item"><?= e($item[0]) ?></a>
+                    <?php endforeach; ?>
+                </details>
+                <?php endforeach; ?>
+                <?php endif; ?>
+
+                <?php if ($auth->isSuperAdmin()): ?>
+                <div class="sidebar-section">Superadmin</div>
+                <a href="/admin/superadmin">SA Dashboard</a>
+                <a href="/admin/superadmin/users">All Users</a>
+                <a href="/admin/superadmin/audit-log">Audit Log</a>
+                <a href="/admin/superadmin/message-log">Message Log</a>
+                <a href="/admin/settings">Site Settings</a>
+                <?php if (module_active('integrations')): ?><a href="/admin/integrations">Integrations</a><?php endif; ?>
+                <a href="/admin/modules">Modules</a>
+                <a href="/admin/system-layouts">System Layouts</a>
+                <?php endif; ?>
             <?php endif; ?>
         </nav>
     </aside>
@@ -661,19 +735,38 @@ $__renderBrand = static function (): string {
                             <?php if (module_active('content')): ?><a href="/content">My Content</a><?php endif; ?>
                         <?php endif; ?>
 
-                        <?php if ($auth->check() && $auth->hasRole(['super-admin','admin']) && !empty($adminNavRendered)): ?>
-                        <!-- Admin dropdown. Clicking the toggle flips .open on the
-                             parent .topbar-dd; the existing body-level click handler
-                             in footer.php closes dropdowns when the user clicks
-                             outside.
+                        <?php if ($__adminMenuSeeded): ?>
+                            <?php /* Menu-driven Admin + Superadmin dropdowns. */ ?>
+                            <?php if (!empty($__adminHolders)): ?>
+                            <div class="topbar-dd">
+                                <button type="button" class="topbar-dd-toggle" onclick="this.parentElement.classList.toggle('open')">Admin ▾</button>
+                                <div class="topbar-dd-menu topbar-dd-menu--sections">
+                                    <?php foreach ($__adminHolders as $__tb_h): ?>
+                                    <div class="topbar-dd-section"><?= e($__tb_h['icon'] ?? '') ?> <?= e($__tb_h['label']) ?></div>
+                                    <?php foreach ($__tb_h['children'] as $__tb_c): ?>
+                                    <a href="<?= e($__tb_c['url'] ?? '#') ?>"><?= e($__tb_c['label']) ?></a>
+                                    <?php endforeach; ?>
+                                    <?php endforeach; unset($__tb_h, $__tb_c); ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
 
-                             Pulls from the same $adminNavRendered array the
-                             sidebar consumes so adding a category in one place
-                             updates both surfaces. Renders as a single tall
-                             dropdown with section headers (no nested submenus —
-                             the topbar dropdown UX is awkward for two-level
-                             interaction; the section headers provide the
-                             grouping cue without requiring a second hover). -->
+                            <?php if (!empty($__saHolders)): ?>
+                            <div class="topbar-dd">
+                                <button type="button" class="topbar-dd-toggle" onclick="this.parentElement.classList.toggle('open')">Superadmin ▾</button>
+                                <div class="topbar-dd-menu topbar-dd-menu--sections">
+                                    <?php foreach ($__saHolders as $__tb_h): ?>
+                                    <div class="topbar-dd-section"><?= e($__tb_h['icon'] ?? '') ?> <?= e($__tb_h['label']) ?></div>
+                                    <?php foreach ($__tb_h['children'] as $__tb_c): ?>
+                                    <a href="<?= e($__tb_c['url'] ?? '#') ?>"><?= e($__tb_c['label']) ?></a>
+                                    <?php endforeach; ?>
+                                    <?php endforeach; unset($__tb_h, $__tb_c); ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                        <?php /* Fallback: hardcoded dropdowns (menu not seeded). */ ?>
+                        <?php if ($auth->check() && $auth->hasRole(['super-admin','admin']) && !empty($adminNavRendered)): ?>
                         <div class="topbar-dd">
                             <button type="button" class="topbar-dd-toggle" onclick="this.parentElement.classList.toggle('open')">Admin ▾</button>
                             <div class="topbar-dd-menu topbar-dd-menu--sections">
@@ -701,6 +794,7 @@ $__renderBrand = static function (): string {
                                 <a href="/admin/system-layouts">System Layouts</a>
                             </div>
                         </div>
+                        <?php endif; ?>
                         <?php endif; ?>
                     </nav>
                 <?php else: ?>

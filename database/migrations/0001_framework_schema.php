@@ -314,7 +314,7 @@ return new class extends Migration {
   `icon` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `target` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT \'_self\',
   `sort_order` int DEFAULT \'0\',
-  `visibility` enum(\'always\',\'logged_in\',\'logged_out\',\'role\',\'permission\',\'group\') COLLATE utf8mb4_unicode_ci DEFAULT \'always\',
+  `visibility` enum(\'always\',\'logged_in\',\'logged_out\',\'role\',\'permission\',\'group\',\'module\',\'admin\',\'superadmin\') COLLATE utf8mb4_unicode_ci DEFAULT \'always\',
   `condition_value` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT \'role slug, permission slug, or group slug\',
   `show_on_pages` text COLLATE utf8mb4_unicode_ci COMMENT \'JSON array of page slugs; NULL=all pages\',
   `is_active` tinyint(1) DEFAULT \'1\',

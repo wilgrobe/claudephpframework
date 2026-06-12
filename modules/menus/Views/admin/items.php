@@ -427,9 +427,12 @@ $pageTitle = 'Menu Items - ' . $menu['name'];
                           'role':       'Role-gated',
                           'permission': 'Permission-gated',
                           'group':      'Group-gated',
+                          'module':     'Module active (admin nav)',
+                          'admin':      'Admins only',
+                          'superadmin': 'Superadmins only',
                       }});
         schema.push({ key: 'condition_value', label: 'Visibility condition value', type: 'text', default: '',
-                      help: 'Role/permission/group slug. Only applies for role/permission/group visibility.' });
+                      help: 'Slug for the gate: role/permission/group slug, or — for "Module active" — the module slug (e.g. store, polls). Ignored for the other kinds.' });
         return schema;
     }
     function openEditModal(cid, isNew) {

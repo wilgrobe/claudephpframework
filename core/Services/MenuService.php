@@ -15,6 +15,9 @@ use Core\Auth\Auth;
  *   role         — user must have condition_value role slug
  *   permission   — user must have condition_value permission slug
  *   group        — user must be in condition_value group slug
+ *   module       — module_active(condition_value) (admin-nav per-module gating)
+ *   admin        — user has the 'admin' OR 'super-admin' role (admin chrome)
+ *   superadmin   — user is a superadmin (Auth::isSuperAdmin())
  */
 class MenuService
 {
@@ -171,9 +174,36 @@ class MenuService
                 return $this->auth->check() && $this->auth->hasPermission($item['condition_value'] ?? '');
             case 'group':
                 return $this->auth->check() && $this->auth->inGroup($item['condition_value'] ?? '');
+            case 'module':
+                // Admin-nav per-module gating. module_active() is a global
+                // helper; it returns false in CLI / early-bootstrap, which is
+                // the right answer (no nav rendered there anyway).
+                return function_exists('module_active')
+                    && module_active((string) ($item['condition_value'] ?? ''));
+            case 'admin':
+                // Admin chrome: matches header.php's hasRole(['super-admin','admin'])
+                // exactly so a pure super-admin (no 'admin' role) still sees it.
+                return $this->auth->check() && $this->auth->hasRole(['super-admin', 'admin']);
+            case 'superadmin':
+                return $this->auth->check() && $this->auth->isSuperAdmin();
             default:
                 return true;
         }
+    }
+
+    /**
+     * True when a menu exists for this location (regardless of whether any
+     * of its items are visible to the current viewer). Lets the admin-nav
+     * chrome decide between the menu-driven path (seeded) and the hardcoded
+     * fallback (un-seeded) without conflating "not seeded" with "filtered to
+     * nothing for this user".
+     */
+    public function locationExists(string $location): bool
+    {
+        return (bool) $this->db->fetchOne(
+            "SELECT id FROM menus WHERE location = ? AND is_active = 1",
+            [$location]
+        );
     }
 
     /**
@@ -276,7 +306,7 @@ class MenuService
     public function replaceItems(int $menuId, array $items): void
     {
         $allowedKinds = ['link', 'holder'];
-        $allowedVisibility = ['always', 'logged_in', 'logged_out', 'role', 'permission', 'group'];
+        $allowedVisibility = ['always', 'logged_in', 'logged_out', 'role', 'permission', 'group', 'module', 'admin', 'superadmin'];
         $allowedTargets = ['_self', '_blank'];
         // URL scheme allowlist. Renderers escape angle-brackets and quotes
         // via htmlspecialchars but DO NOT strip JS/data URIs - so a URL like

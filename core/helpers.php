@@ -286,6 +286,25 @@ if (!function_exists('menu')) {
     }
 }
 
+if (!function_exists('menu_exists')) {
+    /**
+     * True when a menu is seeded for this location (independent of per-viewer
+     * visibility). The admin-nav chrome uses this to choose between the
+     * menu-driven path and the hardcoded fallback.
+     */
+    function menu_exists(string $location): bool
+    {
+        static $fallback = null;
+        try {
+            $svc = \Core\Container\Container::global()->get(\Core\Services\MenuService::class);
+        } catch (\Throwable) {
+            $fallback ??= new \Core\Services\MenuService();
+            $svc = $fallback;
+        }
+        return $svc->locationExists($location);
+    }
+}
+
 if (!function_exists('integration_config')) {
     /**
      * Read third-party integration config from the environment.
