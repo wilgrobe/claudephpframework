@@ -38,7 +38,22 @@ class SettingsController
         'site_name'           => 'string',
         'site_tagline'        => 'string',
         'site_url'            => 'string',
+        // Persisted as a real boolean so setting('maintenance_mode') casts
+        // to a true/false, never the truthy string "false". Surfaced as a
+        // toggle on the General panel — keeping it managed here also pulls
+        // it out of the Other/Unmanaged grid (managedSiteKeys), where a
+        // "Save All" used to demote its type to string.
+        'maintenance_mode'    => 'boolean',
     ];
+
+    /**
+     * Slug of the page guests land on at `/`. Not in GENERAL_KEYS because
+     * it gets dedicated handling (a page-picker dropdown + delete-on-empty
+     * so a cleared selection falls back to /login rather than leaving a
+     * stale empty row). Listed in managedSiteKeys() so it stays out of the
+     * Other/Unmanaged grid; loaded + saved by the General panel below.
+     */
+    private const GUEST_HOME_KEY = 'guest_home_page_slug';
 
     private const LAYOUT_KEYS = [
         // Header
@@ -257,6 +272,9 @@ class SettingsController
         // panel and shouldn't reappear in Other / Unmanaged.
         $local[] = 'theme.font.custom_links';
 
+        // Guest homepage slug — owned by the General panel's page-picker.
+        $local[] = self::GUEST_HOME_KEY;
+
         // Module-declared keys via the settingsKeys() hook on
         // ModuleProvider. Wrapped in try/catch so a misbehaving module
         // can't take the settings page down.
@@ -354,9 +372,21 @@ class SettingsController
         // those silently so the dedicated page stays the one source of truth.
         $managed = $scope === 'site' ? array_flip(self::managedSiteKeys()) : [];
 
+        // PHP parses `types[<key>]` form inputs into a nested array, so it
+        // lands at $_POST['types'][<key>], NOT the flat literal key
+        // "types[<key>]". Reading it the flat way (as the old code did)
+        // ALWAYS missed and fell back to 'string' — silently demoting every
+        // boolean/integer/json row to string on "Save All" (the
+        // maintenance_mode = "false" truthy-string footgun). Read the whole
+        // array once and index into it, with an allowlist guard.
+        $types = $request->post('types', []);
+        if (!is_array($types)) $types = [];
+        $validTypes = ['string', 'boolean', 'integer', 'json', 'text'];
+
         foreach ($items as $key => $value) {
             if (isset($managed[$key])) continue;
-            $type = $request->post("types[$key]", 'string');
+            $type = (string) ($types[$key] ?? 'string');
+            if (!in_array($type, $validTypes, true)) $type = 'string';
             $this->settings->set($key, $value, $scope, $scopeKey, $type);
         }
 
@@ -763,9 +793,26 @@ class SettingsController
     public function general(Request $request): Response
     {
         if (!$this->auth->isSuperAdmin()) return $this->denied();
+
+        // Published + public pages for the homepage picker. Guarded so a
+        // standalone-framework install whose pages table predates the
+        // is_public column (or has no pages module) still renders the panel.
+        $homePages = [];
+        try {
+            $homePages = Database::getInstance()->fetchAll(
+                "SELECT slug, title FROM pages
+                  WHERE status = 'published' AND is_public = 1
+                  ORDER BY sort_order, title"
+            );
+        } catch (\Throwable $e) {
+            error_log('SettingsController::general — page list unavailable: ' . $e->getMessage());
+        }
+
         return Response::view('settings::admin.general', [
-            'values' => $this->loadValues(self::GENERAL_KEYS),
-            'user'   => $this->auth->user(),
+            'values'   => $this->loadValues(self::GENERAL_KEYS),
+            'homeSlug' => (string) ($this->settings->get(self::GUEST_HOME_KEY, '', 'site') ?? ''),
+            'homePages' => $homePages,
+            'user'     => $this->auth->user(),
         ]);
     }
 
@@ -773,6 +820,33 @@ class SettingsController
     {
         if (!$this->auth->isSuperAdmin()) return $this->denied();
         $this->saveValues($request, self::GENERAL_KEYS, 'settings.general.save');
+
+        // Guest homepage slug — validate the pick against an actual
+        // published + public page so a crafted POST can't point `/` at a
+        // draft / private / nonexistent slug. Empty selection deletes the
+        // key so `/` cleanly falls back to /login (matches the page-form
+        // toggle + delete-on-unset behaviour).
+        $homeSlug = trim((string) $request->post(self::GUEST_HOME_KEY, ''));
+        if ($homeSlug === '') {
+            $this->settings->delete(self::GUEST_HOME_KEY, 'site');
+        } else {
+            $valid = false;
+            try {
+                $valid = (bool) Database::getInstance()->fetchOne(
+                    "SELECT id FROM pages WHERE slug = ? AND status = 'published' AND is_public = 1 LIMIT 1",
+                    [$homeSlug]
+                );
+            } catch (\Throwable $e) {
+                error_log('SettingsController::saveGeneral — homepage validation failed: ' . $e->getMessage());
+            }
+            if ($valid) {
+                $this->settings->set(self::GUEST_HOME_KEY, $homeSlug, 'site', null, 'string');
+            } else {
+                return Response::redirect('/admin/settings/general')
+                    ->withFlash('error', 'Homepage must be a published, public page.');
+            }
+        }
+
         return Response::redirect('/admin/settings/general')->withFlash('success', 'General settings saved.');
     }
 

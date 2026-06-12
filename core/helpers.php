@@ -180,6 +180,33 @@ if (!function_exists('setting')) {
     }
 }
 
+if (!function_exists('setting_bool')) {
+    /**
+     * Read a setting as a real boolean, tolerant of how it was persisted.
+     *
+     * The settings store only casts a value to a real bool when its `type`
+     * column is 'boolean' (see SettingsService::cast). A boolean-meaning
+     * key that gets stored as type='string' — e.g. when the Other/Unmanaged
+     * grid re-saves it, or an admin adds it by hand — comes back as the raw
+     * string. PHP then treats the literal "false" as truthy, which silently
+     * flipped maintenance_mode on for freshly built demo tenants.
+     *
+     * This helper normalizes the common falsy spellings ("false", "0", "",
+     * "no", "off", "null") to false and everything else (including real
+     * booleans / "true" / "1") to true. Use it for any boolean gate that
+     * reads through setting() so the result can't depend on the stored type.
+     */
+    function setting_bool(string $key, bool $default = false): bool
+    {
+        $raw = setting($key, $default);
+        if (is_bool($raw))             return $raw;
+        if (is_int($raw))              return $raw !== 0;
+        $norm = strtolower(trim((string) $raw));
+        if ($norm === '')              return false;
+        return !in_array($norm, ['false', '0', 'no', 'off', 'null'], true);
+    }
+}
+
 if (!function_exists('consent_allowed')) {
     /**
      * Whether the current visitor has consented to a given cookie category.

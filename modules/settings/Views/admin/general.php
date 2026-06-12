@@ -38,6 +38,35 @@
                 <small style="color:var(--color-gray-500)">Used in outbound email links (verification, password reset) and canonical SEO tags.</small>
             </div>
 
+            <div class="form-group">
+                <label for="guest_home_page_slug">Homepage</label>
+                <select id="guest_home_page_slug" name="guest_home_page_slug" class="form-control">
+                    <option value="">— Sign-in screen (default) —</option>
+                    <?php foreach (($homePages ?? []) as $hp): ?>
+                        <option value="<?= e((string) $hp['slug']) ?>" <?= ($homeSlug ?? '') === (string) $hp['slug'] ? 'selected' : '' ?>>
+                            <?= e((string) ($hp['title'] ?: $hp['slug'])) ?> (/<?= e((string) $hp['slug']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <small style="color:var(--color-gray-500)">
+                    The page guests land on at <code>/</code>. Only published, public pages appear here.
+                    Leave on “Sign-in screen” to send signed-out visitors straight to the login page.
+                </small>
+            </div>
+
+            <div class="form-group" style="border-top:1px solid var(--color-gray-200);padding-top:1rem;margin-top:.5rem">
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:500">
+                    <input type="hidden" name="maintenance_mode" value="0">
+                    <input type="checkbox" name="maintenance_mode" value="1"
+                           <?= !empty($values['maintenance_mode']) ? 'checked' : '' ?>>
+                    Maintenance mode
+                </label>
+                <small style="color:var(--color-gray-500)">
+                    When on, visitors see a “down for maintenance” page (HTTP 503). Superadmins can still
+                    browse the site to make changes. Sign-in and password-reset stay reachable.
+                </small>
+            </div>
+
         </div>
         <div class="card-body" style="background:var(--color-gray-50);border-top:1px solid var(--color-gray-200);display:flex;justify-content:flex-end">
             <button type="submit" class="btn btn-primary">Save General</button>

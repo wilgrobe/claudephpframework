@@ -100,6 +100,11 @@
                     <td class="col-key"><?= e($key) ?></td>
                     <td class="col-value">
                         <input name="settings[<?= e($key) ?>]" class="form-control" value="<?= e((string) ($meta['raw'] ?? '')) ?>" aria-label="<?= e($key) ?>">
+                        <!-- Preserve the row's stored type on "Save All". Without this
+                             hidden input the save handler defaulted types[$key] to
+                             'string', silently demoting every boolean/integer/json row
+                             (e.g. maintenance_mode) — after which "false" casts truthy. -->
+                        <input type="hidden" name="types[<?= e($key) ?>]" value="<?= e((string) ($meta['type'] ?? 'string')) ?>">
                     </td>
                     <td class="col-type"><?= e((string) ($meta['type'] ?? 'string')) ?></td>
                     <td class="col-act">

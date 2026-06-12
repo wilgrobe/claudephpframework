@@ -293,7 +293,7 @@ $maintenancePrefixes = [
 $allowedDuringMaintenance =
        in_array($path, $maintenanceExact, true)
     || array_filter($maintenancePrefixes, fn($p) => str_starts_with($path, $p));
-if (setting('maintenance_mode', false)
+if (setting_bool('maintenance_mode', false)
     && !\Core\Auth\Auth::getInstance()->isSuperAdmin()
     && !$allowedDuringMaintenance
 ) {
