@@ -141,7 +141,34 @@ class UserController
             }
         }
 
+        // Username: accept a typed one (validated + unique) or auto-derive
+        // from email/name. Admin-created users previously had a NULL
+        // username, which surfaces as "[deleted]" on forum / social /
+        // comment bylines — so always assign one here, mirroring what
+        // self-registration does via the same UsernameSuggester service.
+        $suggester     = new \Core\Services\UsernameSuggester($this->db);
+        $typedUsername = trim((string) $request->post('username', ''));
+        if ($typedUsername !== '') {
+            $unameErr = $suggester->validate($typedUsername);
+            if ($unameErr === null && !$suggester->isAvailable($typedUsername)) {
+                $unameErr = 'That username is already taken.';
+            }
+            if ($unameErr !== null) {
+                Session::flash('errors', ['username' => [$unameErr]]);
+                Session::flash('old', $v->all());
+                return Response::redirect('/admin/users/create');
+            }
+            $username = strtolower($typedUsername);
+        } else {
+            $username = $suggester->suggestOne(
+                $v->get('email'),
+                $v->get('first_name'),
+                $v->get('last_name')
+            ) ?? ('user' . substr((string) time(), -6));
+        }
+
         $userId = $this->userModel->create([
+            'username'    => $username,
             'first_name'  => $v->get('first_name'),
             'last_name'   => $v->get('last_name'),
             'email'       => strtolower($v->get('email')),
@@ -214,6 +241,24 @@ class UserController
 
         if ($this->auth->isSuperadminModeOn()) {
             $updateData['is_superadmin'] = (int) $request->post('is_superadmin', 0);
+        }
+
+        // Username (optional on edit): only change it when the admin typed a
+        // value. Blank leaves the existing username untouched — so this also
+        // lets an admin assign a username to a legacy account that never had
+        // one (e.g. fixing a "[deleted]" forum byline).
+        $typedUsername = trim((string) $request->post('username', ''));
+        if ($typedUsername !== '') {
+            $suggester = new \Core\Services\UsernameSuggester($this->db);
+            $unameErr  = $suggester->validate($typedUsername);
+            if ($unameErr === null && !$suggester->isAvailable($typedUsername, $id)) {
+                $unameErr = 'That username is already taken.';
+            }
+            if ($unameErr !== null) {
+                Session::flash('errors', ['username' => [$unameErr]]);
+                return Response::redirect("/admin/users/$id/edit");
+            }
+            $updateData['username'] = strtolower($typedUsername);
         }
 
         $old = $this->userModel->findById($id);

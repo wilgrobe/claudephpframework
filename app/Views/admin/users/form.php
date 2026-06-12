@@ -34,6 +34,15 @@
             </div>
 
             <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" class="form-control <?= !empty($errors['username'])?'is-invalid':''?>"
+                       value="<?= e($user_edit['username'] ?? old('username')) ?>" id="username"
+                       placeholder="<?= $user_edit ? 'e.g. janedoe' : 'leave blank to auto-generate' ?>">
+                <small class="form-help">Shown on public bylines (forum posts, comments, profiles). Letters, numbers, and underscores. <?= $user_edit ? 'Leave blank to keep the current username.' : 'Leave blank and one is generated from the name/email.' ?></small>
+                <?php if (!empty($errors['username'])): ?><span class="form-error"><?= e($errors['username'][0]) ?></span><?php endif; ?>
+            </div>
+
+            <div class="form-group">
                 <label for="password">Password <?= $user_edit ? '(leave blank to keep current)' : '*' ?></label>
                 <input type="password" name="password" class="form-control <?= !empty($errors['password'])?'is-invalid':''?>"
                        <?= !$user_edit ? 'required' : '' ?> minlength="8" autocomplete="new-password" id="password">
