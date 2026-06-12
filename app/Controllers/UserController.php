@@ -167,6 +167,14 @@ class UserController
             ) ?? ('user' . substr((string) time(), -6));
         }
 
+        // Email verification: an admin creating a user is vouching for them,
+        // so default to verified. Without this, when `require_email_verify` is
+        // on, every admin-created account (typically a non-deliverable seed /
+        // demo / test address) is locked out of login forever — there's no
+        // inbox to click the link in. The form ships the checkbox checked; the
+        // paired hidden input makes an unchecked box post "0" reliably.
+        $emailVerified = (bool) $request->post('email_verified', '1');
+
         $userId = $this->userModel->create([
             'username'    => $username,
             'first_name'  => $v->get('first_name'),
@@ -176,6 +184,7 @@ class UserController
             'phone'       => $v->get('phone'),
             'is_active'   => (int) $request->post('is_active', 1),
             'is_superadmin' => $this->auth->isSuperadminModeOn() ? (int) $request->post('is_superadmin', 0) : 0,
+            'email_verified_at' => $emailVerified ? date('Y-m-d H:i:s') : null,
         ]);
 
         $roleIds = array_filter((array) $request->post('roles', []));
@@ -224,6 +233,18 @@ class UserController
             'phone'      => $v->get('phone'),
             'is_active'  => (int) $request->post('is_active', 0),
         ];
+
+        // Email-verified toggle — lets an admin mark a manually-created /
+        // broken-mailbox account as verified (so it can log in under
+        // `require_email_verify`) or revoke it. Preserve the existing
+        // timestamp when it's already verified + stays checked so we don't
+        // churn the audit-meaningful "when verified" value; stamp NOW() on a
+        // false→true flip; clear to NULL when unchecked.
+        $wantVerified = (bool) $request->post('email_verified', '0');
+        $currentVerifiedAt = $this->userModel->findById($id)['email_verified_at'] ?? null;
+        $updateData['email_verified_at'] = $wantVerified
+            ? ($currentVerifiedAt ?: date('Y-m-d H:i:s'))
+            : null;
 
         if ($pass = $request->post('password')) {
             // Breach check on the proposed new password. Same fail-open

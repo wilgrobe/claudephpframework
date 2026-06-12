@@ -117,7 +117,19 @@ class Validator
                 $tag = strtolower($child->nodeName);
 
                 if (!in_array($tag, $allowedTags, true)) {
-                    // Replace disallowed element with its text content (don't silently delete)
+                    // Disallowed element → unwrap (keep its content, drop the tag).
+                    // CRITICAL: sanitize the subtree FIRST. The unwrap below
+                    // promotes this element's children up to the parent, but
+                    // those children are never revisited by this loop (it's
+                    // already iterating the parent's original child list). Pre-
+                    // fix they were promoted UNSANITIZED, so a disallowed
+                    // wrapper smuggled its children through untouched — e.g.
+                    // `<div><script>…</script></div>` (div + script both
+                    // disallowed) unwrapped the div and left the <script> live.
+                    // Recursing here cleans the subtree (script → text, nested
+                    // disallowed tags → unwrapped, bad attrs stripped) before
+                    // any promotion happens.
+                    self::sanitizeNode($child, $allowedTags, $allowedAttrs);
                     $toRemove[] = ['node' => $child, 'replace' => true];
                     continue;
                 }

@@ -22,6 +22,47 @@ use Core\Services\SettingsService;
  */
 class PageController
 {
+    /**
+     * Wider HTML allowlist for the admin page-body editor. The page body is
+     * an admin-trusted surface (gated by the `pages.manage` permission) and
+     * frequently holds styled heroes like
+     * `<section class="hero"><h1>…</h1></section>`. The default
+     * Validator::sanitizeHtml allowlist (p / h2-h4 / a / lists / blockquote,
+     * no class) strips `<h1>`, `<section>`, and every `class` — silently
+     * downgrading those heroes to plain text on re-save. This superset keeps
+     * structural + styled markup intact while Validator::sanitizeNode still
+     * drops scripts / iframes / `style` / `on*` handlers / unknown url schemes
+     * (the allowlist is additive — anything not listed is removed).
+     */
+    private const BODY_TAGS = [
+        'p','br','hr','small','sub','sup','strong','em','b','i','u',
+        'h1','h2','h3','h4','h5','h6',
+        'ul','ol','li','blockquote',
+        'a',
+        'code','pre','kbd','samp',
+        'table','thead','tbody','tfoot','tr','td','th','caption',
+        'img',
+        'span','div',
+        'section','article','header','footer','aside','figure','figcaption','main','nav',
+    ];
+
+    private const BODY_ATTRS = [
+        'a'          => ['href','title','target','rel','class'],
+        'img'        => ['src','alt','width','height','loading','class'],
+        'div'        => ['class'], 'span' => ['class'],
+        'section'    => ['class'], 'article' => ['class'], 'header' => ['class'],
+        'footer'     => ['class'], 'aside' => ['class'], 'main' => ['class'], 'nav' => ['class'],
+        'figure'     => ['class'], 'figcaption' => ['class'],
+        'p'          => ['class'], 'blockquote' => ['class'],
+        'h1' => ['class'], 'h2' => ['class'], 'h3' => ['class'],
+        'h4' => ['class'], 'h5' => ['class'], 'h6' => ['class'],
+        'ul' => ['class'], 'ol' => ['class'], 'li' => ['class'],
+        'code' => ['class'], 'pre' => ['class'],
+        'table' => ['class'], 'thead' => ['class'], 'tbody' => ['class'],
+        'tr' => ['class'], 'td' => ['class','colspan','rowspan'],
+        'th' => ['class','colspan','rowspan','scope'],
+    ];
+
     private Database        $db;
     private Auth            $auth;
     private SeoManager      $seo;
@@ -71,7 +112,7 @@ class PageController
             return Response::redirect('/admin/pages/create');
         }
         $slug          = $v->get('slug');
-        $sanitizedBody = Validator::sanitizeHtml($request->post('body', ''));
+        $sanitizedBody = Validator::sanitizeHtml($request->post('body', ''), self::BODY_TAGS, self::BODY_ATTRS);
         $status        = $v->get('status');
         $isPublic      = (int) $request->post('is_public', 1);
         $featured      = (int) $request->post('featured', 0);
@@ -166,7 +207,7 @@ class PageController
 
         $oldSlug       = $page['slug'];
         $newSlug       = $v->get('slug');
-        $sanitizedBody = Validator::sanitizeHtml($request->post('body', ''));
+        $sanitizedBody = Validator::sanitizeHtml($request->post('body', ''), self::BODY_TAGS, self::BODY_ATTRS);
         $newStatus     = $v->get('status');
         $newIsPublic   = (int) $request->post('is_public', 1);
         $newFeatured   = (int) $request->post('featured', 0);

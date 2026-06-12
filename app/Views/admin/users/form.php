@@ -76,6 +76,27 @@
                 </label>
             </div>
 
+            <div class="form-group">
+                <?php
+                // On create, default to verified (the admin is vouching). On
+                // edit, reflect the stored state. The hidden 0 makes an
+                // unchecked box post reliably (see UserController).
+                $emailVerifiedChecked = $user_edit
+                    ? !empty($user_edit['email_verified_at'])
+                    : true;
+                ?>
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:400">
+                    <input type="hidden" name="email_verified" value="0">
+                    <input type="checkbox" name="email_verified" value="1" <?= $emailVerifiedChecked ? 'checked' : '' ?>>
+                    Email verified
+                </label>
+                <small class="form-help">
+                    Marks this address as confirmed so the user can sign in even when
+                    “require email verification” is on. Leave checked for admin-created
+                    accounts — uncheck only if you want them to confirm via an email link.
+                </small>
+            </div>
+
             <?php if (auth()->isSuperadminModeOn()): ?>
             <div class="form-group">
                 <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:400">
