@@ -423,12 +423,16 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
 <?php endif; ?>
 <header class="site-header">
     <a href="/" class="site-logo"><?php
-        $__logoRel = setting('builder.branding.logo_url', '');
+        // Brand lockup: the logo image is an icon MARK shown next to the site
+        // name (so it reads "[mark] SiteName"). Falls back to the 🚀 glyph +
+        // name when no logo is set.
+        $__logoRel  = setting('builder.branding.logo_url', '');
+        $__siteName = htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
         if ($__logoRel !== '') {
             $__logoUrl = (new \Core\Services\FileUploadService())->url($__logoRel);
-            echo '<img src="' . htmlspecialchars($__logoUrl, ENT_QUOTES) . '" alt="' . htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES) . '" style="max-height:36px;vertical-align:middle">';
+            echo '<img src="' . htmlspecialchars($__logoUrl, ENT_QUOTES) . '" alt="' . $__siteName . '" style="max-height:32px;width:auto;vertical-align:middle;border-radius:6px"> ' . $__siteName;
         } else {
-            echo '🚀 ' . htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
+            echo '🚀 ' . $__siteName;
         }
     ?></a>
     <nav class="nav-links">

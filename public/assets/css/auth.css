@@ -15,9 +15,13 @@ body.auth {
     color: var(--color-gray-900);
 }
 
-/* The white floating card the form lives in. */
+/* The floating card the form lives in. Uses the theme surface var so it
+   flips with light/dark mode (and picks up a tenant's brand surface) — the
+   hardcoded #fff fallback keeps it white when no theme vars are loaded.
+   Pre-fix this was a hardcoded #fff, which stayed white in dark mode while
+   the text (var(--text-default)) went light → near-unreadable. */
 .auth-card {
-    background: #fff;
+    background: var(--bg-panel, #fff);
     border-radius: var(--radius-lg);
     box-shadow: 0 4px 24px rgba(0,0,0,.08);
     padding: 2.5rem;
@@ -61,7 +65,7 @@ body.auth {
 
 /* OAuth button row + "or" divider. */
 .btn-oauth {
-    background: #fff;
+    background: var(--bg-panel, #fff);
     color: var(--color-gray-900);
     border: 1px solid var(--color-gray-300);
     margin-bottom: .5rem;

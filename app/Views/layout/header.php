@@ -477,12 +477,26 @@ $__hdrShowLogo   = setting('header_show_logo', true);
 $__hdrShowSearch = setting('header_show_search', true);
 $__hdrShowLogo   = $__hdrShowLogo   !== false && $__hdrShowLogo   !== '' && $__hdrShowLogo   !== 'false' && $__hdrShowLogo   !== '0';
 $__hdrShowSearch = $__hdrShowSearch !== false && $__hdrShowSearch !== '' && $__hdrShowSearch !== 'false' && $__hdrShowSearch !== '0';
+
+// Brand lockup for the sidebar + topbar logos. When a logo image is set it's
+// shown as an icon MARK next to the site name ("[mark] SiteName"); otherwise
+// the 🚀 glyph + name. Defined once, used in both nav variants below.
+$__renderBrand = static function (): string {
+    $name = htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
+    $rel  = (string) setting('builder.branding.logo_url', '');
+    if ($rel !== '') {
+        $url = (new \Core\Services\FileUploadService())->url($rel);
+        return '<img src="' . htmlspecialchars($url, ENT_QUOTES) . '" alt="' . $name
+             . '" style="max-height:26px;width:auto;vertical-align:middle;border-radius:5px"> ' . $name;
+    }
+    return '🚀 ' . $name;
+};
 ?>
 <div class="layout layout--<?= e($__layout_orient) ?>">
     <!-- Sidebar -->
     <aside class="sidebar">
         <?php if ($__hdrShowLogo): ?>
-        <a href="/dashboard" class="sidebar-logo">🚀 <?= e(setting('site_name', 'App')) ?></a>
+        <a href="/dashboard" class="sidebar-logo"><?= $__renderBrand() ?></a>
         <?php endif; ?>
         <nav class="sidebar-nav">
             <?php foreach (menu('header') as $menuItem): ?>
@@ -616,7 +630,7 @@ $__hdrShowSearch = $__hdrShowSearch !== false && $__hdrShowSearch !== '' && $__h
             <div class="topbar-left">
                 <?php if ($__layout_orient === 'topbar'): ?>
                     <?php if ($__hdrShowLogo): ?>
-                    <a href="/dashboard" class="topbar-logo">🚀 <?= e(setting('site_name', 'App')) ?></a>
+                    <a href="/dashboard" class="topbar-logo"><?= $__renderBrand() ?></a>
                     <?php endif; ?>
                     <nav class="topbar-nav" aria-label="Primary">
                         <?php foreach (menu('header') as $__tb_item): ?>

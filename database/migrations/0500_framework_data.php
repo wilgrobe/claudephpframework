@@ -334,9 +334,9 @@ return new class extends Migration {
             ['Main Navigation', 'Home',      '/',                 1, 'always',     null],
             ['Main Navigation', 'Groups',    '/groups',           3, 'logged_in',  null],
             ['Main Navigation', 'Admin',     '/admin/superadmin', 4, 'role',       'admin'],
-            ['Footer Links',    'FAQ',       '/faq',              1, 'always',     null],
-            ['Footer Links',    'Privacy',   '/privacy-policy',   2, 'always',     null],
-            ['Footer Links',    'Terms',     '/terms-of-service', 3, 'always',     null],
+            ['Footer Links',    'FAQ',       '/faq',     1, 'always',     null],
+            ['Footer Links',    'Privacy',   '/privacy', 2, 'always',     null],
+            ['Footer Links',    'Terms',     '/terms',   3, 'always',     null],
         ];
         $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO menu_items (menu_id, parent_id, label, url, sort_order, visibility, condition_value)
@@ -351,10 +351,14 @@ return new class extends Migration {
 
     private function seedDefaultPages(): void
     {
+        // NOTE: the full-content `terms` / `privacy` (+ `cookie-policy`) pages are
+        // seeded by seedPolicyPages(). We deliberately do NOT seed one-liner
+        // `terms-of-service` / `privacy-policy` stubs here anymore — they
+        // duplicated those policy pages under different slugs (4 pages where 2
+        // were intended) and the footer linked to the stubs. `about` stays
+        // because it has no full-content twin.
         $rows = [
-            ['Privacy Policy',   'privacy-policy',   '<h1>Privacy Policy</h1><p>Your privacy matters to us.</p>',                       'published', 1],
-            ['Terms of Service', 'terms-of-service', '<h1>Terms of Service</h1><p>By using this service you agree to these terms.</p>', 'published', 1],
-            ['About Us',         'about',            '<h1>About Us</h1><p>Welcome to our platform.</p>',                                'published', 1],
+            ['About Us', 'about', '<h1>About Us</h1><p>Welcome to our platform.</p>', 'published', 1],
         ];
         $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO pages (title, slug, `body`, `status`, is_public) VALUES (?, ?, ?, ?, ?)"
