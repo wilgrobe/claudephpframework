@@ -305,8 +305,10 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                 </div>
                 <div>
                     <label for="page-slug">URL slug *</label>
+                    <?php // On EDIT the slug is an established URL — mark it "touched" so editing
+                          // the title doesn't silently rewrite it (auto-slug stays on for new pages). ?>
                     <input type="text" id="page-slug" name="slug" class="form-control <?= !empty($errors['slug'])?'is-invalid':'' ?>"
-                           value="<?= e($page['slug'] ?? old('slug')) ?>" required>
+                           value="<?= e($page['slug'] ?? old('slug')) ?>" required <?= $page ? 'data-touched="1"' : '' ?>>
                 </div>
                 <div>
                     <label for="status">Status</label>
