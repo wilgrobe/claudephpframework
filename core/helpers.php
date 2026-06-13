@@ -21,6 +21,29 @@ if (!function_exists('config')) {
     }
 }
 
+if (!function_exists('site_base_url')) {
+    /**
+     * The canonical base URL for the SITE being served right now — scheme +
+     * host of the current request. On a multi-tenant install each tenant is
+     * served on its own host (subdomain or attached custom domain), so the
+     * request host is the correct canonical origin for RSS / sitemap / canonical
+     * / og:url emission — NOT the apex APP_URL (which would leak the apex host
+     * onto every tenant). Falls back to config('app.url') in CLI/cron contexts
+     * where there's no request host. Honors X-Forwarded-Proto behind a proxy.
+     */
+    function site_base_url(): string
+    {
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        if ($host !== '' && preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', $host)) {
+            $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || ((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+                || ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
+            return ($https ? 'https://' : 'http://') . $host;
+        }
+        return rtrim((string) config('app.url', ''), '/');
+    }
+}
+
 if (!function_exists('csrf_token')) {
     function csrf_token(): string
     {

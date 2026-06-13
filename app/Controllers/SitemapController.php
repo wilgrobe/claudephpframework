@@ -21,7 +21,8 @@ class SitemapController
 
     public function index(Request $request): Response
     {
-        $baseUrl = rtrim(config('app.url', ''), '/');
+        // Tenant-correct sitemap URLs — the host this sitemap is served on, not the apex APP_URL.
+        $baseUrl = function_exists('site_base_url') ? site_base_url() : rtrim((string) config('app.url', ''), '/');
         $urls    = [];
 
         // Load pages up front so we can use the guest home page's updated_at
