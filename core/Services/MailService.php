@@ -42,11 +42,24 @@ class MailService implements MailDriver
     {
         $env = IntegrationConfig::config('email');
 
+        $driver = $env['driver'] ?? 'smtp';
+
+        // SMTP2GO's SMTP endpoints (mail.smtp2go.com on 2525/587/8025) all
+        // require STARTTLS, and its integration descriptor exposes no
+        // encryption env var — so default the smtp2go driver to STARTTLS
+        // when nothing is configured. Without this the transport connects
+        // in plaintext and SMTP2GO rejects the send ("transport returned
+        // false (no exception)").
+        $encryption = (string) ($env['encryption'] ?? '');
+        if ($encryption === '' && $driver === 'smtp2go') {
+            $encryption = 'tls';
+        }
+
         return [
-            'driver'            => $env['driver']           ?? 'smtp',
+            'driver'            => $driver,
             'host'              => $env['host']             ?? 'localhost',
             'port'              => (int) ($env['port']      ?? 25),
-            'encryption'        => $env['encryption']       ?? '',
+            'encryption'        => $encryption,
             'username'          => $env['username']         ?? '',
             'password'          => $env['password']         ?? '',
             'from_address'      => $env['from_address']     ?? 'noreply@example.com',
@@ -194,7 +207,13 @@ class MailService implements MailDriver
         $to      = preg_replace('/[\r\n]+/', '',  $to);
         $subject = preg_replace('/[\r\n]+/', ' ', $subject);
 
-        if ($driver === 'smtp') {
+        // smtp2go is an SMTP provider (mail.smtp2go.com on 2525/587/8025),
+        // so route it through the SMTP sender like the generic 'smtp'
+        // driver — its host/port/credentials/encryption are already in
+        // $this->config. Without this it fell through to the bare
+        // mail()/sendmail path below, which isn't installed on most
+        // servers ("sendmail: not found").
+        if ($driver === 'smtp' || $driver === 'smtp2go') {
             return $this->sendSmtp($to, $subject, $html, $text);
         }
         if ($driver === 'log') {

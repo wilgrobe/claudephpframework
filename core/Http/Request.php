@@ -103,6 +103,20 @@ class Request
         return ($this->server['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest';
     }
 
+    /**
+     * True when the client wants a JSON response — the Accept header
+     * includes application/json, or the request is an XHR. Used by
+     * handlers that answer either JSON (fetch/XHR) or an HTML redirect.
+     */
+    public function wantsJson(): bool
+    {
+        $accept = (string) ($this->server['HTTP_ACCEPT'] ?? '');
+        if (str_contains($accept, 'application/json')) {
+            return true;
+        }
+        return $this->isAjax();
+    }
+
     public function ip(): string
     {
         // SECURITY: HTTP_X_FORWARDED_FOR is a client-supplied header and can be spoofed.

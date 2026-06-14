@@ -50,8 +50,22 @@ class SmsService implements SmsDriver
     private const RETRY_BACKOFF_MINUTES = [1, 5, 25];
     private const MAX_ATTEMPTS          = 3;
 
+    /**
+     * Default CTIA / A2P-10DLC opt-out notice appended to every outbound
+     * SMS. Carriers + TCR reviewers expect recurring messages to carry
+     * inline opt-out language. Override the wording (e.g. to add HELP) or
+     * disable it (empty value) via the SMS_OPT_OUT_NOTICE env var.
+     */
+    private const DEFAULT_OPT_OUT_NOTICE = 'Reply STOP to opt out';
+
     public function send(string $to, string $body): bool
     {
+        // Append the opt-out notice once, here at the single send entry
+        // point, so EVERY outbound SMS (2FA OTP today, anything else later)
+        // carries it — and so message_log stores exactly what was sent.
+        // resend() re-sends the stored body, so it never double-appends.
+        $body = $this->appendOptOutNotice($body);
+
         $logId = $this->db->insert('message_log', [
             'channel'      => 'sms',
             'recipient'    => $to,
@@ -62,6 +76,28 @@ class SmsService implements SmsDriver
         ]);
 
         return $this->attemptSend($logId, $to, $body);
+    }
+
+    /**
+     * Append the STOP opt-out notice to an outbound SMS body for CTIA /
+     * A2P-10DLC compliance. Configurable via SMS_OPT_OUT_NOTICE (set it
+     * to an empty string to disable; e.g. set it to
+     * "Reply STOP to opt out, HELP for help" to also surface HELP).
+     *
+     * Skipped when the body already contains "STOP" (case-insensitive)
+     * so a caller that supplies its own opt-out language isn't doubled.
+     * Providers (TextMagic, Twilio, etc.) also honor STOP/HELP at the
+     * platform level regardless; this is the human-visible footer.
+     */
+    private function appendOptOutNotice(string $body): string
+    {
+        $notice = array_key_exists('SMS_OPT_OUT_NOTICE', $_ENV)
+            ? trim((string) $_ENV['SMS_OPT_OUT_NOTICE'])
+            : self::DEFAULT_OPT_OUT_NOTICE;
+
+        if ($notice === '') return $body;                       // explicitly disabled
+        if (stripos($body, 'STOP') !== false) return $body;     // already has opt-out text
+        return rtrim($body) . ' ' . $notice;
     }
 
     /**

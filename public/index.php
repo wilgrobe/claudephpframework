@@ -156,7 +156,20 @@ if ($bcastProvider === 'pusher' || $bcastProvider === 'soketi') {
     $connectExtras = ' https://*.ably.io wss://*.ably.io';
 }
 $connectSrc = "'self'" . $connectExtras;
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com$scriptExtras; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src $fontSrc; img-src $imgSrc; frame-src $frameSrc; form-action $formAction; connect-src $connectSrc; base-uri 'self';");
+
+// An active CAPTCHA provider loads a script + iframe + makes XHRs to its
+// own host, so those must be whitelisted in script-src/frame-src/
+// connect-src — otherwise the widget can't render on the very auth
+// surfaces it protects (the widget silently fails → "complete the
+// challenge"). Opened only when a provider is actually configured.
+$captchaProvider = strtolower((string) ($_ENV['CAPTCHA_PROVIDER'] ?? 'none'));
+$captchaSrc = match ($captchaProvider) {
+    'turnstile' => ' https://challenges.cloudflare.com',
+    'hcaptcha'  => ' https://hcaptcha.com https://*.hcaptcha.com',
+    'recaptcha' => ' https://www.google.com https://www.gstatic.com',
+    default     => '',
+};
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com$scriptExtras$captchaSrc; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src $fontSrc; img-src $imgSrc; frame-src $frameSrc$captchaSrc; form-action $formAction; connect-src $connectSrc$captchaSrc; base-uri 'self';");
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 
