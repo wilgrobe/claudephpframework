@@ -50,7 +50,12 @@ class Response
         foreach ($this->headers as $name => $value) {
             header("$name: $value");
         }
-        echo $body;
+        // HTTP HEAD must return identical status + headers to GET but no
+        // body. The router maps HEAD onto the matching GET route, so the
+        // handler runs and sets headers/status; we just withhold the body.
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'HEAD') {
+            echo $body;
+        }
     }
 
     public function withFlash(string $type, string $message): self

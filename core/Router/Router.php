@@ -129,8 +129,18 @@ class Router
         $method = $request->method();
         $uri    = '/' . ltrim(parse_url($request->path(), PHP_URL_PATH) ?? '', '/');
 
+        // HEAD is semantically "GET without a body". No explicit HEAD
+        // routes are registered in this app, so fall back to the matching
+        // GET route — otherwise HEAD-based uptime monitors get a 404 on
+        // every GET-only route. The body is suppressed for HEAD requests
+        // in Response::send(), so headers + status match GET exactly.
+        $headFallsBackToGet = ($method === 'HEAD');
+
         foreach ($this->routes as $route) {
-            if ($route['method'] !== $method) continue;
+            if ($route['method'] !== $method
+                && !($headFallsBackToGet && $route['method'] === 'GET')) {
+                continue;
+            }
             $params = $this->matchRoute($route['path'], $uri);
             if ($params === null) continue;
 
