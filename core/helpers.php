@@ -402,8 +402,22 @@ if (!function_exists('asset')) {
         // Absolute URLs pass through untouched.
         if (preg_match('#^https?://#i', $path)) return $path;
         $base = trim((string) ($_ENV['ASSET_URL'] ?? ''));
-        $path = '/' . ltrim($path, '/');
-        return $base !== '' ? rtrim($base, '/') . $path : $path;
+        $rel  = '/' . ltrim($path, '/');
+        $url  = $base !== '' ? rtrim($base, '/') . $rel : $rel;
+
+        // Cache-bust by file mtime so a CDN/proxy (e.g. Cloudflare, which caches
+        // static assets for ~30d) serves new bytes the moment the file changes:
+        // the ?v= query is part of the cache key, so a deploy that touches the
+        // file yields a never-before-seen URL → fresh fetch from origin, no
+        // manual purge.
+        if (defined('BASE_PATH')) {
+            $clean = strtok($rel, '?');
+            $file  = BASE_PATH . '/public' . $clean;
+            if (is_file($file)) {
+                $url .= (str_contains($url, '?') ? '&' : '?') . 'v=' . (@filemtime($file) ?: 0);
+            }
+        }
+        return $url;
     }
 }
 
