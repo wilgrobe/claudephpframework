@@ -369,7 +369,9 @@ class Database
         $page    = max(1, $page);
         $offset  = ($page - 1) * $perPage;
         $total   = (int) $this->fetchColumn("SELECT COUNT(*) FROM ($sql) _count", $bindings);
-        $items   = $this->fetchAll("$sql LIMIT ? OFFSET ?", array_merge($bindings, [$perPage, $offset]));
+        // LIMIT/OFFSET inlined as ints (both already integers above) so the
+        // query() 1615→emulated-prepare fallback can't trip on a quoted LIMIT.
+        $items   = $this->fetchAll("$sql LIMIT " . (int) $perPage . " OFFSET " . (int) $offset, $bindings);
         return [
             'items'        => $items,
             'total'        => $total,
