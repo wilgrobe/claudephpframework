@@ -144,9 +144,24 @@ class Database
 
     public function query(string $sql, array $bindings = []): \PDOStatement
     {
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($bindings);
-        return $stmt;
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($bindings);
+            return $stmt;
+        } catch (\PDOException $e) {
+            // MySQL 1615 "Prepared statement needs to be re-prepared": the
+            // server evicted this table's definition from its cache (common
+            // under heavy many-table / multi-tenant churn with real
+            // server-side prepares, EMULATE_PREPARES=false), which stales the
+            // cached prepared statement. The statement did NOT execute, so a
+            // fresh prepare + execute is safe + idempotent — retry once.
+            if ((int) ($e->errorInfo[1] ?? 0) === 1615) {
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute($bindings);
+                return $stmt;
+            }
+            throw $e;
+        }
     }
 
     // ── Read Helpers ──────────────────────────────────────────────────────────
