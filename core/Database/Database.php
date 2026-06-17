@@ -150,15 +150,27 @@ class Database
             return $stmt;
         } catch (\PDOException $e) {
             // MySQL 1615 "Prepared statement needs to be re-prepared": the
-            // server evicted this table's definition from its cache (common
-            // under heavy many-table / multi-tenant churn with real
-            // server-side prepares, EMULATE_PREPARES=false), which stales the
-            // cached prepared statement. The statement did NOT execute, so a
-            // fresh prepare + execute is safe + idempotent — retry once.
+            // server evicted this table's definition from its cache, which
+            // stales the cached server-side prepared statement. On this
+            // multi-tenant install table_definition_cache (2000) is far
+            // smaller than the live table count (~8700 across 18 tenant DBs +
+            // central), so eviction is PERSISTENT — even a fresh re-prepare
+            // re-evicts instantly. So we can't just re-prepare; we fall back
+            // to an EMULATED prepare for this one statement, where the query
+            // is assembled client-side + sent as plain SQL with NO server-side
+            // statement, so 1615 cannot occur. The failed statement never
+            // executed, so this is safe. ROOT-CAUSE FIX (operator): raise
+            // MySQL table_definition_cache + table_open_cache above the table
+            // count on the DB host. Was intermittently breaking register/login.
             if ((int) ($e->errorInfo[1] ?? 0) === 1615) {
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute($bindings);
-                return $stmt;
+                $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+                try {
+                    $stmt = $this->pdo->prepare($sql);
+                    $stmt->execute($bindings);
+                    return $stmt;
+                } finally {
+                    $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+                }
             }
             throw $e;
         }
