@@ -42,6 +42,15 @@ final class SubmoduleRegistry
      */
     private array $enabledByProject = [];
 
+    /**
+     * Per-request cache of per-submodule settings, keyed by
+     * project_id → module_name → submodule_key → settings array.
+     * Populated lazily on first settings lookup.
+     *
+     * @var array<int, array<string, array<string, array>>>
+     */
+    private array $settingsByProject = [];
+
     /** Cache for the projects-table-existence probe (per request). */
     private ?bool $projectsTableExists = null;
 
@@ -158,6 +167,29 @@ final class SubmoduleRegistry
     }
 
     /**
+     * Static convenience for reading per-submodule settings from
+     * controller / service / view code — the read-side sibling of
+     * featureEnabled(). Returns [] when the registry isn't resolvable
+     * (apex / CLI / standalone) so callers can `?? $default` cleanly.
+     *
+     *   $cfg = SubmoduleRegistry::settingsFor('store', 'shipping-flat-rate');
+     *   $rate = (int) ($cfg['rate_cents'] ?? 500);
+     *
+     * @return array<string, mixed>
+     */
+    public static function settingsFor(string $moduleName, string $submoduleKey): array
+    {
+        try {
+            if (!class_exists(\Core\Container\Container::class)) return [];
+            $reg = \Core\Container\Container::global()->get(self::class);
+            if (!$reg instanceof self) return [];
+            return $reg->settingsForCurrent($moduleName, $submoduleKey);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
      * Enabled submodule keys for an explicit project + module.
      *
      * If the project has any `project_submodules` row at all (across
@@ -208,6 +240,66 @@ final class SubmoduleRegistry
         }
         $this->enabledByProject[$projectId] = $grouped;
         return $grouped[$moduleName] ?? [];
+    }
+
+    /**
+     * Phase 4.a — per-submodule settings for the current request's source
+     * project. Returns [] on apex/CLI (no runtime project) or when the
+     * submodule has no stored settings. Shape is whatever was persisted at
+     * wizard save time (validated then against the descriptor's
+     * settingsSchema), so callers can read config keys directly.
+     *
+     *   $sla = SubmoduleRegistry::settingsFor('helpdesk', 'sla-tracking');
+     *   $hours = (int) ($sla['first_response_hours'] ?? 24);
+     *
+     * @return array<string, mixed>
+     */
+    public function settingsForCurrent(string $moduleName, string $submoduleKey): array
+    {
+        $projectId = $this->resolveCurrentProjectId();
+        if ($projectId === null) return [];
+        return $this->settingsForProject($projectId, $moduleName, $submoduleKey);
+    }
+
+    /**
+     * Per-submodule settings for an explicit project. One query per project
+     * (cached), mirroring enabledForProject's pattern.
+     *
+     * @return array<string, mixed>
+     */
+    public function settingsForProject(int $projectId, string $moduleName, string $submoduleKey): array
+    {
+        if (!array_key_exists($projectId, $this->settingsByProject)) {
+            $this->settingsByProject[$projectId] = $this->loadSettings($projectId);
+        }
+        return $this->settingsByProject[$projectId][$moduleName][$submoduleKey] ?? [];
+    }
+
+    /** @return array<string, array<string, array>>  module => key => settings */
+    private function loadSettings(int $projectId): array
+    {
+        $cdb = $this->centralDb();
+        if ($cdb === null) return [];
+        try {
+            $stmt = $cdb->prepare(
+                "SELECT module_slug, submodule_key, settings FROM project_submodules
+                  WHERE project_id = ? AND settings IS NOT NULL"
+            );
+            $stmt->execute([$projectId]);
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable) {
+            // Missing table OR missing `settings` column (pre-migration
+            // standalone framework / fresh install) → no settings.
+            return [];
+        }
+        $out = [];
+        foreach ($rows as $r) {
+            $decoded = json_decode((string) ($r['settings'] ?? ''), true);
+            if (is_array($decoded) && $decoded !== []) {
+                $out[(string) $r['module_slug']][(string) $r['submodule_key']] = $decoded;
+            }
+        }
+        return $out;
     }
 
     /**
