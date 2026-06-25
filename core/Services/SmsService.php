@@ -279,7 +279,7 @@ class SmsService implements SmsDriver
     /**
      * TextMagic v2 — POST /api/v2/messages with X-TM-Username +
      * X-TM-Key headers, form-encoded body. Recommended provider for
-     * the wizard's free-trial flow (no credit card required for
+     * a host's free-trial flow (no credit card required for
      * trial signup) + best public affiliate program.
      */
     private function sendTextMagic(string $to, string $body): bool

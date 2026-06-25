@@ -11,48 +11,20 @@ namespace Core\Module;
  *      Populated at boot by ModuleRegistry calling each provider's
  *      `submodules()` method. Mirrors BlockRegistry's shape.
  *
- *   2. **Tenant-scoped lookup** — which submodules are enabled for the
- *      current request's project. Resolves the project_id from
- *      `Tenant::current()` via `sourceProjectId()`, reads central
- *      `project_submodules`, caches the entire (project → modules →
- *      keys) tree for the rest of the request.
+ *   2. **Runtime gating** — which submodules are enabled for the current
+ *      request. The framework does NOT decide this itself; it delegates to
+ *      the bound {@see SubmoduleGate}. The default {@see AllSubmodulesEnabled}
+ *      enables everything (correct for a standalone install), while a host
+ *      such as a multi-tenant host binds a gate that scopes by project/plan.
  *
- * Backwards-compat behavior (CONFIGURABLE — see decision log in the
- * docblock of `enabledForProject` below):
- *   - Apex requests (no tenant) → all submodules enabled (the wizard
- *     decides spend, runtime gating doesn't apply).
- *   - Standalone-framework deployments where `projects` table is
- *     absent → all submodules enabled (no wizard exists to drive the
- *     selection model).
- *   - Built tenant whose source project has zero `project_submodules`
- *     rows for a module → NONE enabled. Operator must run
- *     `php artisan submodules:backfill --enable-all --project=N`
- *     before deploying or the gated features turn off.
+ * Default behavior (no gate bound / gate returns null): every declared
+ * submodule is enabled, so a bare framework install never acts as if its
+ * features are switched off.
  */
 final class SubmoduleRegistry
 {
     /** @var array<string, SubmoduleDescriptor[]> moduleName → descriptors */
     private array $catalog = [];
-
-    /**
-     * Per-request cache of enabled submodule keys, keyed by
-     * (project_id, module_name). Populated lazily on first lookup.
-     *
-     * @var array<int, array<string, string[]>>
-     */
-    private array $enabledByProject = [];
-
-    /**
-     * Per-request cache of per-submodule settings, keyed by
-     * project_id → module_name → submodule_key → settings array.
-     * Populated lazily on first settings lookup.
-     *
-     * @var array<int, array<string, array<string, array>>>
-     */
-    private array $settingsByProject = [];
-
-    /** Cache for the projects-table-existence probe (per request). */
-    private ?bool $projectsTableExists = null;
 
     /**
      * Register every SubmoduleDescriptor a module contributes. Throws
@@ -104,22 +76,23 @@ final class SubmoduleRegistry
     }
 
     /**
-     * Enabled submodule keys for the current request's tenant + module.
-     * See class docblock for the apex / standalone-framework / no-rows
-     * fallback rules.
+     * Enabled submodule keys for the current request's module.
+     *
+     * Consults the bound {@see SubmoduleGate}. A null result means "no
+     * gating applies" → every declared submodule is enabled (the bare-
+     * framework default). A gating deployment returns its explicit set.
      *
      * @return string[]  submodule keys that are turned on
      */
     public function enabledForCurrent(string $moduleName): array
     {
-        $projectId = $this->resolveCurrentProjectId();
-        if ($projectId === null) {
-            // Apex / CLI / standalone framework — runtime gating doesn't
-            // apply. Return the full available catalog so the module
+        $enabled = $this->gate()->enabledFor($moduleName);
+        if ($enabled === null) {
+            // No gating — return the full available catalog so the module
             // doesn't act as if everything is disabled.
             return array_map(fn($d) => $d->key, $this->availableForModule($moduleName));
         }
-        return $this->enabledForProject($projectId, $moduleName);
+        return $enabled;
     }
 
     public function isEnabledForCurrent(string $moduleName, string $submoduleKey): bool
@@ -170,7 +143,7 @@ final class SubmoduleRegistry
      * Static convenience for reading per-submodule settings from
      * controller / service / view code — the read-side sibling of
      * featureEnabled(). Returns [] when the registry isn't resolvable
-     * (apex / CLI / standalone) so callers can `?? $default` cleanly.
+     * (no gate / CLI / standalone) so callers can `?? $default` cleanly.
      *
      *   $cfg = SubmoduleRegistry::settingsFor('store', 'shipping-flat-rate');
      *   $rate = (int) ($cfg['rate_cents'] ?? 500);
@@ -190,64 +163,10 @@ final class SubmoduleRegistry
     }
 
     /**
-     * Enabled submodule keys for an explicit project + module.
-     *
-     * If the project has any `project_submodules` row at all (across
-     * any module), we trust the table — modules with zero rows are
-     * intentionally "nothing enabled" because the wizard's
-     * uncheck-everything case produces exactly that state.
-     *
-     * If the project has NO rows at all (legacy build pre-dating
-     * submodule UX), we also return NONE — operator must run
-     * `submodules:backfill --enable-all --project=N` to seed
-     * defaults. Documented in the class docblock + the backfill
-     * command's `--help` output.
-     *
-     * @return string[]
-     */
-    public function enabledForProject(int $projectId, string $moduleName): array
-    {
-        if (isset($this->enabledByProject[$projectId])) {
-            return $this->enabledByProject[$projectId][$moduleName] ?? [];
-        }
-
-        $cdb = $this->centralDb();
-        if ($cdb === null) {
-            // Central DB unreachable from this context (early CLI?).
-            // Fall through to "all enabled" so we don't accidentally
-            // disable everything because of a transient bootstrap
-            // ordering issue.
-            return array_map(fn($d) => $d->key, $this->availableForModule($moduleName));
-        }
-
-        try {
-            $stmt = $cdb->prepare(
-                "SELECT module_slug, submodule_key FROM project_submodules WHERE project_id = ?"
-            );
-            $stmt->execute([$projectId]);
-            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\Throwable $e) {
-            // Missing project_submodules table → standalone framework
-            // or fresh install pre-migrate. Default-on so we don't
-            // crash. Cache the lookup so we don't retry the same query.
-            $this->enabledByProject[$projectId] = [];
-            return array_map(fn($d) => $d->key, $this->availableForModule($moduleName));
-        }
-
-        $grouped = [];
-        foreach ($rows as $r) {
-            $grouped[(string) $r['module_slug']][] = (string) $r['submodule_key'];
-        }
-        $this->enabledByProject[$projectId] = $grouped;
-        return $grouped[$moduleName] ?? [];
-    }
-
-    /**
-     * Phase 4.a — per-submodule settings for the current request's source
-     * project. Returns [] on apex/CLI (no runtime project) or when the
-     * submodule has no stored settings. Shape is whatever was persisted at
-     * wizard save time (validated then against the descriptor's
-     * settingsSchema), so callers can read config keys directly.
+     * Per-submodule settings for the current request, delegated to the bound
+     * {@see SubmoduleGate}. Returns [] when no gating applies or the submodule
+     * has no stored settings. Shape is whatever the gate persisted, so callers
+     * can read config keys directly.
      *
      *   $sla = SubmoduleRegistry::settingsFor('helpdesk', 'sla-tracking');
      *   $hours = (int) ($sla['first_response_hours'] ?? 24);
@@ -256,97 +175,27 @@ final class SubmoduleRegistry
      */
     public function settingsForCurrent(string $moduleName, string $submoduleKey): array
     {
-        $projectId = $this->resolveCurrentProjectId();
-        if ($projectId === null) return [];
-        return $this->settingsForProject($projectId, $moduleName, $submoduleKey);
+        return $this->gate()->settingsFor($moduleName, $submoduleKey);
     }
 
     /**
-     * Per-submodule settings for an explicit project. One query per project
-     * (cached), mirroring enabledForProject's pattern.
-     *
-     * @return array<string, mixed>
+     * Resolve the bound {@see SubmoduleGate}. Falls back to the no-gating
+     * {@see AllSubmodulesEnabled} default when the container/binding isn't
+     * available (early CLI, tests, standalone install).
      */
-    public function settingsForProject(int $projectId, string $moduleName, string $submoduleKey): array
+    private function gate(): SubmoduleGate
     {
-        if (!array_key_exists($projectId, $this->settingsByProject)) {
-            $this->settingsByProject[$projectId] = $this->loadSettings($projectId);
-        }
-        return $this->settingsByProject[$projectId][$moduleName][$submoduleKey] ?? [];
-    }
-
-    /** @return array<string, array<string, array>>  module => key => settings */
-    private function loadSettings(int $projectId): array
-    {
-        $cdb = $this->centralDb();
-        if ($cdb === null) return [];
         try {
-            $stmt = $cdb->prepare(
-                "SELECT module_slug, submodule_key, settings FROM project_submodules
-                  WHERE project_id = ? AND settings IS NOT NULL"
-            );
-            $stmt->execute([$projectId]);
-            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\Throwable) {
-            // Missing table OR missing `settings` column (pre-migration
-            // standalone framework / fresh install) → no settings.
-            return [];
-        }
-        $out = [];
-        foreach ($rows as $r) {
-            $decoded = json_decode((string) ($r['settings'] ?? ''), true);
-            if (is_array($decoded) && $decoded !== []) {
-                $out[(string) $r['module_slug']][(string) $r['submodule_key']] = $decoded;
+            if (class_exists(\Core\Container\Container::class)) {
+                $c = \Core\Container\Container::global();
+                if ($c !== null && $c->has(SubmoduleGate::class)) {
+                    $g = $c->get(SubmoduleGate::class);
+                    if ($g instanceof SubmoduleGate) return $g;
+                }
             }
-        }
-        return $out;
-    }
-
-    /**
-     * Find the current request's source project_id. Walks
-     * `Tenant::current()` → reverse-look up via
-     * `projects WHERE tenant_id = ?`. Returns null on the apex,
-     * the CLI, or when the central `projects` table doesn't exist
-     * (standalone framework).
-     */
-    private function resolveCurrentProjectId(): ?int
-    {
-        if (!class_exists(\App\Tenancy\Tenant::class)) return null;
-        $tenant = \App\Tenancy\Tenant::current();
-        if ($tenant === null) return null;
-
-        if (!$this->projectsTableExists()) return null;
-
-        // Cached on the Tenant via sourceProjectId — see Tenant.php.
-        if (method_exists($tenant, 'sourceProjectId')) {
-            return $tenant->sourceProjectId();
-        }
-        return null;
-    }
-
-    private function projectsTableExists(): bool
-    {
-        if ($this->projectsTableExists !== null) return $this->projectsTableExists;
-        $cdb = $this->centralDb();
-        if ($cdb === null) return $this->projectsTableExists = false;
-        try {
-            $exists = (int) $cdb->query(
-                "SELECT COUNT(*) FROM information_schema.tables
-                  WHERE table_schema = DATABASE() AND table_name = 'projects'"
-            )->fetchColumn();
-            return $this->projectsTableExists = $exists > 0;
         } catch (\Throwable) {
-            return $this->projectsTableExists = false;
+            // fall through to the no-gating default
         }
-    }
-
-    private function centralDb(): ?\PDO
-    {
-        if (!class_exists(\App\Database\CentralDatabase::class)) return null;
-        try {
-            return \App\Database\CentralDatabase::get();
-        } catch (\Throwable) {
-            return null;
-        }
+        return new AllSubmodulesEnabled();
     }
 }

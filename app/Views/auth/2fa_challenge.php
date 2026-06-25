@@ -80,7 +80,7 @@
         text-align: center; margin-top: .5rem;
     }
     </style>
-    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — coral apex / tenant brand + light-dark */ ?>
+    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — light-dark */ ?>
 </head>
 <body class="auth">
 

@@ -7,6 +7,12 @@ return [
     'url'      => $_ENV['APP_URL']  ?? 'http://localhost',
     'key'      => $_ENV['APP_KEY']  ?? 'change-me-32-characters-minimum!!',
     'timezone' => 'UTC',
+
+    // Early bootstrappers run by core/bootstrap.php BEFORE the Database
+    // singleton is created (web requests only, not CLI). Each entry is a
+    // callable, or a class name exposing a static resolve(). Used by
+    // multi-tenant hosts to resolve the per-request database. Empty by default.
+    'bootstrappers' => [],
     'session'  => [
         'lifetime' => 120,
         // NOTE: renamed from 'phpfw_session' to 'cphpfw_session' during rebrand.

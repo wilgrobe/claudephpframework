@@ -88,7 +88,7 @@ class MenuService
 
     /**
      * Phase 43.157 — get a fully nested, visibility-filtered menu tree by
-     * handle (Phase 43.152 wizard-side identifier; mirrors getMenu but
+     * handle (a host-side identifier; mirrors getMenu but
      * looks up via the menus.handle column). Used by the siteblocks.menu
      * block to render the menu picked in its settings.
      *
@@ -342,7 +342,7 @@ class MenuService
 
             // First pass: insert everything top-level (parent_id null) so
             // children-first references can resolve. The payload order
-            // matters - admins arrange the tree and the builder serialises
+            // matters - admins arrange the tree and the menu editor serialises
             // it depth-first, parents before children.
             foreach ($items as $item) {
                 $clientId = (string) ($item['client_id'] ?? '');

@@ -122,7 +122,7 @@ class NotificationsController
 
         // Group TYPES by their declared `group` for the view's grouping.
         $byGroup = [];
-        foreach (NotificationService::TYPES as $type => $meta) {
+        foreach (NotificationService::types() as $type => $meta) {
             $group = (string) ($meta['group'] ?? 'Other');
             $byGroup[$group][] = [
                 'type'     => $type,

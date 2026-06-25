@@ -4,10 +4,9 @@ namespace Core\Theme;
 
 /**
  * The framework's theme-preset catalogue. Ships the BASIC (free) presets that
- * every install gets. Premium presets are contributed by the builder layer
- * (App\Theme\PresetLibrary::premiumPresets()) and merged in here via a
- * class_exists soft-dep — a framework-only install sees just the basics; a
- * builder install (or one that's paid for premium) sees all of them.
+ * every install gets. Additional presets are contributed by a host through the
+ * {@see ThemeExtension} extension point and merged in here — a framework-only
+ * install sees just the basics; a host that adds presets sees all of them.
  *
  * Each preset declares a small CORE map of { token_key => value } (its
  * `tokens` + per-mode `tokens_dark`). PresetExpander turns that core into the
@@ -23,7 +22,7 @@ namespace Core\Theme;
 final class PresetLibrary
 {
     /**
-     * Every preset, basics + (when present) the builder's premium set.
+     * Every preset, basics + (when present) a host's extra preset set.
      *
      * @return array<string, array{label:string, description:string, accent:string, tier:string, tokens:array<string,string>, tokens_dark?:array<string,string>}>
      */
@@ -31,16 +30,18 @@ final class PresetLibrary
     {
         $presets = self::basics();
 
-        // Soft-dep: the builder ships the premium catalogue. Merge it in when
-        // present so paid installs see all presets; framework-only installs
-        // stay on the basics.
-        if (class_exists(\App\Theme\PresetLibrary::class)
-            && method_exists(\App\Theme\PresetLibrary::class, 'premiumPresets')) {
-            try {
-                $presets += \App\Theme\PresetLibrary::premiumPresets();
-            } catch (\Throwable $e) {
-                error_log('[PresetLibrary] premium merge failed: ' . $e->getMessage());
+        // Theme-extension hook: a host can contribute extra presets. None on a
+        // bare framework install (the default NullThemeExtension returns []).
+        try {
+            if (class_exists(\Core\Container\Container::class)) {
+                $c = \Core\Container\Container::global();
+                if ($c->has(\Core\Theme\ThemeExtension::class)) {
+                    $extra = $c->get(\Core\Theme\ThemeExtension::class)->extraPresets();
+                    if (is_array($extra)) $presets += $extra;
+                }
             }
+        } catch (\Throwable $e) {
+            error_log('[PresetLibrary] theme-extension presets failed: ' . $e->getMessage());
         }
 
         return $presets;

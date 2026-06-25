@@ -464,17 +464,12 @@ class ModuleRegistry
             // cascades into 'disabled_dependency' the same way an
             // admin-disable would. Core modules bypass the gate.
             //
-            // Phase 31 made `App\Services\TenantEntitlement::isEntitled`
-            // unconditionally return true under the metered billing
-            // model — so this branch is effectively dead today. We
-            // keep the structure (the registry's interface stays
-            // stable + a future per-tenant DENY override would
-            // resurrect the path immediately) but operators should
-            // not see new `disabled_unlicensed` rows materialize in
-            // module_status under the current EntitlementCheck binding.
-            // The auto-correction in persistAndNotify() flips any
-            // legacy 'disabled_unlicensed' rows back to 'active' on
-            // the next request that touches the registry.
+            // The default AlwaysGrantEntitlement returns true for every
+            // module, so this branch is inert on a bare install — it only
+            // marks modules `disabled_unlicensed` when a host binds an
+            // EntitlementCheck that denies. The auto-correction in
+            // persistAndNotify() flips any stale 'disabled_unlicensed' rows
+            // back to 'active' on the next request that touches the registry.
             if ($provider->tier() === 'premium' && !$entitlement->isEntitled($name)) {
                 $this->unlicensed[$name] = [
                     'provider' => $provider,
@@ -506,7 +501,7 @@ class ModuleRegistry
      * The method is structured to never raise — a missing or broken
      * binding silently degrades to "grant everything", which is the
      * right default for self-hosted installs but is something the
-     * future hosted builder will want to override explicitly.
+     * a host may want to override explicitly.
      */
     private function resolveEntitlementCheck(): EntitlementCheck
     {
@@ -995,7 +990,7 @@ class ModuleRegistry
 
     /**
      * Tier of a discovered module, or null if unknown. Convenience for
-     * /admin/modules and the future builder.
+     * /admin/modules and a host UI.
      */
     public function tier(string $name): ?string
     {

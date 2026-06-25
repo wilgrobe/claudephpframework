@@ -32,12 +32,11 @@ try {
 }
 
 $__renderBody = function () use ($page, $user, $__composer) {
-    // Pre-rendered section-based layout (webappbuilder Phase 4). When a
-    // page's section composer has saved output to pages.rendered_html,
-    // serve that verbatim — the renderer already produced safe HTML and
-    // the embedded styles. The pages.rendered_html column is added by
-    // webappbuilder; the ?? null coalesce keeps this safe on framework
-    // installs that don't have the column yet.
+    // Pre-rendered section-based layout. When a page's section composer has
+    // saved output to pages.rendered_html, serve that verbatim — the renderer
+    // already produced safe HTML and the embedded styles. The rendered_html
+    // column is optional; the ?? null coalesce keeps this safe on installs
+    // that don't have the column yet.
     $__rendered = $page['rendered_html'] ?? null;
     if (is_string($__rendered) && $__rendered !== '') {
         echo $__rendered;
@@ -132,15 +131,6 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php
-    // Tenant-uploaded favicon (webappbuilder Phase 5). Falls through silently
-    // when not set — browsers retain whatever default they were using.
-    $__faviconRel = setting('builder.branding.favicon_url', '');
-    if ($__faviconRel !== '') {
-        $__faviconUrl = (new \Core\Services\FileUploadService())->url($__faviconRel);
-        echo '<link rel="icon" href="' . htmlspecialchars($__faviconUrl, ENT_QUOTES) . '">';
-    }
-    ?>
-    <?php
     // Canonical is the root for the page that's set as the guest home, and
     // /{slug} for everything else. Prevents the home page from being indexed
     // under two distinct URLs.
@@ -161,14 +151,12 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     // would have nothing to bind to and the theme system would be
     // admin-chrome-only. The output also covers light + dark mode.
     echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle();
-    // Tenant custom font + custom CSS (webappbuilder Phase 5e/5f).
-    // No-op on framework installs that don't ship the App\Theme\BrandingRenderer
-    // class, so this hook stays passive for vanilla framework users.
-    if (class_exists(\App\Theme\BrandingRenderer::class)) {
-        echo \App\Theme\BrandingRenderer::renderHead();
-    }
+    // Per-site branding for <head> (favicon, custom font, custom CSS) via the
+    // BrandingProvider extension point. Placed after renderOverrideStyle so
+    // custom CSS wins on cascade; framework default reads neutral branding.*.
+    echo branding_head();
     // Phase 43.32 — per-page font overrides win over the site-wide
-    // BrandingRenderer output via cascade order (this <style> comes
+    // branding-provider output via cascade order (this <style> comes
     // after it). Each slot has an optional URL (loaded via <link>)
     // and a family name (overwrites the matching --font-family-* var
     // on :root). NULL/empty slots leave the inherited site-level
@@ -200,7 +188,7 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
         if (!empty($__rootVars)) echo '<style>:root{' . implode('', $__rootVars) . '}</style>';
     }
     // Phase 43.164 — per-page color overrides + custom CSS. Emitted
-    // AFTER ThemeService + BrandingRenderer so the page-scoped values
+    // AFTER ThemeService + branding output so the page-scoped values
     // win via cascade order. Token → CSS-var map matches the wizard
     // step 7 overrides modal's allowlist. Column-guarded for tenants
     // pre-43.164.
@@ -426,7 +414,7 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
         // Brand lockup: the logo image is an icon MARK shown next to the site
         // name (so it reads "[mark] SiteName"). Falls back to the 🚀 glyph +
         // name when no logo is set.
-        $__logoRel  = setting('builder.branding.logo_url', '');
+        $__logoRel  = setting('branding.logo_url', '');
         $__siteName = htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
         if ($__logoRel !== '') {
             $__logoUrl = (new \Core\Services\FileUploadService())->url($__logoRel);

@@ -10,18 +10,10 @@
          Mark Read actions fail on the dashboard and notifications index. -->
     <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
     <?php
-    // Tenant-uploaded favicon (webappbuilder Phase 5). Same logic as
-    // public/page.php — emit the link when the setting is present so
-    // both authed and guest views show the same icon.
-    $__faviconRel = setting('builder.branding.favicon_url', '');
-    if ($__faviconRel !== '') {
-        $__faviconUrl = (new \Core\Services\FileUploadService())->url($__faviconRel);
-        echo '<link rel="icon" href="' . htmlspecialchars($__faviconUrl, ENT_QUOTES) . '">';
-    }
-    // Tenant custom font + custom CSS (webappbuilder Phase 5e/5f).
-    if (class_exists(\App\Theme\BrandingRenderer::class)) {
-        echo \App\Theme\BrandingRenderer::renderHead();
-    }
+    // Per-site branding for <head> (favicon, custom font, custom CSS).
+    // Resolves the BrandingProvider extension point — framework default reads
+    // neutral branding.* settings; a host can bind a richer provider.
+    echo branding_head();
     ?>
     <?= \Core\SEO\SeoManager::metaTags([
         'title'       => ($seoTitle ?? $pageTitle ?? 'Dashboard') . ' — ' . setting('site_name', 'App'),
@@ -483,7 +475,7 @@ $__hdrShowSearch = $__hdrShowSearch !== false && $__hdrShowSearch !== '' && $__h
 // the 🚀 glyph + name. Defined once, used in both nav variants below.
 $__renderBrand = static function (): string {
     $name = htmlspecialchars((string) setting('site_name', 'App'), ENT_QUOTES);
-    $rel  = (string) setting('builder.branding.logo_url', '');
+    $rel  = (string) setting('branding.logo_url', '');
     if ($rel !== '') {
         $url = (new \Core\Services\FileUploadService())->url($rel);
         return '<img src="' . htmlspecialchars($url, ENT_QUOTES) . '" alt="' . $name

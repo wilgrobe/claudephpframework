@@ -27,7 +27,7 @@ if (!function_exists('site_base_url')) {
      * host of the current request. On a multi-tenant install each tenant is
      * served on its own host (subdomain or attached custom domain), so the
      * request host is the correct canonical origin for RSS / sitemap / canonical
-     * / og:url emission — NOT the apex APP_URL (which would leak the apex host
+     * / og:url emission — NOT the global APP_URL (which would leak the wrong host
      * onto every tenant). Falls back to config('app.url') in CLI/cron contexts
      * where there's no request host. Honors X-Forwarded-Proto behind a proxy.
      */
@@ -131,6 +131,31 @@ if (!function_exists('app')) {
         $c = \Core\Container\Container::global();
         if ($abstract === null) return $c;
         return $c->make($abstract, $parameters);
+    }
+}
+
+if (!function_exists('branding_head')) {
+    /**
+     * Per-site branding HTML for the document <head> (favicon, custom font,
+     * custom CSS, …). Resolves the bound {@see \Core\Theme\BrandingProvider}
+     * extension point; the framework default reads neutral `branding.*`
+     * settings, and a host can bind a richer provider.
+     *
+     *   <?= branding_head() ?>
+     *
+     * Returns '' when nothing is bound or there's nothing to emit.
+     */
+    function branding_head(): string
+    {
+        try {
+            if (!class_exists(\Core\Container\Container::class)) return '';
+            $c = \Core\Container\Container::global();
+            if (!$c->has(\Core\Theme\BrandingProvider::class)) return '';
+            $p = $c->get(\Core\Theme\BrandingProvider::class);
+            return $p instanceof \Core\Theme\BrandingProvider ? $p->renderHead() : '';
+        } catch (\Throwable) {
+            return '';
+        }
     }
 }
 

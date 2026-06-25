@@ -341,13 +341,10 @@ class View
         $namespace = null;
         if (str_contains($view, '::')) {
             [$namespace, $view] = explode('::', $view, 2);
-            // Phase 43.202b H5 — allow hyphens. The builder repo's
-            // Phase 43.51 shipped this relaxation in its tracked copy
-            // because 9+ premium modules ship with hyphenated names
-            // (ai-moderation, kyc-aml, chat-live, etc.) and the
-            // framework throws "Invalid view namespace" the moment
-            // they try to register a view ns. Mirroring upstream so
-            // framework-standalone installs of those modules boot.
+            // Allow hyphens in view namespaces: some modules ship with
+            // hyphenated names (e.g. ai-moderation, kyc-aml, chat-live), and
+            // without this the framework throws "Invalid view namespace" the
+            // moment they register a view ns.
             if (!preg_match('/^[a-zA-Z0-9_-]+$/', $namespace)) {
                 throw new \InvalidArgumentException("Invalid view namespace: [$namespace]");
             }

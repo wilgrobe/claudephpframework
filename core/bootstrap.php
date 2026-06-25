@@ -34,23 +34,27 @@ Container::setGlobal($container);
 $container->singleton(\Core\Router\Router::class);
 $container->singleton(\Core\Request::class, fn() => \Core\Request::capture());
 
-// ── Tenant resolution hook ───────────────────────────────────────────────
-// Multi-tenant deployments can hook in here to identify the tenant for the
-// current request BEFORE the Database singleton is created, so the
-// framework's getInstance() picks up the tenant's database directly via
-// $_ENV (the resolver mutates DB_DATABASE / DB_HOST / etc. for the resolved
-// tenant; bare framework installs that don't ship the resolver class load
-// exactly as before).
-//
-// Convention: a class at App\Tenancy\TenantResolver with a static resolve()
-// method. CLI invocations (artisan) skip the hook because HTTP_HOST isn't
-// meaningful there — CLI flows that need a specific tenant connection
-// (e.g. tenant:create's migration run) call Database::resetInstance() and
-// override $_ENV themselves.
-if (PHP_SAPI !== 'cli'
-    && class_exists(\App\Tenancy\TenantResolver::class)
-    && method_exists(\App\Tenancy\TenantResolver::class, 'resolve')) {
-    \App\Tenancy\TenantResolver::resolve();
+// ── Early bootstrappers (pre-Database hook) ──────────────────────────────
+// A deployment that must run code BEFORE the Database singleton is created
+// registers a bootstrapper in config('app.bootstrappers') — a list of
+// callables, or class names exposing a static resolve(). The canonical use is
+// multi-tenant hosting: a bootstrapper identifies the tenant for the current
+// request and mutates DB_DATABASE / DB_HOST / etc. in $_ENV so the framework's
+// getInstance() opens the right database. Skipped on CLI (artisan), where
+// HTTP_HOST isn't meaningful — CLI flows that need a specific connection call
+// Database::resetInstance() and override $_ENV themselves. The bare framework
+// ships an empty list, so this is a no-op out of the box.
+if (PHP_SAPI !== 'cli') {
+    foreach ((array) config('app.bootstrappers', []) as $__bootstrapper) {
+        if (is_string($__bootstrapper)
+            && class_exists($__bootstrapper)
+            && method_exists($__bootstrapper, 'resolve')) {
+            $__bootstrapper::resolve();
+        } elseif (is_callable($__bootstrapper)) {
+            $__bootstrapper();
+        }
+    }
+    unset($__bootstrapper);
 }
 
 // ── Existing singleton-style services: bind their instances ──────────────
@@ -111,6 +115,21 @@ if (file_exists($serviceBindings)) {
     (require $serviceBindings)($container);
 }
 
+// ── Extension-point defaults ──────────────────────────────────────────────
+// Framework-shipped contracts each have a no-op / framework-native default. A
+// host (e.g. a multi-tenant host) overrides any of them in config/services.php
+// (loaded just above); the !has() guard means we only fill what wasn't bound.
+foreach ([
+    \Core\Module\SubmoduleGate::class   => fn() => new \Core\Module\AllSubmodulesEnabled(),
+    \Core\Theme\BrandingProvider::class => fn() => new \Core\Theme\DefaultBrandingProvider(),
+    \Core\Theme\ThemeExtension::class   => fn() => new \Core\Theme\NullThemeExtension(),
+] as $__contract => $__default) {
+    if (interface_exists($__contract) && !$container->has($__contract)) {
+        $container->singleton($__contract, $__default);
+    }
+}
+unset($__contract, $__default);
+
 // ── Modules ───────────────────────────────────────────────────────────────
 // Registry scans every root in config('modules.paths') for module.php
 // providers and registers them. Safe to call even when no modules exist
@@ -124,11 +143,11 @@ if (file_exists($serviceBindings)) {
 //
 // Premium modules pass through ModuleProvider::tier() + the
 // EntitlementCheck contract during dependency resolution, so that the
-// hosted builder can gate them per-tenant without changing discovery.
+// host can gate them per license without changing discovery.
 if (class_exists(\Core\Module\ModuleRegistry::class)) {
     $container->singleton(\Core\Module\ModuleRegistry::class);
 
-    // Default the EntitlementCheck binding to AlwaysGrant. The builder
+    // Default the EntitlementCheck binding to AlwaysGrant. A host
     // (or any custom installation) can override this in
     // config/services.php to plug in a real licence check.
     if (interface_exists(\Core\Module\EntitlementCheck::class)
@@ -158,7 +177,7 @@ if (class_exists(\Core\Module\BlockRegistry::class)
 // SubmoduleRegistry — same lazy aggregation pattern as BlockRegistry, but
 // for the (project-scoped) feature toggles declared via ModuleProvider::
 // submodules(). Modules consult this in their route registration / boot
-// methods to gate per-submodule features based on the wizard-time pick.
+// methods to gate per-submodule features based on the build-time pick.
 if (class_exists(\Core\Module\SubmoduleRegistry::class)
     && class_exists(\Core\Module\ModuleRegistry::class)) {
     $container->singleton(\Core\Module\SubmoduleRegistry::class, function ($c) {

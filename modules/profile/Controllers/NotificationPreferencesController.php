@@ -33,7 +33,7 @@ class NotificationPreferencesController
     public function show(Request $request): Response
     {
         return Response::view('profile::notification_preferences', [
-            'types' => NotificationService::TYPES,
+            'types' => NotificationService::types(),
             'prefs' => $this->notif->preferencesFor((int) $this->auth->id()),
             'user'  => $this->auth->user(),
         ]);

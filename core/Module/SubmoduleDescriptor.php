@@ -17,7 +17,7 @@ final class SubmoduleDescriptor
 {
     /**
      * Acceptable $settingsSchema field types — the same set BlockDescriptor
-     * uses, so the wizard's submodule-settings panel can reuse the block
+     * uses, so a host's submodule-settings panel can reuse the block
      * field renderer. Schema-less submodules render no settings UI (the
      * common case — most submodules are pure enable/disable).
      */
@@ -25,9 +25,9 @@ final class SubmoduleDescriptor
 
     /**
      * @param string   $key            module-scoped, kebab-case (e.g. 'cart', 'gift-cards')
-     * @param string   $label          human-readable name shown in the wizard
+     * @param string   $label          human-readable name shown in a host build UI
      * @param string   $description    one-line explanation of what the submodule does
-     * @param int      $costTokens     per-pick token cost; default 150 matches wizard.step4.per_submodule
+     * @param int      $costTokens     per-pick cost a host may surface; default 150
      * @param string[] $requires       other submodule keys (intra-module) that must be enabled too
      * @param array    $settingsSchema per-submodule config fields, indexed array of
      *                                 {key,label,type,default,placeholder,help,options,item_schema};

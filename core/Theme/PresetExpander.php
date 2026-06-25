@@ -24,9 +24,8 @@ namespace Core\Theme;
  * track the Brand colour (primary, hero, the ordinal tints) still get values,
  * but a configured Brand colour overrides them at runtime.
  *
- * Pure functions, no side effects. Self-contained (no dependency on the
- * builder's App\Theme\BrandColorDeriver) so the framework can expand the basic
- * presets on its own.
+ * Pure functions, no side effects. Self-contained (no dependency on a host's
+ * brand-color deriver) so the framework can expand the basic presets on its own.
  */
 final class PresetExpander
 {
@@ -154,7 +153,7 @@ final class PresetExpander
         return array_merge($derived, $core);
     }
 
-    /** Tertiary/quaternary/quinary bg+grad tints (mirrors BrandColorDeriver). */
+    /** Tertiary/quaternary/quinary bg+grad tints (mirrors the host brand deriver). */
     private static function ordinalTints(string $primary, string $secondary, bool $dark): array
     {
         [$hb, $sb, ] = self::rgbToHsl(...self::hexToRgb($primary));

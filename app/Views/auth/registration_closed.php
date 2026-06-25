@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="<?= e(asset('/assets/css/app.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('/assets/css/admin.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('/assets/css/auth.css')) ?>">
-    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — coral apex / tenant brand + light-dark */ ?>
+    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — light-dark */ ?>
 </head>
 <body class="auth">
 <div class="auth-card" style="text-align:center">

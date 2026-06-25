@@ -72,12 +72,24 @@ final class NotificationServiceTest extends TestCase
         $this->db = new FakeNotifDb();
         $this->mockDatabase($this->db);
         $this->svc = new NotificationService();
+
+        // The framework ships no built-in types; modules register their own.
+        // Register a representative pair so the catalog/preferences tests have
+        // something to assert against (registration is idempotent).
+        NotificationService::registerType('social.followed', [
+            'label' => 'Someone follows you', 'group' => 'Social',
+            'channels' => ['in_app', 'email'],
+        ]);
+        NotificationService::registerType('comment.reply', [
+            'label' => 'Someone replies to your comment', 'group' => 'Social',
+            'channels' => ['in_app', 'email'],
+        ]);
     }
 
     public function test_types_catalog_has_expected_shape(): void
     {
-        $this->assertNotEmpty(NotificationService::TYPES);
-        foreach (NotificationService::TYPES as $key => $meta) {
+        $this->assertNotEmpty(NotificationService::types());
+        foreach (NotificationService::types() as $key => $meta) {
             $this->assertIsString($key);
             $this->assertArrayHasKey('label',    $meta);
             $this->assertArrayHasKey('group',    $meta);
@@ -141,7 +153,7 @@ final class NotificationServiceTest extends TestCase
         // Phase 43.197c M3 — setPreferences now issues ONE batched multi-row
         // INSERT covering every (type, channel) in TYPES (was one query each).
         $pairs = 0;
-        foreach (NotificationService::TYPES as $meta) {
+        foreach (NotificationService::types() as $meta) {
             $pairs += count($meta['channels']);
         }
         // Exactly one captured query — the batched upsert.

@@ -334,7 +334,7 @@ abstract class ModuleProvider
      * `Modules\Premium\...` namespace reference. The other direction is
      * fine; premium modules may freely depend on core.
      *
-     * The future web-app builder uses this hook plus an EntitlementCheck
+     * A host uses this hook plus an EntitlementCheck
      * implementation to gate which premium modules a given tenant is
      * licensed to load.
      *

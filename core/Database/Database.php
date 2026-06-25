@@ -132,7 +132,7 @@ class Database
      *   $db->table('users')->where('id', 42)->first();
      *   $db->table('content_items')->whereIn('owner_group_id', $ids)->paginate(20);
      *
-     * The builder preserves this wrapper's prepared-statement guarantee —
+     * The QueryBuilder preserves this wrapper's prepared-statement guarantee —
      * values are always bound, identifiers are whitelisted.
      */
     public function table(string $table): QueryBuilder

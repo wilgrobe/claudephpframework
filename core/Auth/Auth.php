@@ -186,8 +186,7 @@ class Auth
             }
             // Phase 43.195b H5 — UPSERT instead of bare INSERT to refresh
             // the encrypted token on every login and avoid a UNIQUE-
-            // constraint fatal on re-link. See builder Auth.php's
-            // matching comment for the full rationale.
+            // constraint fatal on re-link.
             $encryptedToken = $providerData['token']
                 ? $this->encryptToken($providerData['token'])
                 : null;

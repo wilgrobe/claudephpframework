@@ -15,8 +15,8 @@ namespace Core\Module;
  *
  * The default implementation in the open-source repo is
  * AlwaysGrantEntitlement — every premium module that's physically on
- * disk loads. The future web-app builder ships its own implementation
- * (driven by per-tenant subscription state, token balance, or whatever
+ * disk loads. A host that licenses premium modules ships its own
+ * implementation (driven by subscription state, token balance, or whatever
  * the licensing model resolves to) and binds it into the container,
  * overriding the default.
  *
@@ -24,7 +24,7 @@ namespace Core\Module;
  *
  *   $container->singleton(
  *       \Core\Module\EntitlementCheck::class,
- *       \App\Services\TenantEntitlement::class
+ *       \App\YourEntitlementCheck::class
  *   );
  *
  * Core modules never go through this gate — their tier() returns 'core'

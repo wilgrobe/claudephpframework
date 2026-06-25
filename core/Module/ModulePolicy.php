@@ -93,13 +93,13 @@ abstract class ModulePolicy
             : self::VISIBILITY_PUBLIC;
     }
 
-    // ── Static public-surface gate (wizard-parity) ───────────────────
+    // ── Static public-surface gate (host-configurable) ───────────────────
     //
     // The two helpers below let ANY module gate its public-facing routes by
     // a site-configured visibility WITHOUT subclassing — a controller action
     // just calls ModulePolicy::publicGate('courses') at the top. This is the
     // toggle the demos hand-coded (e.g. a public course catalog vs a
-    // members-only one): a wizard customer sets `{prefix}_public_visibility`
+    // members-only one): a site owner sets `{prefix}_public_visibility`
     // and the module's guest surface honors it.
 
     /** Read `{prefix}_public_visibility` directly (no instance needed). */

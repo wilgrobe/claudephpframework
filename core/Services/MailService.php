@@ -82,13 +82,12 @@ class MailService implements MailDriver
      * Send an email. Returns true on successful transport, false on
      * failure (which has already been logged + queued for retry).
      *
-     * Pass an optional $chargeUserId to meter the send against a user's
-     * wallet. On a successful send we call
-     * `\App\Services\TokenGate::chargeActionFor($chargeUserId, 'action.email.send')`
-     * via class_exists guard — framework users without TokenGate get
-     * no charging behavior. Pass null (default) for system-triggered
-     * mail (claim emails, password resets, queue retries, 2FA codes)
-     * that shouldn't bill anyone.
+     * Pass an optional $chargeUserId to attribute the send to a user. On a
+     * successful send we emit a `mail.sent` event carrying the recipient +
+     * the attributed user id, so a host can meter/bill it from a listener.
+     * The bare framework has no listener, so attribution is a no-op. Pass
+     * null (default) for system-triggered mail (claim emails, password
+     * resets, queue retries, 2FA codes) that shouldn't be attributed.
      */
     public function send(string $to, string $subject, string $htmlBody, string $textBody = '', ?int $chargeUserId = null): bool
     {
@@ -103,12 +102,15 @@ class MailService implements MailDriver
         ]);
 
         $ok = $this->attemptSend($logId, $to, $subject, $htmlBody, $textBody);
-        if ($ok && $chargeUserId !== null && class_exists(\App\Services\TokenGate::class)) {
-            \App\Services\TokenGate::chargeActionFor(
-                $chargeUserId,
-                'action.email.send',
-                "Email send to $to",
-            );
+        // Delivery hook: announce a successful send so a host can meter/bill
+        // it (when attributed to a user) or otherwise react. Fire-and-forget;
+        // no listener on a bare framework install.
+        if ($ok && class_exists(\Core\Events\EventBus::class)) {
+            \Core\Events\EventBus::emit('mail.sent', [
+                'to'             => $to,
+                'subject'        => $subject,
+                'charge_user_id' => $chargeUserId,
+            ]);
         }
         return $ok;
     }

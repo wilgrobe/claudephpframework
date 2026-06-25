@@ -63,7 +63,7 @@ class IntegrationConfig
             'driver_var'     => 'SMS_DRIVER',
             'default_driver' => 'auto',
             // Provider entries gain optional metadata fields used by the
-            // wizard's step-5 integration coaching:
+            // a host's integration coaching:
             //   signup_url  — where to register; per-affiliate URL via
             //                 ${PROVIDER}_AFFILIATE_URL env override
             //   free_tier   — short human label for the free starter offer
@@ -528,7 +528,7 @@ class IntegrationConfig
     }
 
     /**
-     * Per-provider metadata for the wizard's integration coaching UI.
+     * Per-provider metadata for a host's integration coaching UI.
      * Returns the raw `providers` map for `$type` enriched with the
      * resolved `signup_url` (env-overridden when `affiliate_env` is
      * declared on the provider entry — operators paste their tracked
@@ -538,7 +538,7 @@ class IntegrationConfig
      * has at least: label / required / optional / signup_url (if set)
      * / docs_url (if set) / free_tier (if set) / recommended (bool).
      *
-     * For the wizard's "where do I sign up?" CTA cards.
+     * For a host's "where do I sign up?" CTA cards.
      *
      * @return array<string, array<string,mixed>>
      */

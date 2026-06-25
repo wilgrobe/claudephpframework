@@ -10,7 +10,7 @@ namespace Core\Module;
  * development against the paired claudephpframeworkpremium checkout.
  * If you have the files, you have the licence.
  *
- * The hosted web-app builder swaps in a tenant-aware implementation
+ * A host swaps in a license-aware implementation
  * (see EntitlementCheck docblock) by binding a different concrete to
  * the EntitlementCheck contract in config/services.php.
  */

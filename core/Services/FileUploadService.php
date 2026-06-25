@@ -255,8 +255,11 @@ class FileUploadService
         } finally {
             if (is_resource($stream)) fclose($stream);
         }
-        if (class_exists(\App\Tenancy\TenantQuotaGate::class) && strlen($bytes) > 0) {
-            try { \App\Tenancy\TenantQuotaGate::recordWrite(strlen($bytes)); } catch (\Throwable) { /* best-effort */ }
+        // Storage-accounting hook: announce the write so a host (e.g. a
+        // multi-tenant deployment metering per-tenant storage) can record it.
+        // Fire-and-forget — no listener on a bare framework install.
+        if (strlen($bytes) > 0 && class_exists(\Core\Events\EventBus::class)) {
+            \Core\Events\EventBus::emit('storage.bytes_written', ['bytes' => strlen($bytes), 'path' => $relKey]);
         }
         return $this->url($relKey);
     }

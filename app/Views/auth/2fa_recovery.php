@@ -24,7 +24,7 @@
         box-shadow: 0 0 0 3px rgba(79,70,229,.15);
     }
     </style>
-    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — coral apex / tenant brand + light-dark */ ?>
+    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — light-dark */ ?>
 </head>
 <body class="auth">
 <div class="auth-card">

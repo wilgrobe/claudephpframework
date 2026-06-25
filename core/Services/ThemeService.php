@@ -55,7 +55,7 @@ class ThemeService
         // gets its own tokens so it can be styled independently of the
         // sidebar/footer pair. Defaults match the existing light topbar
         // look (white bg + near-black text) so installs that haven't
-        // customized see zero change. BrandColorDeriver overrides these
+        // customized see zero change. a bound ThemeExtension overrides these
         // when a brand color is picked, producing a brand-tinted dark
         // header to match the rest of the chrome.
         'theme.color.chrome.header_bg'    => ['css' => 'chrome-header-bg',    'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header background'],
@@ -63,7 +63,7 @@ class ThemeService
 
         // ── Radius ──
         // radius.sm/md/full removed (no consumer). Only --radius-lg is
-        // referenced (in BrandingRenderer's `border-radius:var(--radius-lg)`).
+        // referenced (in the branding layer's radius var).
         'theme.radius.lg'   => ['css' => 'radius-lg',   'default' => '12px',  'validator' => 'length', 'group' => 'radius', 'label' => 'Large radius'],
 
         // Removed groups (no consumers):
@@ -106,7 +106,7 @@ class ThemeService
 
         // ── hero role (its own surface, with gradient + CTA pair) ──
         // Solid colours first; the gradient pair (stop 2 + direction) renders
-        // last in the section (cf. appearance + wizard step 6 layouts).
+        // last in the section (cf. appearance + host layout UI).
         'theme.palette.hero.bg'         => ['css' => 'hero-bg',         'default' => '#c2410c', 'default_dark' => '#d4521e', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero background / stop 1'],
         'theme.palette.hero.text'       => ['css' => 'hero-text',       'default' => '#ffffff', 'default_dark' => '#ffffff', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero text'],
         'theme.palette.hero.text-muted' => ['css' => 'hero-text-muted', 'default' => '#ffffffe6', 'default_dark' => '#ffffffe6', 'validator' => 'color', 'group' => 'pal_hero', 'label' => 'Hero subheading'],
@@ -207,7 +207,7 @@ class ThemeService
 
     /**
      * Allowed gradient directions for the `*-grad-dir` (angle) tokens —
-     * value => arrow label. Shared by the admin appearance page + the wizard
+     * value => arrow label. Shared by the admin appearance page + a host build UI
      * step-6 customizer so both render the same dropdown. Anything outside this
      * set fails the 'angle' validator and falls back to the token default.
      */
@@ -331,7 +331,7 @@ class ThemeService
         }
         $out = [];
         // Tenant ordinal-tint derivation (tertiary/quaternary/quinary) from the
-        // tenant's brand. Empty on apex / framework-only installs, so it only
+        // tenant's brand. Empty when no ThemeExtension is bound, so it only
         // overrides the 6 ordinal-tint defaults for tenant renders.
         $ordinalDerived = $this->resolveOrdinalDerived($mode);
         if ($mode === 'dark') {
@@ -389,11 +389,11 @@ class ThemeService
     /**
      * Derive the tenant's ordinal LIGHT-TINT palettes (tertiary / quaternary /
      * quinary) from its brand so a tenant section set to one of those ordinals
-     * harmonises with the tenant's own colors instead of the apex's hand-tuned
+     * harmonises with the site's own colors instead of the framework's hand-tuned
      * coral / mint / cream defaults.
      *
      * Gated on tenant context: the APEX (and framework-only / CLI installs,
-     * where the builder tenancy layer is absent or no tenant is current) gets
+     * where no theme extension is bound) gets
      * an empty map → the static TOKEN_DEFINITIONS defaults stand. The bold
      * ordinals (primary, secondary) are NOT here — they already track the brand
      * via the color_primary / color_secondary LEGACY_FALLBACK. An explicit
@@ -403,26 +403,47 @@ class ThemeService
      */
     private function resolveOrdinalDerived(string $mode): array
     {
-        if (!class_exists(\App\Tenancy\Tenant::class) || \App\Tenancy\Tenant::current() === null) {
-            return [];
-        }
+        // Brand-tint derivation is a host feature, surfaced via the
+        // ThemeExtension hook. With no host bound (or the framework default
+        // NullThemeExtension) this returns [] and the static TOKEN_DEFINITIONS
+        // defaults stand.
+        $ext = $this->themeExtension();
+        if ($ext === null) return [];
+
         $dark   = $mode === 'dark';
         $defKey = $dark ? 'default_dark' : 'default';
         // The brand HUE is mode-independent (a teal brand is teal in both
         // modes; deriveOrdinalTints supplies the dark/light lightness band). So
         // in dark mode prefer an explicit color_primary.dark, then fall back to
-        // the light color_primary the tenant actually set, then the default.
+        // the light color_primary the site actually set, then the default.
         $brandFor = function (string $base) use ($dark, $defKey): string {
             $v = $dark ? trim((string) $this->settings->get($base . '.dark', '', 'site')) : '';
             if ($v === '') $v = trim((string) $this->settings->get($base, '', 'site'));
             if ($v === '') $v = (string) self::TOKEN_DEFINITIONS[$base][$defKey];
             return $v;
         };
-        return \App\Theme\BrandColorDeriver::deriveOrdinalTints(
+        return $ext->deriveOrdinalTints(
             $brandFor('theme.palette.primary.bg'),
             $brandFor('theme.palette.secondary.bg'),
             $dark
-        );
+        ) ?? [];
+    }
+
+    /** Resolve the bound {@see \Core\Theme\ThemeExtension}, or null if none. */
+    private function themeExtension(): ?\Core\Theme\ThemeExtension
+    {
+        try {
+            if (class_exists(\Core\Container\Container::class)) {
+                $c = \Core\Container\Container::global();
+                if ($c->has(\Core\Theme\ThemeExtension::class)) {
+                    $e = $c->get(\Core\Theme\ThemeExtension::class);
+                    if ($e instanceof \Core\Theme\ThemeExtension) return $e;
+                }
+            }
+        } catch (\Throwable) {
+            // fall through
+        }
+        return null;
     }
 
     /**

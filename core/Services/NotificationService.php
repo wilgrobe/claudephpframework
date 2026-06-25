@@ -7,71 +7,55 @@ use Core\Database\Database;
 class NotificationService
 {
     /**
-     * Catalog of known notification types — drives the per-channel
-     * preferences UI at /profile/notifications and provides a friendly
-     * label + group for each type. Adding a new type to this list makes
-     * it appear on the prefs page immediately; absence means "send by
-     * default with no UI control" (used for system-critical types).
+     * Framework-native notification types. The framework ships NONE — every
+     * notification type is owned by the module that emits it (social, comments,
+     * messaging, …) and registered via {@see registerType()} from that module's
+     * register() hook. This keeps core free of module-specific knowledge.
      *
-     * Channels: 'in_app' is the bell-badge; 'email' rides MailService.
-     * Both are gated independently per-user via notification_preferences.
+     * Read the merged catalog (native + registered) via {@see types()} — drives
+     * the per-channel preferences UI at /profile/notifications. A type that's
+     * never registered still sends; it just has no preferences-UI control
+     * ("send by default", used for system-critical notifications).
+     *
+     * Channels: 'in_app' is the bell-badge; 'email' rides MailService. Both are
+     * gated independently per-user via notification_preferences.
      */
-    public const TYPES = [
-        'social.followed' => [
-            'label'    => 'Someone follows you',
-            'group'    => 'Social',
-            'channels' => ['in_app', 'email'],
-        ],
-        'comment.reply' => [
-            'label'    => 'Someone replies to your comment',
-            'group'    => 'Social',
-            'channels' => ['in_app', 'email'],
-        ],
-        'messages.new' => [
-            'label'    => 'You receive a direct message',
-            'group'    => 'Messaging',
-            'channels' => ['in_app', 'email'],
-        ],
-        'group.owner_removal_request' => [
-            'label'    => 'Group owner-removal request',
-            'group'    => 'Groups',
-            'channels' => ['in_app', 'email'],
-        ],
+    public const TYPES = [];
 
-        // ── Phase 25 — apex project lifecycle events ─────────────────
-        'project.build_completed' => [
-            'label'    => 'A project build finishes (download ready)',
-            'group'    => 'Projects',
-            'channels' => ['in_app', 'email'],
-        ],
-        'project.tenant_provisioned' => [
-            'label'    => 'A hosted tenant gets provisioned for your project',
-            'group'    => 'Projects',
-            'channels' => ['in_app', 'email'],
-        ],
-        'project.deploy_completed' => [
-            'label'    => 'A SSH / cPanel / API deploy succeeds or fails',
-            'group'    => 'Projects',
-            'channels' => ['in_app', 'email'],
-        ],
+    /**
+     * Module-registered notification types, keyed by type name.
+     *
+     * @var array<string, array{label:string, group:string, channels:string[]}>
+     */
+    private static array $registered = [];
 
-        // ── Phase 25 — tenant-side marketing events ──────────────────
-        'broadcast.scheduled_sent' => [
-            'label'    => 'A scheduled email broadcast fires',
-            'group'    => 'Marketing',
-            'channels' => ['in_app', 'email'],
-        ],
-        'broadcast.ab_decided' => [
-            'label'    => 'An A/B test picks a winner',
-            'group'    => 'Marketing',
-            'channels' => ['in_app', 'email'],
-        ],
-        'broadcast.finished' => [
-            'label'    => 'An email broadcast finishes sending to every recipient',
-            'group'    => 'Marketing',
-            'channels' => ['in_app'],
-        ],
-    ];
+    /**
+     * Register a notification type so it appears in the preferences UI. Call
+     * from a module's register() hook:
+     *
+     *   NotificationService::registerType('store.order_shipped', [
+     *       'label' => 'Your order ships', 'group' => 'Store',
+     *       'channels' => ['in_app', 'email'],
+     *   ]);
+     *
+     * @param array{label:string, group:string, channels:string[]} $meta
+     */
+    public static function registerType(string $type, array $meta): void
+    {
+        self::$registered[$type] = $meta;
+    }
+
+    /**
+     * The full catalog: framework-native types (TYPES) plus everything modules
+     * registered. This is the canonical accessor — prefer it over reading the
+     * TYPES constant directly so module-contributed types are included.
+     *
+     * @return array<string, array{label:string, group:string, channels:string[]}>
+     */
+    public static function types(): array
+    {
+        return self::TYPES + self::$registered;
+    }
 
     private Database $db;
 
@@ -199,7 +183,7 @@ class NotificationService
         // across types. Now: atomic + one round trip.
         $values = [];
         $params = [];
-        foreach (self::TYPES as $type => $meta) {
+        foreach (self::types() as $type => $meta) {
             foreach ($meta['channels'] as $ch) {
                 $on = !empty($prefs[$type][$ch]);
                 $values[] = '(?, ?, ?, ?)';
@@ -233,7 +217,7 @@ class NotificationService
     public function preferencesFor(int $userId): array
     {
         $out = [];
-        foreach (self::TYPES as $type => $meta) {
+        foreach (self::types() as $type => $meta) {
             $out[$type] = [];
             foreach ($meta['channels'] as $ch) {
                 $out[$type][$ch] = $this->isAllowed($userId, $type, $ch);
