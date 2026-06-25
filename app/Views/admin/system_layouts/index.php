@@ -115,7 +115,7 @@
                     <td><?= $__blockCount ?></td>
                     <td>
                         <?php if ($__slotCount > 0): ?>
-                            <span style="display:inline-block;padding:.1rem .45rem;background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;border-radius:10px;font-size:11.5px;font-weight:600">
+                            <span style="display:inline-block;padding:.1rem .45rem;background:var(--color-info-bg);color:#0e7490;border:1px solid #a5f3fc;border-radius:10px;font-size:11.5px;font-weight:600">
                                 <?= $__slotCount ?>
                             </span>
                         <?php else: ?>

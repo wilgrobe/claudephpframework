@@ -8,7 +8,7 @@ body{margin:0;font-family:'Helvetica Neue',Arial,sans-serif;background:#f4f4f5;p
 .body{padding:2rem;text-align:center}
 .body p{color:var(--color-gray-700);line-height:1.7;margin:0 0 1rem;text-align:left;font-size:14px}
 .code-box{
-    background:#eef2ff;border:2px solid #c7d2fe;border-radius:10px;
+    background:var(--accent-subtle);border:2px solid var(--border-strong);border-radius:10px;
     padding:1.25rem 2rem;margin:1.5rem auto;display:inline-block;
     font-family:'Courier New',monospace;font-size:2.2rem;font-weight:900;
     letter-spacing:.35rem;color:var(--color-primary-dark);text-align:center;

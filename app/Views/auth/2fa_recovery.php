@@ -4,9 +4,9 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Recovery Code — <?= e(setting('site_name', 'App')) ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/app.css">
-    <link rel="stylesheet" href="/assets/css/admin.css">
-    <link rel="stylesheet" href="/assets/css/auth.css">
+    <link rel="stylesheet" href="<?= e(asset('/assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('/assets/css/admin.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset('/assets/css/auth.css')) ?>">
     <style>
     .recovery-input {
         width: 100%; padding: .7rem 1rem;
@@ -24,6 +24,7 @@
         box-shadow: 0 0 0 3px rgba(79,70,229,.15);
     }
     </style>
+    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — coral apex / tenant brand + light-dark */ ?>
 </head>
 <body class="auth">
 <div class="auth-card">

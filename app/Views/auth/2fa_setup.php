@@ -47,7 +47,7 @@
                     </noscript>
                 </div>
                 <div style="font-size:12.5px;color:var(--color-gray-500);text-align:center">Can't scan? Enter this key manually:</div>
-                <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:.6rem 1rem;text-align:center;font-family:monospace;font-size:1rem;font-weight:700;letter-spacing:.15rem;margin-top:.4rem;user-select:all">
+                <div style="background:var(--accent-subtle);border:1px solid var(--border-strong);border-radius:6px;padding:.6rem 1rem;text-align:center;font-family:monospace;font-size:1rem;font-weight:700;letter-spacing:.15rem;margin-top:.4rem;user-select:all">
                     <?= e($totpData['secret']) ?>
                 </div>
             </div>
@@ -66,7 +66,8 @@
                            inputmode="numeric" autocomplete="one-time-code"
                            placeholder="000000" maxlength="6" pattern="[0-9]{6}" required autofocus
                            style="text-align:center;font-size:1.15rem;font-family:monospace;letter-spacing:.2rem" aria-label="000000">
-                    <!-- AUTH-H1 — password re-auth required to activate TOTP. -->
+                    <!-- AUTH-H1 — password re-auth required to activate TOTP, so a
+                         hijacked session can't enable an attacker-controlled second factor. -->
                     <label for="confirm_totp_pw" style="font-weight:600;font-size:13px">Confirm your password</label>
                     <input type="password" id="confirm_totp_pw" name="current_password" class="form-control"
                            autocomplete="current-password" required>
@@ -81,12 +82,11 @@
     </div>
 </div>
 
-<!-- Render the QR client-side. qrcodejs is ~5KB gzipped and cdnjs is already
-     in the CSP script-src allowlist (see public/index.php). If this CDN ever
-     becomes unavailable, the "Can't scan? Enter this key manually" fallback
-     below still gets users through setup.
-     NOTE: consider adding SRI (integrity=) once you've pinned the hash, or
-     vendor this file into /public/js/ to drop the external dependency. -->
+<?php if (empty($totpData['qr_data_uri'])): ?>
+<!-- Fallback path: server-side QR library isn't installed. Render
+     client-side via cdnjs-hosted qrcode.js. Server-side rendering is the
+     default (endroid/qr-code in composer.json); this block stays for
+     installs that vendor without dev deps. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
@@ -95,7 +95,6 @@
     if (!target) return;
     var uri = target.dataset.uri || '';
     if (!uri) return;
-    // Clear any fallback content, then render.
     target.innerHTML = '';
     new QRCode(target, {
         text: uri,
@@ -104,6 +103,7 @@
     });
 })();
 </script>
+<?php endif; ?>
 
 <?php else: ?>
 <!-- ── Method picker (no method selected yet) ── -->
@@ -136,10 +136,13 @@
                 </label>
                 <?php endforeach; ?>
             </div>
-            <!-- AUTH-M4 — password re-auth required before any 2FA change. -->
+            <!-- Phase 43.193a — password re-auth required before 2FA
+                 method change. Matches the pattern that disable +
+                 regenerateRecoveryCodes already use. -->
             <div style="margin-bottom:1rem">
-                <label for="enable_2fa_pw" style="display:block;font-weight:600;font-size:13px;margin-bottom:.35rem">Confirm your password</label>
-                <input type="password" id="enable_2fa_pw" name="current_password" class="form-control" autocomplete="current-password" required>
+                <label for="current_password" style="display:block;font-weight:600;font-size:13px;margin-bottom:.35rem">Confirm your password</label>
+                <input type="password" id="current_password" name="current_password" class="form-control" autocomplete="current-password" required>
+                <span style="display:block;font-size:12px;color:var(--color-gray-500);margin-top:.3rem">Required to make 2FA changes — defends against session-hijack scenarios.</span>
             </div>
             <button type="submit" class="btn btn-primary">Continue</button>
         </form>

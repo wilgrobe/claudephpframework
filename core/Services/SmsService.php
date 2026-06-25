@@ -79,28 +79,6 @@ class SmsService implements SmsDriver
     }
 
     /**
-     * Append the STOP opt-out notice to an outbound SMS body for CTIA /
-     * A2P-10DLC compliance. Configurable via SMS_OPT_OUT_NOTICE (set it
-     * to an empty string to disable; e.g. set it to
-     * "Reply STOP to opt out, HELP for help" to also surface HELP).
-     *
-     * Skipped when the body already contains "STOP" (case-insensitive)
-     * so a caller that supplies its own opt-out language isn't doubled.
-     * Providers (TextMagic, Twilio, etc.) also honor STOP/HELP at the
-     * platform level regardless; this is the human-visible footer.
-     */
-    private function appendOptOutNotice(string $body): string
-    {
-        $notice = array_key_exists('SMS_OPT_OUT_NOTICE', $_ENV)
-            ? trim((string) $_ENV['SMS_OPT_OUT_NOTICE'])
-            : self::DEFAULT_OPT_OUT_NOTICE;
-
-        if ($notice === '') return $body;                       // explicitly disabled
-        if (stripos($body, 'STOP') !== false) return $body;     // already has opt-out text
-        return rtrim($body) . ' ' . $notice;
-    }
-
-    /**
      * Re-dispatch a previously-logged SMS by ID. See MailService::resend().
      */
     public function resend(int $logId): bool
@@ -172,6 +150,28 @@ class SmsService implements SmsDriver
             ],
             'id = ?', [$logId]
         );
+    }
+
+    /**
+     * Append the STOP opt-out notice to an outbound SMS body for CTIA /
+     * A2P-10DLC compliance. Configurable via SMS_OPT_OUT_NOTICE (set it
+     * to an empty string to disable; e.g. set it to
+     * "Reply STOP to opt out, HELP for help" to also surface HELP).
+     *
+     * Skipped when the body already contains "STOP" (case-insensitive)
+     * so a caller that supplies its own opt-out language isn't doubled.
+     * Providers (TextMagic, Twilio, etc.) also honor STOP/HELP at the
+     * platform level regardless; this is the human-visible footer.
+     */
+    private function appendOptOutNotice(string $body): string
+    {
+        $notice = array_key_exists('SMS_OPT_OUT_NOTICE', $_ENV)
+            ? trim((string) $_ENV['SMS_OPT_OUT_NOTICE'])
+            : self::DEFAULT_OPT_OUT_NOTICE;
+
+        if ($notice === '') return $body;                       // explicitly disabled
+        if (stripos($body, 'STOP') !== false) return $body;     // already has opt-out text
+        return rtrim($body) . ' ' . $notice;
     }
 
     private function doSend(string $to, string $body): bool

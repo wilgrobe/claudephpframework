@@ -407,8 +407,8 @@ select.form-control {
 /* Buttons — Phase 43.11 button radius driven by --style-* token. */
 .btn {
     display: inline-flex; align-items: center; gap: .4rem;
-    padding: .5rem 1rem; border-radius: var(--style-border-button-radius, 6px);
-    font-weight: 500; font-size: 13.5px;
+    padding: var(--style-button-padding-y, .5rem) var(--style-button-padding-x, 1rem); border-radius: var(--style-border-button-radius, 6px);
+    font-weight: 500; font-size: var(--style-button-font-size, 13.5px);
     cursor: pointer; text-decoration: none;
     border: 1px solid transparent;
     transition: all .15s;

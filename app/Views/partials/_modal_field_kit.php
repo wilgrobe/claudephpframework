@@ -160,7 +160,15 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     };
     window.escapeAttr = function(s) {
-        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        // Phase 43.180 — also escapes ' for defense-in-depth. Pre-fix only
+        // covered double-quoted attribute contexts (every current caller in
+        // this file uses double quotes), but a future caller using single
+        // quotes (e.g. `value='${escapeAttr(x)}'`) would be vulnerable to
+        // single-quote attribute breakouts. Mirroring escapeHtml's full set
+        // makes escapeAttr safe regardless of which quote style the caller
+        // picked.
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/'/g, '&#39;');
     };
 
     window.renderSchemaField = function(f, settings, prefix) {

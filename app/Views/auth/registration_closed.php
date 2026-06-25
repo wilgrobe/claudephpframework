@@ -4,9 +4,10 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Registration Closed — <?= e(setting('site_name','App')) ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app.css">
-<link rel="stylesheet" href="/assets/css/admin.css">
-<link rel="stylesheet" href="/assets/css/auth.css">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/admin.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/auth.css')) ?>">
+    <?php echo (new \Core\Services\ThemeService(new \Core\Services\SettingsService()))->renderOverrideStyle(); /* site theme — coral apex / tenant brand + light-dark */ ?>
 </head>
 <body class="auth">
 <div class="auth-card" style="text-align:center">

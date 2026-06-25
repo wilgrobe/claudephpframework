@@ -34,6 +34,7 @@ if (!function_exists('site_base_url')) {
     function site_base_url(): string
     {
         $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        // Reject anything that isn't a clean host[:port] (defense vs Host-header tricks).
         if ($host !== '' && preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', $host)) {
             $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                 || ((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
@@ -405,16 +406,19 @@ if (!function_exists('asset')) {
         $rel  = '/' . ltrim($path, '/');
         $url  = $base !== '' ? rtrim($base, '/') . $rel : $rel;
 
-        // Cache-bust by file mtime so a CDN/proxy (e.g. Cloudflare, which caches
-        // static assets for ~30d) serves new bytes the moment the file changes:
+        // Cache-bust by file mtime so a CDN/proxy (Cloudflare caches static
+        // assets for ~30d) serves the new bytes the moment the file changes:
         // the ?v= query is part of the cache key, so a deploy that touches the
         // file yields a never-before-seen URL → fresh fetch from origin, no
-        // manual purge.
+        // manual purge. Strip any query for the on-disk lookup; only version
+        // real local files (skip when ASSET_URL points elsewhere is fine —
+        // the file still lives in public/ for the mtime).
         if (defined('BASE_PATH')) {
             $clean = strtok($rel, '?');
             $file  = BASE_PATH . '/public' . $clean;
             if (is_file($file)) {
-                $url .= (str_contains($url, '?') ? '&' : '?') . 'v=' . (@filemtime($file) ?: 0);
+                $v   = @filemtime($file) ?: 0;
+                $url .= (str_contains($url, '?') ? '&' : '?') . 'v=' . $v;
             }
         }
         return $url;

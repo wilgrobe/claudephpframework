@@ -54,10 +54,14 @@ class TwoFactorService
      */
     public function enrollTotp(int $userId): array
     {
-        // AUTH-H1 — refuse to overwrite an already-confirmed TOTP secret so a
-        // hijacked session can't mint a fresh secret over the victim's working
-        // one (GET /profile/2fa/setup?method=totp). Re-enrolling requires
-        // disabling 2FA first, which requires the password.
+        // AUTH-H1 — refuse to overwrite an already-confirmed TOTP secret.
+        // Pre-fix this ran unconditionally, so a hijacked session could hit
+        // GET /profile/2fa/setup?method=totp, mint a fresh secret over the
+        // victim's working one, and take over the second factor. The
+        // controller already wraps this in try/catch expecting the throw
+        // (Phase 43.193a G5) — but the throw was never implemented. To
+        // re-enroll legitimately the user must disable 2FA first, which
+        // requires their password.
         $confirmed = $this->db->fetchOne("SELECT two_factor_confirmed FROM users WHERE id = ?", [$userId]);
         if ($confirmed && (int) ($confirmed['two_factor_confirmed'] ?? 0) === 1) {
             throw new \RuntimeException('Two-factor authentication is already enabled. Disable it first (you will be asked for your password) before re-enrolling.');

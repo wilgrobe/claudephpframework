@@ -463,6 +463,18 @@ class ModuleRegistry
             // dependency check, so any module that requires them
             // cascades into 'disabled_dependency' the same way an
             // admin-disable would. Core modules bypass the gate.
+            //
+            // Phase 31 made `App\Services\TenantEntitlement::isEntitled`
+            // unconditionally return true under the metered billing
+            // model — so this branch is effectively dead today. We
+            // keep the structure (the registry's interface stays
+            // stable + a future per-tenant DENY override would
+            // resurrect the path immediately) but operators should
+            // not see new `disabled_unlicensed` rows materialize in
+            // module_status under the current EntitlementCheck binding.
+            // The auto-correction in persistAndNotify() flips any
+            // legacy 'disabled_unlicensed' rows back to 'active' on
+            // the next request that touches the registry.
             if ($provider->tier() === 'premium' && !$entitlement->isEntitled($name)) {
                 $this->unlicensed[$name] = [
                     'provider' => $provider,

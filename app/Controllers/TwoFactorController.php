@@ -177,12 +177,35 @@ class TwoFactorController
             return Response::redirect('/auth/2fa/recovery');
         }
 
+        // Phase 43.190a — rate-limit gate mirroring the `challenge`
+        // (TOTP/email/SMS) flow above. Pre-fix the recovery endpoint
+        // had no limiter — an attacker who had stolen the primary
+        // credentials (phishing, password reuse) + obtained the
+        // 2fa_pending_user_id session could fire unlimited recovery
+        // submissions. 40-bit codes × 8 active = ~8T search space so
+        // brute-force is impractical-but-uncapped; the rate-limit
+        // matches the defense-in-depth posture of the other auth
+        // endpoints. Key shape "2farec:N" is distinct from the
+        // challenge path's "2fa:N" so a separate counter avoids
+        // the TOTP flow's failures bleeding into the recovery
+        // budget + vice versa.
+        $ip = $request->ip();
+        $rateKey = "2farec:$userId";
+        if ($this->limiter->tooManyAttempts($rateKey, $ip)) {
+            $wait = $this->limiter->availableInSeconds($rateKey, $ip);
+            Session::flash('error', "Too many recovery attempts. Try again in $wait seconds.");
+            return Response::redirect('/auth/2fa/recovery');
+        }
+
         if (!$this->twoFactor->verifyRecoveryCode($userId, $code)) {
+            $this->limiter->hit($rateKey, $ip);
             $this->auth->auditLog('2fa.recovery_failed', 'users', $userId);
             Session::flash('error', 'Invalid recovery code.');
             return Response::redirect('/auth/2fa/recovery');
         }
 
+        // Clear the recovery-code limiter on success.
+        $this->limiter->clear($rateKey, $ip);
         $this->auth->auditLog('2fa.recovery_used', 'users', $userId);
         $this->completePendingLogin($userId);
 
@@ -219,14 +242,25 @@ class TwoFactorController
         // If TOTP method requested, generate secret and QR now
         $totpData = null;
         if ($method === 'totp') {
-            // AUTH-H1 — enrollTotp throws when TOTP is already confirmed
-            // (prevents silent overwrite via session-hijack/CSRF on this GET).
-            // Surface as a flash + redirect rather than a 500.
+            // Phase 43.193a — enrollTotp now throws when TOTP is already
+            // confirmed for this user (prevents silent overwrite via
+            // session-hijack or CSRF on the GET). Surface as a clear
+            // flash + redirect to settings page rather than 500.
             try {
                 $totpData = $this->twoFactor->enrollTotp($this->auth->id());
             } catch (\RuntimeException $e) {
                 Session::flash('warning', $e->getMessage());
                 return Response::redirect('/profile/2fa');
+            }
+            // Server-side QR via the `twofactorqr` premium module — outputs
+            // a data: URI we can inline. class_exists guard so framework-
+            // only installs (or builder installs without the module
+            // enabled) gracefully fall back to client-side qrcode.js
+            // rendering in the view.
+            $totpData['qr_data_uri'] = null;
+            if (class_exists(\Modules\TwoFactorQr\Services\TwoFactorQrService::class)) {
+                $totpData['qr_data_uri'] = (new \Modules\TwoFactorQr\Services\TwoFactorQrService())
+                    ->render((string) $totpData['provisioning_uri'], 220);
             }
         }
 
@@ -240,6 +274,15 @@ class TwoFactorController
 
     /**
      * Process method selection / enable email or SMS 2FA.
+     *
+     * Phase 43.193a — require password re-auth. Pre-fix only the
+     * session was checked; `disable` + `regenerateRecoveryCodes`
+     * correctly required password confirm, but `enableMethod`
+     * didn't. Session-hijack → attacker could silently downgrade
+     * the victim's 2FA method (e.g. TOTP → SMS, gaining control
+     * if they could also change the phone), OR enable a method
+     * the victim didn't choose. Re-auth here matches the sibling
+     * disable/regenerate flows.
      */
     public function enableMethod(Request $request): Response
     {
@@ -247,14 +290,27 @@ class TwoFactorController
 
         $method = $request->post('method', '');
 
-        // AUTH-M4 — require password re-auth before any 2FA change, matching
-        // disable()/regenerateRecoveryCodes(). Pre-fix only the session was
-        // checked, so a hijacked session could enable/downgrade the victim's
-        // 2FA method. Fetch the hash from the DB (loadUser omits it from the
-        // session-cached shape).
+        // Password re-auth before any 2FA change.
+        //
+        // Phase 43.201a C4 — pre-fix this read `$user['password']` from
+        // `$this->auth->user()`, but `Auth::loadUser` deliberately omits
+        // the password column from the session-cached user shape. So
+        // `$user['password']` was always undefined → password_verify
+        // against empty string → every call to enableMethod failed
+        // unconditionally with "Please enter your current password",
+        // making the entire 2FA enable flow user-facing BROKEN. The
+        // sibling `disable()` already does the right thing (line ~345)
+        // — mirror that pattern.
         $password = (string) $request->post('current_password', '');
-        $pwRow = $this->db->fetchOne('SELECT password FROM users WHERE id = ?', [$this->auth->id()]);
-        if (!$pwRow || empty($pwRow['password']) || !password_verify($password, (string) $pwRow['password'])) {
+        $user     = $this->auth->user();
+        if (!is_array($user)) {
+            return Response::redirect('/login');
+        }
+        $row = \Core\Database\Database::getInstance()->fetchOne(
+            'SELECT password FROM users WHERE id = ?',
+            [$this->auth->id()]
+        );
+        if (!$row || empty($row['password']) || !password_verify($password, (string) $row['password'])) {
             Session::flash('error', 'Please enter your current password to change 2FA settings.');
             return Response::redirect('/profile/2fa/setup');
         }
@@ -267,7 +323,6 @@ class TwoFactorController
         if (in_array($method, ['email', 'sms'], true)) {
             // Validate phone present for SMS
             if ($method === 'sms') {
-                $user = $this->auth->user();
                 if (empty($user['phone'])) {
                     Session::flash('error', 'You must add a phone number to your profile before enabling SMS 2FA.');
                     return Response::redirect('/profile/2fa/setup');
@@ -293,12 +348,17 @@ class TwoFactorController
         if ($this->auth->guest()) return Response::redirect('/login');
 
         // AUTH-H1 — require password re-auth to ACTIVATE TOTP. The enroll GET
-        // (setupForm) bypasses enableMethod's password gate; this is the
-        // chokepoint where an unconfirmed secret becomes the live second
-        // factor, so a hijacked session must prove the password here.
+        // (setupForm) is reachable directly, bypassing enableMethod's password
+        // gate; this is the chokepoint where an unconfirmed secret becomes the
+        // live second factor, so a hijacked session must prove the password
+        // here (mirrors disable()/regenerateRecoveryCodes()). enrollTotp()
+        // separately blocks overwriting an already-confirmed secret.
         $password = (string) $request->post('current_password', '');
-        $pwRow = $this->db->fetchOne('SELECT password FROM users WHERE id = ?', [$this->auth->id()]);
-        if (!$pwRow || empty($pwRow['password']) || !password_verify($password, (string) $pwRow['password'])) {
+        $row = \Core\Database\Database::getInstance()->fetchOne(
+            'SELECT password FROM users WHERE id = ?',
+            [$this->auth->id()]
+        );
+        if (!$row || empty($row['password']) || !password_verify($password, (string) $row['password'])) {
             Session::flash('error', 'Please enter your current password to enable two-factor authentication.');
             return Response::redirect('/profile/2fa/setup?method=totp');
         }

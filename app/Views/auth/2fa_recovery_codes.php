@@ -77,4 +77,7 @@ function copyAll() {
 }
 </script>
 
+<?php /* Phase 43.173 — show-password 👁 toggle (auto-wires every <input type="password">). */ ?>
+<?php require BASE_PATH . '/app/Views/partials/_password_toggle.php'; ?>
+
 <?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>

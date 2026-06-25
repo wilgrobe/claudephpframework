@@ -93,6 +93,64 @@ abstract class ModulePolicy
             : self::VISIBILITY_PUBLIC;
     }
 
+    // ── Static public-surface gate (wizard-parity) ───────────────────
+    //
+    // The two helpers below let ANY module gate its public-facing routes by
+    // a site-configured visibility WITHOUT subclassing — a controller action
+    // just calls ModulePolicy::publicGate('courses') at the top. This is the
+    // toggle the demos hand-coded (e.g. a public course catalog vs a
+    // members-only one): a wizard customer sets `{prefix}_public_visibility`
+    // and the module's guest surface honors it.
+
+    /** Read `{prefix}_public_visibility` directly (no instance needed). */
+    public static function publicVisibilityFor(string $prefix): string
+    {
+        $v = (string) (new SettingsService())->get($prefix . '_public_visibility', self::VISIBILITY_PUBLIC, 'site');
+        return in_array($v, [self::VISIBILITY_PUBLIC, self::VISIBILITY_AUTH, self::VISIBILITY_DISABLED], true)
+            ? $v
+            : self::VISIBILITY_PUBLIC;
+    }
+
+    /**
+     * Gate a module's PUBLIC surface by its site-configured visibility.
+     * Returns a Response to short-circuit the action, or null to proceed:
+     *   public    → null (anyone, default — back-compat)
+     *   auth_only → null if logged in; else redirect to /login (intended set
+     *               from $request so post-login returns to the page)
+     *   disabled  → 404 for everyone except admins/super-admins (so the owner
+     *               can still preview); null for them
+     *
+     * Fail-OPEN: any error resolving the setting/auth → null (never hide a
+     * surface by accident). Call at the very top of a public controller
+     * action:  if ($r = ModulePolicy::publicGate('courses', $request)) return $r;
+     */
+    public static function publicGate(string $prefix, ?\Core\Request $request = null): ?\Core\Response
+    {
+        try {
+            $vis = self::publicVisibilityFor($prefix);
+            if ($vis === self::VISIBILITY_PUBLIC) return null;
+
+            $auth = Auth::getInstance();
+
+            if ($vis === self::VISIBILITY_AUTH) {
+                if ($auth->check()) return null;
+                $path = $request ? $request->path() : '/';
+                if (is_string($path) && $path !== '' && $path[0] === '/') {
+                    \Core\Session::set('intended', $path);
+                }
+                return \Core\Response::redirect('/login');
+            }
+
+            // disabled — owners/admins may still preview; everyone else 404s.
+            if ($auth->check() && ($auth->isSuperAdmin() || $auth->hasRole(['admin', 'super-admin']))) {
+                return null;
+            }
+            return new \Core\Response('Not found', 404);
+        } catch (\Throwable) {
+            return null; // fail open
+        }
+    }
+
     public function notificationsEnabled(): bool
     {
         return (bool) $this->settings->get($this->key('notifications_enabled'), true, 'site');

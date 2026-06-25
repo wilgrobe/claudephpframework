@@ -63,9 +63,13 @@ class ChromeWrapper
         $sys      = new SystemLayoutService();
         $composer = $sys->get($config['layout']);
         if ($composer === null) {
-            // Documented graceful fallback — broken/missing chrome must
-            // never break the page.
-            return $response->getBody();
+            // The named system layout is missing or admin-disabled. Rather
+            // than emit the fragment BARE (no header, no footer, no theme CSS
+            // — which renders unstyled and white-in-dark-mode), wrap it in the
+            // default public chrome (header + footer) so the page is still
+            // branded + themed. A broken/absent layout must never break — and
+            // shouldn't leave — the page un-chromed.
+            return self::renderFallbackChrome($response, $config);
         }
 
         // Resolve slots + capture-and-emit globals.
@@ -175,6 +179,47 @@ class ChromeWrapper
             // Drain the buffer before re-throwing so the half-built
             // document doesn't accidentally leak into a downstream
             // ob_get_*() call from the global error handler.
+            if (ob_get_level() > 0) ob_end_clean();
+            throw $e;
+        }
+    }
+
+    /**
+     * Fallback chrome for when a fragment's named system layout is missing.
+     * Stitches header.php + a centered content container holding the
+     * fragment body + footer.php — i.e. the full themed/branded document,
+     * minus only the (absent) grid layout. Mirrors renderChromeDocument's
+     * capture-and-emit so $pageTitle etc. still reach header.php.
+     */
+    private static function renderFallbackChrome(Response $response, array $config): string
+    {
+        $body     = '';
+        $captured = self::emptyCapture();
+
+        if (($config['mode'] ?? 'single') === 'multi') {
+            $body = implode("\n", array_map('strval', $config['slots'] ?? []));
+        } elseif (($config['view'] ?? null) !== null) {
+            // Re-render as a fragment to grab body + captured globals
+            // (a throw here is a real view error — let it surface).
+            $fragment = View::renderFragment($config['view'], $config['data']);
+            $body     = $fragment['body'];
+            $captured = $fragment['captured'];
+        } else {
+            $body = $response->getBody();
+        }
+
+        $scope = array_filter($captured, fn($v) => $v !== null);
+
+        ob_start();
+        try {
+            extract($scope, EXTR_SKIP);
+            include BASE_PATH . '/app/Views/layout/header.php';
+            echo '<div class="chrome-fallback-main" style="max-width:960px;margin:2rem auto;padding:0 1.25rem">';
+            echo $body;
+            echo '</div>';
+            include BASE_PATH . '/app/Views/layout/footer.php';
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
             if (ob_get_level() > 0) ob_end_clean();
             throw $e;
         }

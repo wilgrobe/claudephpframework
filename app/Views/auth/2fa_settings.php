@@ -62,17 +62,37 @@
 
             <!-- Google Authenticator / TOTP -->
             <a href="/profile/2fa/setup?method=totp" style="text-decoration:none">
-                <div style="background: var(--bg-panel, #fff);border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='#7c3aed'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
+                <div style="background: var(--bg-panel, #fff);border:2px solid var(--color-gray-200);border-radius:10px;padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-gray-200)'">
                     <div style="font-size:1.5rem;margin-bottom:.5rem">🔐</div>
                     <div style="font-weight:600;font-size:14px">Authenticator App (TOTP)</div>
                     <div style="font-size:12px;color:var(--color-gray-500);margin-top:.25rem;line-height:1.4">Use Google Authenticator, Microsoft Authenticator, or Authy.</div>
                     <div style="display:flex;gap:.35rem;margin-top:.5rem;flex-wrap:wrap">
-                        <span style="font-size:10px;background:var(--color-purple-bg);color:#4c1d95;border-radius:4px;padding:.15rem .4rem;font-weight:600">Most secure</span>
+                        <span style="font-size:10px;background:var(--color-purple-bg);color:var(--color-primary-dark);border-radius:4px;padding:.15rem .4rem;font-weight:600">Most secure</span>
                         <span style="font-size:10px;background:var(--color-info-bg);color:var(--color-info-fg);border-radius:4px;padding:.15rem .4rem">Works offline</span>
                     </div>
                 </div>
             </a>
 
+        </div>
+
+        <!-- SMS consent disclosure (CTIA / 10DLC carrier-compliance) -->
+        <div style="margin-top:1.25rem;border:1px solid var(--color-gray-200);border-radius:10px;padding:1rem 1.15rem;background:var(--color-gray-50, #f9fafb);font-size:12px;line-height:1.55;color:var(--color-gray-600)">
+            <div style="font-weight:600;color:var(--color-gray-700);margin-bottom:.4rem">📱 About SMS verification</div>
+            <p style="margin:0 0 .5rem">
+                If you choose <strong>SMS OTP</strong>, you agree to receive one-time
+                verification codes from <strong><?= htmlspecialchars((string) setting('site_name', 'this site'), ENT_QUOTES) ?></strong>
+                at the phone number on your profile. Messages are sent only for
+                account security — when you sign in or perform a sensitive action.
+                We never send marketing texts and never share your number with third
+                parties for marketing.
+            </p>
+            <p style="margin:0">
+                Message frequency depends on your account activity.
+                <strong>Message and data rates may apply.</strong>
+                Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+                See our <a href="/terms">Terms of Service</a> and
+                <a href="/privacy">Privacy Policy</a>.
+            </p>
         </div>
     </div>
 </div>

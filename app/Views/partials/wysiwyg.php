@@ -90,9 +90,9 @@ $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
     padding: .25rem .55rem; font-size: 12.5px; cursor: pointer;
     color: var(--color-gray-700); line-height: 1.2; min-width: 28px;
 }
-.wy-btn:hover  { background: #eef2ff; border-color: #c7d2fe; color: #4338ca; }
+.wy-btn:hover  { background: var(--accent-subtle); border-color: var(--border-strong); color: var(--color-primary); }
 .wy-btn:active { transform: translateY(1px); }
-.wy-btn.active { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
+.wy-btn.active { background: var(--accent-subtle); border-color: var(--color-primary); color: var(--color-primary); }
 .wy-sep        { display: inline-block; width: 1px; background: var(--color-gray-200); margin: 0 .2rem; align-self: stretch; }
 .wy-editor h2  { font-size: 1.4rem;  margin: .9rem 0 .4rem;  font-weight: 700; }
 .wy-editor h3  { font-size: 1.2rem;  margin: .8rem 0 .35rem; font-weight: 700; }
@@ -100,7 +100,7 @@ $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
 .wy-editor p   { margin: 0 0 .75rem; }
 .wy-editor ul, .wy-editor ol { margin: 0 0 .75rem 1.5rem; }
 .wy-editor blockquote {
-    margin: .75rem 0; padding: .5rem 1rem; border-left: 3px solid #c7d2fe;
+    margin: .75rem 0; padding: .5rem 1rem; border-left: 3px solid var(--border-strong);
     color: #4b5563; background: var(--color-gray-50);
 }
 .wy-editor a           { color: var(--color-primary); text-decoration: underline; }

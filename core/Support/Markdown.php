@@ -204,6 +204,23 @@ class Markdown
             return '<a href="' . $url . '"' . $title . '>' . $m[1] . '</a>';
         }, $s);
 
+        // Auto-link bare http(s):// URLs so pasted links become clickable
+        // (standard markdown only links [text](url)). Stash the anchors/images
+        // already built above so linkifying the remaining text doesn't touch
+        // their href/src attributes, then restore them.
+        $builtTags = [];
+        $s = preg_replace_callback('#<a\b[^>]*>.*?</a>|<img\b[^>]*>#is', function ($m) use (&$builtTags) {
+            $i = count($builtTags);
+            $builtTags[] = $m[0];
+            return "\x03TAG{$i}\x03";
+        }, $s);
+        $s = preg_replace_callback('#(?<![\w@/])(https?://[^\s<]+[^\s<.,;:!?)\]}\'"])#i', function ($m) {
+            return '<a href="' . $this->safeUrl($m[1]) . '" rel="nofollow">' . $m[1] . '</a>';
+        }, $s) ?? $s;
+        $s = preg_replace_callback('/\x03TAG(\d+)\x03/', function ($m) use ($builtTags) {
+            return $builtTags[(int) $m[1]] ?? '';
+        }, $s);
+
         // Bold: **text** or __text__. Match first so single * isn't taken
         // as italic + italic.
         $s = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $s);
@@ -226,14 +243,23 @@ class Markdown
      * (#…), and relative URLs (/foo, foo/bar). Anything else — most
      * notably javascript: — gets replaced with about:blank so a malicious
      * Markdown source can't ship XSS through a link href.
+     *
+     * Phase 43.188a — reject protocol-relative URLs (`//evil.com/x`).
+     * Pre-fix the `^/` branch matched both single-leading-slash
+     * relative paths AND double-slash protocol-relative URLs which
+     * the browser resolves cross-origin (open-redirect-via-Markdown
+     * surface). Now: explicit reject of any URL whose first two
+     * characters are `//` before any other matching runs.
      */
     private function safeUrl(string $url): string
     {
         $u = trim($url);
         if ($u === '') return 'about:blank';
         // XSS-M2 — reject protocol-relative URLs (`//evil.com/x`). Browsers
-        // resolve these cross-origin (open-redirect / off-site resource); the
-        // `/` branch below would otherwise return them verbatim.
+        // resolve these cross-origin (open-redirect / off-site resource). The
+        // docblock above documents this reject but the 43.199c rewrite dropped
+        // it from the code, so `//evil.com` fell through to the `/` branch and
+        // was returned verbatim. Restore it here, before any other matching.
         if (str_starts_with($u, '//')) return 'about:blank';
         // Phase 43.199c M1 — explicit colon-before-slash reject. Pre-fix
         // the `[a-z0-9._-]+(/|$)` branch accepted `data.foo/bar;...`

@@ -8,11 +8,11 @@
 /* Page body — vertically-centered card on a soft-gray background. */
 body.auth {
     margin: 0;
-    background: var(--color-gray-50);
-    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-page, var(--color-gray-50));
+    display: flex; align-items: center; justify-content: var(--auth-justify, center);
     min-height: 100vh; padding: 2rem;
     font-family: var(--font);
-    color: var(--color-gray-900);
+    color: var(--text-default, var(--color-gray-900));
 }
 
 /* The floating card the form lives in. Uses the theme surface var so it
@@ -26,7 +26,7 @@ body.auth {
     box-shadow: 0 4px 24px rgba(0,0,0,.08);
     padding: 2.5rem;
     width: 100%;
-    max-width: 440px;
+    max-width: var(--auth-card-width, 440px);
 }
 .auth-card--wide   { max-width: 520px; }
 .auth-card--wider  { max-width: 560px; }
@@ -38,17 +38,39 @@ body.auth {
 }
 .auth-logo h1 {
     font-size: 1.5rem; font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-default, var(--color-gray-900));
     margin: .5rem 0 .25rem;
 }
 .auth-logo p {
-    color: var(--color-gray-500); font-size: 14px; margin: 0;
+    color: var(--text-muted, var(--color-gray-500)); font-size: 14px; margin: 0;
 }
+/* Track B Phase 4 — brand logo image in the lockup slot (replaces the emoji
+   when a logo is set). */
+.auth-logo .auth-emoji img { max-height: 48px; width: auto; display: inline-block; }
+
+/* Track B Phase 4 — auth layout variants (the `auth_layout` setting → a body
+   class). The default `centered-card` uses the rules above. --auth-image is
+   emitted per-page by SiteChromeService::authImageCss() when a brand image is
+   set; it falls back to a brand gradient so the layouts work without an image.
+   Inert on framework-standalone (the body class only ever becomes
+   auth--centered-card there). */
+@media (min-width: 880px) {
+    body.auth--split-image { justify-content: flex-start; padding: 0; }
+    body.auth--split-image .auth-card { margin: auto 0 auto max(4rem, 6vw); box-shadow: none; }
+    body.auth--split-image::after {
+        content: ''; position: fixed; right: 0; top: 0; bottom: 0; width: 45vw;
+        background: var(--auth-image, linear-gradient(135deg, var(--color-primary), var(--color-primary-dark, var(--color-primary)))) center / cover no-repeat;
+    }
+}
+body.auth--hero-overlay {
+    background: var(--auth-image, linear-gradient(135deg, var(--color-primary), var(--color-primary-dark, var(--color-primary)))) center / cover no-repeat fixed;
+}
+body.auth--hero-overlay .auth-card { box-shadow: 0 12px 48px rgba(0,0,0,.28); }
 
 /* Footer (e.g. "Already have an account? Sign in"). */
 .auth-footer {
     text-align: center; margin-top: 1.5rem;
-    font-size: 13.5px; color: var(--color-gray-500);
+    font-size: 13.5px; color: var(--text-muted, var(--color-gray-500));
 }
 .auth-footer a {
     color: var(--color-primary);
@@ -66,32 +88,33 @@ body.auth {
 /* OAuth button row + "or" divider. */
 .btn-oauth {
     background: var(--bg-panel, #fff);
-    color: var(--color-gray-900);
-    border: 1px solid var(--color-gray-300);
+    color: var(--text-default, var(--color-gray-900));
+    border: 1px solid var(--border-default, var(--color-gray-300));
     margin-bottom: .5rem;
     font-weight: 500;
 }
-.btn-oauth:hover { background: var(--color-gray-50); }
+.btn-oauth:hover { background: var(--bg-page, var(--color-gray-50)); }
 .btn-oauth .oauth-icon { width: 20px; height: 20px; }
 
 .divider {
     display: flex; align-items: center; gap: .75rem;
     margin: 1.25rem 0;
-    color: var(--color-gray-500); font-size: 12px;
+    color: var(--text-muted, var(--color-gray-500)); font-size: 12px;
 }
 .divider::before, .divider::after {
-    content: ''; flex: 1; border-top: 1px solid var(--color-gray-200);
+    content: ''; flex: 1; border-top: 1px solid var(--border-default, var(--color-gray-200));
 }
 
 /* Inline static fields shown as read-only contextual chrome
    (e.g. "Claiming as <email>" on the password-set page).      */
 .auth-static {
-    background: var(--color-gray-100);
+    background: var(--bg-page, var(--color-gray-100));
+    border: 1px solid var(--border-default, var(--color-gray-200));
     border-radius: 6px;
     padding: .6rem .8rem;
     font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', Consolas, monospace;
     font-size: 13px;
-    color: var(--color-gray-900);
+    color: var(--text-default, var(--color-gray-900));
     margin-bottom: 1.25rem;
     text-align: center;
 }
@@ -107,12 +130,12 @@ body.auth {
 }
 .subdomain-row .suffix {
     padding: .55rem .75rem;
-    background: var(--color-gray-100);
-    border: 1px solid var(--color-gray-300);
+    background: var(--bg-page, var(--color-gray-100));
+    border: 1px solid var(--border-default, var(--color-gray-300));
     border-left: 0;
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
-    color: var(--color-gray-700);
+    color: var(--text-muted, var(--color-gray-700));
     font-size: 14px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     display: flex; align-items: center; white-space: nowrap;
@@ -128,14 +151,14 @@ body.auth {
     .plan-grid { grid-template-columns: 1fr; }
 }
 .plan-card {
-    border: 2px solid var(--color-gray-200);
+    border: 2px solid var(--border-default, var(--color-gray-200));
     border-radius: var(--radius);
     padding: 1rem; cursor: pointer;
     transition: border-color .15s, background-color .15s;
 }
 .plan-card:hover {
-    border-color: var(--color-gray-300);
-    background: var(--color-gray-50);
+    border-color: var(--border-strong, var(--color-gray-300));
+    background: var(--bg-page, var(--color-gray-50));
 }
 .plan-card input { margin-right: .5rem; }
 .plan-card.selected {
@@ -143,14 +166,14 @@ body.auth {
     background: var(--color-purple-bg);
 }
 .plan-card .name {
-    font-weight: 600; font-size: 14px; color: var(--color-gray-900);
+    font-weight: 600; font-size: 14px; color: var(--text-default, var(--color-gray-900));
 }
 .plan-card .price {
     font-size: 20px; font-weight: 700;
-    color: var(--color-gray-900); margin: .25rem 0;
+    color: var(--text-default, var(--color-gray-900)); margin: .25rem 0;
 }
 .plan-card .desc {
-    font-size: 12px; color: var(--color-gray-500); line-height: 1.4;
+    font-size: 12px; color: var(--text-muted, var(--color-gray-500)); line-height: 1.4;
 }
 
 /* Success / warning hero icon (signup_success "✓" / claim_invalid "!"). */

@@ -86,12 +86,16 @@ class UploadsController
 
         $isImage = str_starts_with($mimeType, 'image/');
 
+        // Phase 43.197a C4 — sanitize filename via central helper.
+        // basename of user-uploaded path could contain CRLF if the
+        // upload validator missed control chars in the saved filename.
+        $safeName = \Core\Response::safeFilename(basename($fullPath), 'download');
         return new Response($fileContent, 200, [
             'Content-Type'              => $mimeType,
             'X-Content-Type-Options'    => 'nosniff',
             'Cache-Control'             => $isImage ? 'public, max-age=86400, immutable' : 'private, no-store',
             'Content-Length'            => (string) strlen($fileContent),
-            'Content-Disposition'       => $isImage ? 'inline' : 'attachment; filename="' . basename($fullPath) . '"',
+            'Content-Disposition'       => $isImage ? 'inline' : 'attachment; filename="' . $safeName . '"',
         ]);
     }
 }

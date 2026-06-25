@@ -46,6 +46,15 @@ class Response
             ? ChromeWrapper::wrap($this)
             : $this->body;
 
+        // First-party analytics: inject the tracker before </body> on HTML
+        // responses when the analytics module is installed. Single chokepoint
+        // so it covers EVERY page shell (chrome / guest / 3-pane / module
+        // views). Same-origin script → default CSP allows it. Idempotent +
+        // fully guarded, so it's a no-op on non-HTML, framework-only installs,
+        // or sites without the module.
+        $body = self::injectAnalyticsTracker($body, (string) ($this->headers['Content-Type'] ?? ''));
+        $body = self::injectPolicyClauses($body, (string) ($this->headers['Content-Type'] ?? ''));
+
         http_response_code($this->status);
         foreach ($this->headers as $name => $value) {
             header("$name: $value");
@@ -56,6 +65,59 @@ class Response
         if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'HEAD') {
             echo $body;
         }
+    }
+
+    /**
+     * Inject the first-party analytics SDK before </body> for HTML pages when
+     * the `analytics` module is installed. Builder feature; safe no-op when the
+     * module/helpers are absent (framework-only) or the response isn't HTML.
+     */
+    private static function injectAnalyticsTracker(string $body, string $contentType): string
+    {
+        if ($body === '' || stripos($contentType, 'text/html') === false) return $body;
+        if (stripos($body, '/analytics/sdk.js') !== false) return $body;   // already present
+        $pos = strripos($body, '</body>');
+        if ($pos === false) return $body;
+        if (!function_exists('module_active') || !module_active('analytics')) return $body;
+        if (function_exists('setting') && setting('analytics_tracking_enabled', true) === false) return $body;
+        return substr($body, 0, $pos)
+             . '<script src="/analytics/sdk.js" defer></script>'
+             . substr($body, $pos);
+    }
+
+    /**
+     * Fallback: ensure the /privacy + /terms pages carry installed modules'
+     * policySections() clauses even on page shells that bypass the page render
+     * closure (e.g. the 3-pane unified-chrome layout). No-op when the closure
+     * already injected them (the `policy-module-clauses` marker is present), or
+     * on non-HTML / non-policy URLs / framework-only installs.
+     */
+    private static function injectPolicyClauses(string $body, string $contentType): string
+    {
+        if ($body === '' || stripos($contentType, 'text/html') === false) return $body;
+        if (stripos($body, 'policy-module-clauses') !== false) return $body;   // already injected
+        $path = strtolower(parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?: '');
+        $kind = ['/privacy' => 'privacy', '/terms' => 'tos', '/tos' => 'tos'][$path] ?? null;
+        if ($kind === null) return $body;
+        $pos = strripos($body, '</body>');
+        if ($pos === false) return $body;
+        if (!function_exists('module_active') || !class_exists(\Core\Module\ModuleRegistry::class)) return $body;
+        try {
+            $reg = \Core\Container\Container::global()->get(\Core\Module\ModuleRegistry::class);
+            $extra = '';
+            foreach ($reg->all() as $prov) {
+                if (!$prov instanceof \Core\Module\ModuleProvider) continue;
+                $secs = $prov->policySections();
+                if (!is_array($secs) || empty($secs[$kind]['body_html'])) continue;
+                $h = (string) ($secs[$kind]['heading'] ?? '');
+                if ($h !== '') $extra .= '<h2>' . htmlspecialchars($h, ENT_QUOTES) . '</h2>';
+                $extra .= (string) $secs[$kind]['body_html'];
+            }
+        } catch (\Throwable) { return $body; }
+        if ($extra === '') return $body;
+        $block = '<div class="policy-module-clauses" style="max-width:760px;margin:1.5rem auto;padding:0 1rem">'
+               . \Core\Validation\Validator::sanitizeHtml($extra) . '</div>';
+        return substr($body, 0, $pos) . $block . substr($body, $pos);
     }
 
     public function withFlash(string $type, string $message): self

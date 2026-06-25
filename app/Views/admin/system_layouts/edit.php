@@ -247,7 +247,7 @@ document.addEventListener('change', (e) => {
         if (newType === 'content_slot' && !existing) {
             const span = document.createElement('span');
             span.className = 'placement-kind-badge';
-            span.style.cssText = 'display:inline-block;margin-top:.3rem;padding:.05rem .4rem;background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;border-radius:10px;font-size:10.5px;font-weight:600';
+            span.style.cssText = 'display:inline-block;margin-top:.3rem;padding:.05rem .4rem;background:var(--color-info-bg);color:#0e7490;border:1px solid #a5f3fc;border-radius:10px;font-size:10.5px;font-weight:600';
             span.textContent = 'Page content';
             kindCell.appendChild(span);
         } else if (newType !== 'content_slot' && existing) {

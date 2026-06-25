@@ -555,6 +555,7 @@ class AuthController
     public function oauthRedirect(Request $request): Response
     {
         $provider = $request->param(0);
+
         $cfg = $this->getOAuthConfig($provider);
         if (!$cfg) return Response::redirect('/login')->withFlash('error', 'OAuth provider not configured.');
 
@@ -570,16 +571,40 @@ class AuthController
 
     public function oauthCallback(Request $request): Response
     {
-        $provider = $request->param(0);
-        $code     = $request->query('code', '');
-        $state    = $request->query('state', '');
+        $provider = (string) $request->param(0);
+        $code     = (string) $request->query('code', '');
+        $state    = (string) $request->query('state', '');
 
-        if ($state !== Session::get('oauth_state')) {
+        // Phase 43.195a C2 — clear oauth_state BEFORE the compare (43.195c M2)
+        // so any callback attempt consumes the one-shot state. Pre-fix the
+        // forget only ran on the success branch; failed-state attempts left
+        // the stored state alive for replay by a subsequent legitimate callback.
+        $expectedState = (string) Session::get('oauth_state', '');
+        Session::forget('oauth_state');
+        if ($expectedState === '' || !hash_equals($expectedState, $state)) {
             return Response::redirect('/login')->withFlash('error', 'Invalid OAuth state. Please try again.');
         }
-        Session::forget('oauth_state');
 
-        $cfg         = $this->getOAuthConfig($provider);
+        // Phase 43.195a C2 — reject empty code BEFORE any token exchange.
+        // Pre-fix the user cancelling on the provider side (which fires the
+        // callback URL with valid state + no code) would let an empty $code
+        // flow into exchangeOAuthCode, then an empty provider_id reach
+        // attemptOAuth — if any user_oauth row had blank provider_id (from
+        // a prior buggy callback), it would silently authenticate THAT user.
+        if ($code === '') {
+            return Response::redirect('/login')->withFlash('error', 'OAuth was cancelled or no authorization code was returned.');
+        }
+
+        // Phase 43.195a C2 — provider allowlist gate. Pre-fix a bogus
+        // provider slug from the URL reached getOAuthConfig() which would
+        // return null; the cfg-null check below was implicit (NPE caught
+        // by try/catch), so the malformed flow surfaced as a generic
+        // error. Fail loud + early instead.
+        $cfg = $this->getOAuthConfig($provider);
+        if ($cfg === null) {
+            return Response::redirect('/login')->withFlash('error', 'Unknown OAuth provider.');
+        }
+
         $redirectUri = config('app.url') . "/auth/oauth/$provider/callback";
 
         try {
@@ -625,17 +650,33 @@ class AuthController
         $enable = (bool) $request->post('enable', 0);
         $this->auth->toggleSuperadminMode($enable);
 
+        // Phase 43.198c M1 — rotate session id after privilege elevation.
+        // Pre-fix the in-session SA-mode flip didn't rotate session id;
+        // an attacker who captured PHPSESSID while the user was non-SA
+        // (XSS / shared device / coffee-shop network) could re-send the
+        // same cookie + observe the elevation when the legitimate user
+        // toggles SA on. Best-effort: rotate only when a session is
+        // actually active (CLI / test contexts may not have one).
+        try {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
+        } catch (\Throwable) { /* best-effort */ }
+
         if ($request->isAjax()) {
             return Response::json(['success' => true, 'mode' => $enable]);
         }
 
-        $back = $request->header('Referer') ?: '/dashboard';
-        // Don't let Referer be used to redirect offsite.
-        if (!preg_match('#^https?://#i', $back) || str_starts_with($back, (string) config('app.url'))) {
-            // relative or same-origin — ok
-        } else {
-            $back = '/dashboard';
-        }
+        // Phase 43.187a — fix open-redirect via Referer. Pre-fix
+        // regex `!preg_match('#^https?://#i', $back)` accepted
+        // protocol-relative `//evil.com/x` (doesn't match `https?://`
+        // but resolves cross-origin in the browser). safeRedirect()
+        // correctly rejects `//` URLs + protocol-relatives + anything
+        // outside the configured app.url.
+        $back = \Core\Auth\Auth::safeRedirect(
+            (string) ($request->header('Referer') ?: ''),
+            '/dashboard'
+        );
 
         return Response::redirect($back)->withFlash(
             'success',
@@ -672,7 +713,8 @@ class AuthController
 
     public function sendPasswordReset(Request $request): Response
     {
-        $v = new Validator($request->post());
+        $ip = $request->ip();
+        $v  = new Validator($request->post());
         $v->validate(['email' => 'required|email']);
         if ($v->fails()) {
             Session::flash('errors', $v->errors());
@@ -681,16 +723,25 @@ class AuthController
 
         $email = strtolower($v->get('email'));
 
-        // AUTH-M3 — rate-limit password-reset requests (pre-fix: none). Stops
-        // inbox flooding + email enumeration via send-timing/cost. Key by
-        // 'pwreset:'+email (independent of login attempts); increment BEFORE
-        // the user lookup so bots can't enumerate by counting pre-lockout
-        // hits. Mirror the constant-success-message so a rate-limited reply
-        // doesn't leak "exists but throttled" vs "doesn't exist".
-        $ip = $request->ip();
+        // Phase 43.187b — rate-limit password-reset requests. Pre-fix:
+        // no limiter on this endpoint at all. Attacker could hammer
+        // it to enumerate emails (the success message is identical
+        // regardless of whether the email exists — good — but the
+        // server still queues + sends a real email when it does,
+        // flooding inboxes + producing measurable cost differences).
+        // Use the same RateLimiter the login path uses; key by
+        // 'pwreset:'+email so the count is independent of login
+        // attempts. Increment BEFORE the user-existence check so
+        // bots can't enumerate by counting hits before lockout.
         $rateKey = 'pwreset:' . $email;
         if ($this->limiter->tooManyAttempts($rateKey, $ip)) {
-            return Response::redirect('/login')->withFlash('success', 'If that email exists, a reset link has been sent.');
+            // Mirror the constant-success-message pattern below to
+            // avoid leaking "this email exists but is rate-limited"
+            // vs "this email doesn't exist."
+            return Response::redirect('/login')->withFlash(
+                'success',
+                'If that email exists, a reset link has been sent.'
+            );
         }
         $this->limiter->hit($rateKey, $ip);
 

@@ -14,9 +14,9 @@ namespace Core\Services;
  *      tracing (SENTRY_TRACES_SAMPLE_RATE).
  *
  *   2. Hand-rolled HTTP fallback — used when the SDK isn't installed (a
- *      checkout that skipped `composer install`, or a stripped deploy). Posts
- *      directly to the legacy /store/ endpoint. Error/exception capture only;
- *      no tracing or breadcrumbs.
+ *      framework-only checkout that skipped `composer install`, or a stripped
+ *      deploy). Posts directly to the legacy /store/ endpoint. Error/exception
+ *      capture only; no tracing or breadcrumbs.
  *
  * Either way: enabled when SENTRY_DSN is set, every method a no-op otherwise.
  * init() is hooked from core/bootstrap.php so both the web (public/index.php)
@@ -27,6 +27,7 @@ namespace Core\Services;
  * Privacy posture (preserved across both paths): we attach the authenticated
  * user's id + email + ip_address and nothing else — send_default_pii stays
  * false so the SDK doesn't auto-collect cookies / headers / request bodies.
+ * See auto-memory reference_sentry_user_context for the rationale.
  */
 class SentryService
 {
@@ -164,7 +165,7 @@ class SentryService
             'traces_sample_rate'    => $traces,
             // We attach user context (id/email/ip) deliberately in before_send;
             // keep auto-PII off so cookies / headers / request bodies aren't
-            // collected. See the class docblock for the privacy rationale.
+            // collected. See class docblock + reference_sentry_user_context.
             'send_default_pii'      => false,
             'attach_stacktrace'     => true,
             'max_request_body_size' => 'medium',
