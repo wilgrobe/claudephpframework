@@ -27,12 +27,27 @@
 
 $base = defined('BASE_PATH') ? BASE_PATH : __DIR__ . '/..';
 
-// Default premium location: a sibling checkout. Tunable via env so a
-// production server with a non-standard layout (e.g. /opt/cphpf-core
-// + /opt/cphpf-premium) doesn't have to edit code.
-$premium = $_ENV['MODULE_PREMIUM_PATH']
-    ?? getenv('MODULE_PREMIUM_PATH')
-    ?: realpath($base . '/../claudephpframeworkpremium/modules');
+// Premium-modules location, resolved in priority order:
+//
+//   1. An EXPLICIT MODULE_PREMIUM_PATH (env) — honored on any install, so a
+//      production server with a non-standard layout (e.g. /opt/cphpf-core +
+//      /opt/cphpf-premium) can point at a vendored copy without editing code.
+//   2. STANDALONE BUILD — a generated single-tarball kit bundles its premium
+//      modules directly into `modules/` (ZipBuilder::layStandaloneKit). It drops
+//      `config/standalone.flag` to say so; when present we must NOT also scan a
+//      sibling checkout, because that double-loads modules AND can pull in a
+//      sibling's migrations that reference classes absent from the bundled core
+//      (the "Class Core\Business\PlatformBusiness not found" migrate failure).
+//   3. DEV CONVENTION — fall back to a sibling `../claudephpframeworkpremium`
+//      checkout (how a paired core+premium working tree runs locally).
+$explicitPremium = $_ENV['MODULE_PREMIUM_PATH'] ?? getenv('MODULE_PREMIUM_PATH') ?: null;
+if (is_string($explicitPremium) && $explicitPremium !== '') {
+    $premium = $explicitPremium;
+} elseif (is_file($base . '/config/standalone.flag')) {
+    $premium = false; // premium is bundled into modules/ — don't scan a sibling
+} else {
+    $premium = realpath($base . '/../claudephpframeworkpremium/modules');
+}
 
 $paths = [
     $base . '/modules',
