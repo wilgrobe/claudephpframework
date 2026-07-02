@@ -51,9 +51,45 @@ class CsrfMiddleware
                         ]);
                     }
                 } catch (\Throwable) { /* best-effort */ }
+
+                // Self-heal for normal browser form posts. A returning user whose
+                // session expired (idle timeout, cookie rotation, a bfcache-restored
+                // login page) submits a token from the OLD session. Rather than a
+                // dead-end 419 with no way forward, send them back to the form they
+                // came from with a FRESH token + a clear message, so the retry
+                // succeeds. csrf_token() below regenerates the token (we unset it
+                // above), and the redirect's GET renders it bound to the current
+                // session. AJAX / fetch callers (which send Accept: json, an
+                // X-Requested-With header, or the X-CSRF-Token header) still get the
+                // 419 so their JS can handle it explicitly.
+                $accept = strtolower((string) ($request->header('Accept') ?? ''));
+                $isAjax = str_contains($accept, 'application/json')
+                    || strtolower((string) ($request->header('X-Requested-With') ?? '')) === 'xmlhttprequest'
+                    || $request->header('X-CSRF-Token') !== null;
+                if (!$isAjax) {
+                    csrf_token(); // regenerate now so the redirected GET has a valid token
+                    return Response::redirect($this->safeReferer($request))
+                        ->withFlash('error', 'Your session timed out for security — please try again.');
+                }
                 return new Response('CSRF token mismatch. Please go back and try again.', 419);
             }
         }
         return $next($request);
+    }
+
+    /** Same-origin Referer path to bounce a failed form post back to, else '/'. */
+    private function safeReferer(Request $request): string
+    {
+        $ref = (string) ($request->header('Referer') ?? '');
+        if ($ref !== '') {
+            $host = (string) ($_SERVER['HTTP_HOST'] ?? '');   // includes :port
+            $p = parse_url($ref);
+            $refHost = ($p['host'] ?? '') . (isset($p['port']) ? ':' . $p['port'] : '');
+            if ($host !== '' && $refHost === $host) {
+                $path = ($p['path'] ?? '/') . (isset($p['query']) ? '?' . $p['query'] : '');
+                if ($path !== '' && $path[0] === '/' && !str_starts_with($path, '//')) return $path;
+            }
+        }
+        return '/';
     }
 }
