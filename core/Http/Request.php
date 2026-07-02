@@ -37,14 +37,43 @@ class Request
             }
         }
 
-        return new static(
+        // JSON request bodies. An HTML form posts url-encoded data into $_POST,
+        // but `fetch(url, {headers:{'Content-Type':'application/json'}, body:
+        // JSON.stringify(...)})` does NOT populate $_POST — so post() would miss
+        // the payload entirely (every JSON-fetch write would silently receive an
+        // empty body). Parse a JSON body once and merge it into the post bag so
+        // post()/all() see it just like form fields. We read php://input a
+        // SINGLE time and seed the raw() cache with the exact bytes, so webhook
+        // handlers that verify a signature over raw() are unaffected (php://input
+        // is non-rewindable on some SAPIs, so it must only be read once).
+        $post    = $_POST;
+        $rawBody = null;
+        $ctype   = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? ''));
+        if ($method !== 'GET' && str_contains($ctype, 'application/json')) {
+            $rawBody = (string) @file_get_contents('php://input');
+            if ($rawBody !== '') {
+                $decoded = json_decode($rawBody, true);
+                // Only object bodies map to named fields; a bare JSON array/scalar
+                // stays accessible via raw(). $_POST keys win on conflict (defensive
+                // — $_POST is normally empty for an application/json request).
+                if (is_array($decoded) && array_is_list($decoded) === false) {
+                    $post = $post + $decoded;
+                }
+            }
+        }
+
+        $req = new static(
             $method,
             $_GET,
-            $_POST,
+            $post,
             $_SERVER,
             $_COOKIE,
             $_FILES
         );
+        if ($rawBody !== null) {
+            $req->raw = $rawBody; // seed cache so raw() never re-reads php://input
+        }
+        return $req;
     }
 
     public function method(): string { return $this->method; }

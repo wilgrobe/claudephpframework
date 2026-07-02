@@ -42,6 +42,15 @@ class Database
 
         // Strict SQL mode for safer inserts
         $this->pdo->exec("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO'");
+
+        // Pin the MySQL session to UTC so DB NOW() matches PHP, which runs in
+        // UTC (config('app.timezone')='UTC'). Without this, MySQL uses the DB
+        // host's system TZ — on a server that isn't UTC (e.g. a shared host in
+        // US/Pacific) PHP-stamped `available_at`/timestamps land hours away from
+        // NOW(), so `WHERE available_at <= NOW()` mis-fires and the DB-backed
+        // queue effectively never drains. The '+00:00' offset form needs no
+        // named-timezone tables, so it's safe on any MySQL.
+        $this->pdo->exec("SET time_zone = '+00:00'");
     }
 
     public static function getInstance(): self

@@ -148,6 +148,19 @@ class Response
     }
 
     /**
+     * 404 Not Found response. Generated modules (and most frameworks) reach for
+     * a `Response::notFound()` factory, so provide one: a "not found" guard is
+     * then a one-liner instead of a hand-built `new Response('', 404)` — or, as
+     * generated code sometimes wrote, an illegal STATIC call to the instance
+     * method `Response::status(404)` that fatals at runtime. Body defaults to a
+     * minimal message; callers wanting a themed 404 should render a view.
+     */
+    public static function notFound(string $body = 'Not Found'): self
+    {
+        return new self($body, 404, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
+
+    /**
      * Phase 43.197b H4 — explicit local-path redirect. Refuses URLs
      * that aren't a single forward-slash-prefixed path (no scheme, no
      * host, no protocol-relative `//evil.com`). When the URL doesn't
