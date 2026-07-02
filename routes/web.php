@@ -1,7 +1,7 @@
 <?php
 // routes/web.php
 
-use App\Middleware\{AuthMiddleware, GuestMiddleware, CsrfMiddleware, RequireAdmin, RequireSuperadmin};
+use App\Middleware\{AuthMiddleware, GuestMiddleware, CsrfMiddleware, CsrfExempt, RequireAdmin, RequireSuperadmin};
 
 /** @var \Core\Router\Router $router */
 
@@ -177,7 +177,12 @@ $router->post('/login',                     'AuthController@login',            [
 $router->post('/dev/login-as',              'AuthController@devLoginAs',       [CsrfMiddleware::class, GuestMiddleware::class]);
 $router->get('/register',                   'AuthController@showRegister',     [GuestMiddleware::class]);
 $router->post('/register',                  'AuthController@register',         [CsrfMiddleware::class, GuestMiddleware::class]);
-$router->post('/logout',                    'AuthController@logout',           [CsrfMiddleware::class, AuthMiddleware::class]);
+// Logout is CSRF-exempt: its whole purpose is to END the session, so a "forged"
+// logout has the same outcome as a real one (and SameSite=Lax already blocks a
+// cross-site POST from carrying the session cookie). No AuthMiddleware either, so a
+// timed-out user can always log out cleanly instead of hitting a CSRF/redirect wall
+// — Auth::logout() is idempotent and guest-safe.
+$router->post('/logout',                    'AuthController@logout',           [CsrfExempt::class]);
 $router->get('/password/forgot',            'AuthController@showForgotPassword');
 $router->post('/password/forgot',           'AuthController@sendPasswordReset',[CsrfMiddleware::class]);
 $router->get('/password/reset',             'AuthController@showResetPassword');
