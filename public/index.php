@@ -32,6 +32,15 @@ if (function_exists('ini_parse_quantity')) {
 // Autoload (helpers.php is loaded via Composer's "files" autoload)
 require BASE_PATH . '/vendor/autoload.php';
 
+// Restore the real client IP when behind Cloudflare (or another CDN that sets
+// CF-Connecting-IP). MUST run before anything reads the client IP — tenant
+// rate-limiting, IP allowlists, audit logging, CAPTCHA remoteip all key on
+// REMOTE_ADDR. Guarded + idempotent: a no-op unless REMOTE_ADDR is a Cloudflare
+// edge (hosts that already restore the IP at the web-server level, e.g.
+// DreamHost's mod_remoteip, hand us the real client so this does nothing;
+// bare hosts behind Cloudflare get the restoration they'd otherwise lack).
+\Core\Http\TrustedProxy::restoreClientIp();
+
 // Tenant resolution MUST run before the DB session handler is wired,
 // because that handler calls Database::getInstance() which caches a
 // PDO against $_ENV['DB_DATABASE'] AT THAT MOMENT. If we let the
