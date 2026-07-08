@@ -136,6 +136,14 @@ class Router
         // in Response::send(), so headers + status match GET exactly.
         $headFallsBackToGet = ($method === 'HEAD');
 
+        // Pick the MOST SPECIFIC matching route — the one with the fewest {param}
+        // placeholders — so a literal route (/app/products/create) always beats a
+        // parametric one (/app/products/{id}) regardless of which was registered
+        // first. Pre-fix this was first-match-wins by registration order, so a
+        // generated routes.php that listed /app/products/{id} before
+        // /app/products/create sent "create" into show({id}=create). Ties (same
+        // param count — e.g. a same-URL override) keep registration order.
+        $matched = null; $matchedParams = null; $bestParamCount = PHP_INT_MAX;
         foreach ($this->routes as $route) {
             if ($route['method'] !== $method
                 && !($headFallsBackToGet && $route['method'] === 'GET')) {
@@ -143,8 +151,16 @@ class Router
             }
             $params = $this->matchRoute($route['path'], $uri);
             if ($params === null) continue;
+            $paramCount = (int) preg_match_all('/\{[^}]+\}/', $route['path']);
+            if ($paramCount < $bestParamCount) {
+                $matched = $route; $matchedParams = $params; $bestParamCount = $paramCount;
+                if ($paramCount === 0) break; // exact literal match — unbeatable
+            }
+        }
 
-            $request->setParams($params);
+        if ($matched !== null) {
+            $route = $matched;
+            $request->setParams($matchedParams);
 
             // Default-deny CSRF: every state-changing request gets
             // CsrfMiddleware prepended unless the route explicitly opts
