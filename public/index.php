@@ -378,7 +378,26 @@ if (class_exists(\Modules\Policies\Middleware\RequirePolicyAcceptance::class)) {
     }
 }
 
-$response = $router->dispatch($request);
+// An access gate or a controller may throw a Core\Http\HttpException
+// (forbidden / notFound / unauthorized) as control flow — it carries its own
+// HTTP status. Render that status with a clean page here (in BOTH dev and prod)
+// instead of letting it bubble to a raw fatal + stack trace (dev) or a generic
+// 500 (prod).
+try {
+    $response = $router->dispatch($request);
+} catch (\Core\Http\HttpException $he) {
+    $sc  = method_exists($he, 'statusCode') ? (int) $he->statusCode() : 500;
+    $msg = htmlspecialchars($he->getMessage() ?: 'This request could not be completed.', ENT_QUOTES);
+    $response = new \Core\Response(
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' . $sc . '</title></head>'
+        . '<body style="font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:4rem 1rem;color:#334155;">'
+        . '<h1 style="font-size:3.5rem;margin:0;color:#94a3b8;">' . $sc . '</h1>'
+        . '<p style="font-size:1.05rem;">' . $msg . '</p>'
+        . '<p><a href="/" style="color:#2563eb;text-decoration:none;">← Back to home</a></p>'
+        . '</body></html>',
+        $sc
+    );
+}
 $response->send();
 
 // The response is fully dispatched by this point. No post-response work
