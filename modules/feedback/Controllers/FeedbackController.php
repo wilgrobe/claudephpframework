@@ -27,6 +27,23 @@ class FeedbackController
         return function_exists('setting') && (string) setting('builder.feedback.enabled') === '1';
     }
 
+    /**
+     * Verify the CAPTCHA token, if a provider is configured. Returns true when
+     * captcha is disabled so the form still works on local/dev. The session
+     * lock is released around the synchronous provider round-trip (same reason
+     * AuthController does — a slow provider shouldn't block concurrent requests
+     * sharing this session).
+     */
+    private function captchaOk(Request $request): bool
+    {
+        $token       = \Core\Services\CaptchaService::tokenFromRequest($request->post());
+        $wasActive   = session_status() === PHP_SESSION_ACTIVE;
+        if ($wasActive) session_write_close();
+        $ok          = \Core\Services\CaptchaService::verify($token, (string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+        if ($wasActive) session_start();
+        return $ok;
+    }
+
     private function siteName(): string
     {
         $n = function_exists('setting') ? (string) setting('site_name') : '';
@@ -66,6 +83,14 @@ class FeedbackController
         // Honeypot — bots fill hidden fields; humans leave them empty.
         if (trim((string) $request->post('website') ?? '') !== '') {
             Session::flash('success', 'Thanks for your feedback!');
+            return Response::redirect($back);
+        }
+
+        // CAPTCHA gate — enforced on prod (Turnstile/reCAPTCHA/hCaptcha);
+        // degrades to pass when no provider is configured (local/dev).
+        if (!$this->captchaOk($request)) {
+            Session::flash('feedback_old', $request->post());
+            Session::flash('error', 'Please complete the anti-spam check and try again.');
             return Response::redirect($back);
         }
 

@@ -122,6 +122,11 @@ $isAnon        = !empty($old['is_anonymous']);
             </div>
         </div>
 
+        <?php $__captcha = function_exists('captcha_widget') ? captcha_widget() : ''; ?>
+        <?php if ($__captcha !== ''): ?>
+            <div class="fb-field"><?= $__captcha ?></div>
+        <?php endif; ?>
+
         <button type="submit" class="fb-submit">Send</button>
     </form>
 </div>

@@ -63,9 +63,23 @@ final class ContactController
         $ip = self::clientIp();
         $ua = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
 
-        $result = ContactService::submit($payload, $ip, $ua);
-
         $back = self::resolveReturnUrl((string) ($_POST['return_url'] ?? '/contact'));
+
+        // CAPTCHA gate — enforced on prod (Turnstile/reCAPTCHA/hCaptcha);
+        // degrades to pass when no provider is configured (local/dev). The
+        // session lock is released around the synchronous provider round-trip.
+        $capToken  = \Core\Services\CaptchaService::tokenFromRequest($_POST);
+        $wasActive = session_status() === PHP_SESSION_ACTIVE;
+        if ($wasActive) session_write_close();
+        $capOk     = \Core\Services\CaptchaService::verify($capToken, $ip);
+        if ($wasActive) session_start();
+        if (!$capOk) {
+            Session::flash('contact_old', $payload);
+            Session::flash('error', 'Please complete the anti-spam check and try again.');
+            return Response::redirect($back);
+        }
+
+        $result = ContactService::submit($payload, $ip, $ua);
 
         if ($result['ok'] ?? false) {
             // Honeypot triggered = silently drop, lie to bots with success

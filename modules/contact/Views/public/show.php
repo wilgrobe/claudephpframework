@@ -118,6 +118,11 @@ $e = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_HTML5, 'UTF
                 <?php if (isset($errors['body'])): ?><div class="err"><?= $e($errors['body']) ?></div><?php endif; ?>
             </div>
 
+            <?php $__captcha = function_exists('captcha_widget') ? captcha_widget() : ''; ?>
+            <?php if ($__captcha !== ''): ?>
+                <div class="contact-field"><?= $__captcha ?></div>
+            <?php endif; ?>
+
             <button type="submit" class="contact-submit">Send message</button>
         </form>
     <?php endif; ?>
