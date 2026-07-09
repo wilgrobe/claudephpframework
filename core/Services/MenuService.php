@@ -16,6 +16,8 @@ use Core\Auth\Auth;
  *   permission   — user must have condition_value permission slug
  *   group        — user must be in condition_value group slug
  *   module       — module_active(condition_value) (admin-nav per-module gating)
+ *   setting      — site setting condition_value is truthy (1/true/on/yes) —
+ *                  feature-toggle gating for always-present modules
  *   admin        — user has the 'admin' OR 'super-admin' role (admin chrome)
  *   superadmin   — user is a superadmin (Auth::isSuperAdmin())
  */
@@ -180,6 +182,15 @@ class MenuService
                 // the right answer (no nav rendered there anyway).
                 return function_exists('module_active')
                     && module_active((string) ($item['condition_value'] ?? ''));
+            case 'setting':
+                // Feature-toggle gating: the item shows only when the site
+                // setting named by condition_value is truthy (1 / true / on).
+                // Used for opt-in features whose module is always present but
+                // whose surface is gated by a settings toggle (e.g. the
+                // Feedback page → builder.feedback.enabled).
+                if (!function_exists('setting')) return false;
+                $sv = strtolower((string) setting((string) ($item['condition_value'] ?? '')));
+                return $sv === '1' || $sv === 'true' || $sv === 'on' || $sv === 'yes';
             case 'admin':
                 // Admin chrome: matches header.php's hasRole(['super-admin','admin'])
                 // exactly so a pure super-admin (no 'admin' role) still sees it.
