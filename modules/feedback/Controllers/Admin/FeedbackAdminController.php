@@ -60,14 +60,14 @@ class FeedbackAdminController
         $status = (string) $request->post('status');
         if (!in_array($status, ['new', 'reviewed', 'published', 'archived'], true)) {
             Session::flash('error', 'Invalid status.');
-            return Response::redirect('/admin/feedback');
+            return Response::redirect('/admin/site-feedback');
         }
         // Publishing is only meaningful for a testimonial the submitter consented to display.
         if ($status === 'published') {
             $row = $this->db->fetchOne("SELECT kind, consent_display FROM feedback_submissions WHERE id = ?", [$id]);
             if (!$row || $row['kind'] !== 'testimonial' || (int) $row['consent_display'] !== 1) {
                 Session::flash('error', 'Only testimonials with display consent can be published.');
-                return Response::redirect('/admin/feedback');
+                return Response::redirect('/admin/site-feedback');
             }
         }
         try {
@@ -79,7 +79,7 @@ class FeedbackAdminController
         } catch (\Throwable $e) {
             Session::flash('error', 'Could not update: ' . $e->getMessage());
         }
-        return Response::redirect('/admin/feedback' . ($request->post('back') ? (string) $request->post('back') : ''));
+        return Response::redirect('/admin/site-feedback' . ($request->post('back') ? (string) $request->post('back') : ''));
     }
 
     public function delete(Request $request): Response
@@ -91,6 +91,6 @@ class FeedbackAdminController
         } catch (\Throwable $e) {
             Session::flash('error', 'Could not delete.');
         }
-        return Response::redirect('/admin/feedback');
+        return Response::redirect('/admin/site-feedback');
     }
 }

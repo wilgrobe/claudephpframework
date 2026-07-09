@@ -20,12 +20,15 @@ $router->get ('/testimonials',
     'Modules\Feedback\Controllers\FeedbackController@testimonials');
 
 // ── Admin queue (always reachable for site admins) ──────────────────────────
-$router->get ('/admin/feedback',
+// NB: /admin/site-feedback (not /admin/feedback) — on the builder apex the
+// builder-operator module owns /admin/feedback for BUILD feedback; this is
+// the SITE's end-user feedback inbox, so it gets a distinct path everywhere.
+$router->get ('/admin/site-feedback',
     'Modules\Feedback\Controllers\Admin\FeedbackAdminController@index',
     [AuthMiddleware::class, RequireAdmin::class]);
-$router->post('/admin/feedback/{id}/status',
+$router->post('/admin/site-feedback/{id}/status',
     'Modules\Feedback\Controllers\Admin\FeedbackAdminController@setStatus',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
-$router->post('/admin/feedback/{id}/delete',
+$router->post('/admin/site-feedback/{id}/delete',
     'Modules\Feedback\Controllers\Admin\FeedbackAdminController@delete',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);

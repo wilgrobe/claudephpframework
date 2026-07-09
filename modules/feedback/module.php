@@ -9,7 +9,7 @@ use Core\Module\ModuleProvider;
  * identified may request a reply) or submit a testimonial (never anonymous).
  * Prompts nudge useful answers ("What did you think of…", "What suggestions…",
  * "Tell us about your experience"). Submissions land in an admin queue at
- * /admin/feedback; published testimonials can be showcased via the
+ * /admin/site-feedback; published testimonials can be showcased via the
  * `feedback.testimonials` block or the public /testimonials page.
  *
  * Inclusion is a single wizard toggle: the `builder.feedback.enabled` site

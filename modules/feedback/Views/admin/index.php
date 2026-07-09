@@ -40,7 +40,7 @@ $statusBadge = [
         foreach ($tabs as $qs => $label):
             $on = $curQs === $qs;
         ?>
-            <a href="/admin/feedback<?= $e($qs) ?>" class="btn btn-sm <?= $on ? 'btn-primary' : 'btn-secondary' ?>"><?= $e($label) ?></a>
+            <a href="/admin/site-feedback<?= $e($qs) ?>" class="btn btn-sm <?= $on ? 'btn-primary' : 'btn-secondary' ?>"><?= $e($label) ?></a>
         <?php endforeach; ?>
     </div>
 
@@ -84,24 +84,24 @@ $statusBadge = [
                     <!-- Actions -->
                     <div style="display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap;">
                         <?php if ($status !== 'reviewed'): ?>
-                            <form method="post" action="/admin/feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
+                            <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
                                 <input type="hidden" name="_token" value="<?= $e($csrf) ?>"><input type="hidden" name="status" value="reviewed">
                                 <button class="btn btn-secondary btn-xs" type="submit">Mark reviewed</button>
                             </form>
                         <?php endif; ?>
                         <?php if ($isTest && (int) ($r['consent_display'] ?? 0) === 1 && $status !== 'published'): ?>
-                            <form method="post" action="/admin/feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
+                            <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
                                 <input type="hidden" name="_token" value="<?= $e($csrf) ?>"><input type="hidden" name="status" value="published">
                                 <button class="btn btn-success btn-xs" type="submit">Publish testimonial</button>
                             </form>
                         <?php endif; ?>
                         <?php if ($status !== 'archived'): ?>
-                            <form method="post" action="/admin/feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
+                            <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
                                 <input type="hidden" name="_token" value="<?= $e($csrf) ?>"><input type="hidden" name="status" value="archived">
                                 <button class="btn btn-secondary btn-xs" type="submit">Archive</button>
                             </form>
                         <?php endif; ?>
-                        <form method="post" action="/admin/feedback/<?= (int) $r['id'] ?>/delete" style="display:inline;" onsubmit="return confirm('Delete this feedback permanently?');">
+                        <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/delete" style="display:inline;" onsubmit="return confirm('Delete this feedback permanently?');">
                             <input type="hidden" name="_token" value="<?= $e($csrf) ?>">
                             <button class="btn btn-danger btn-xs" type="submit">Delete</button>
                         </form>
