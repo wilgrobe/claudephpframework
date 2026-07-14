@@ -24,6 +24,27 @@ return new class extends Migration {
         if (!$menu) return; // no admin_sidebar menu on this DB — nothing to do
         $mid = (int) $menu['id'];
 
+        // menu_items.visibility is a strict ENUM; widen it to accept 'setting'
+        // (the feature-toggle gate) before inserting. Idempotent — only ALTERs
+        // when the value is missing. Fresh installs already carry it via the
+        // baseline schema; this catches DBs migrated before it was added.
+        $col  = $this->db->fetchOne("SHOW COLUMNS FROM menu_items LIKE 'visibility'");
+        $type = strtolower((string) ($col['Type'] ?? ''));
+        // Widen when ANY value this migration inserts is missing — not just
+        // 'setting'. A DB that carried 'setting' but not 'admin'/'superadmin'
+        // (its holder insert uses 'admin') otherwise skipped the ALTER and the
+        // insert truncated.
+        $needed = ["'setting'", "'admin'", "'superadmin'"];
+        $missing = false;
+        foreach ($needed as $v) { if (strpos($type, $v) === false) { $missing = true; break; } }
+        if ($col && $missing) {
+            $this->db->query(
+                "ALTER TABLE menu_items MODIFY `visibility` "
+                . "enum('always','logged_in','logged_out','role','permission','group','module','setting','admin','superadmin') "
+                . "COLLATE utf8mb4_unicode_ci DEFAULT 'always'"
+            );
+        }
+
         // Already present? Idempotent no-op.
         $exists = $this->db->fetchColumn(
             "SELECT id FROM menu_items WHERE menu_id = ? AND url = '/admin/site-feedback' LIMIT 1",
