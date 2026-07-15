@@ -110,6 +110,22 @@ class Request
     }
 
     /**
+     * Read a value from POST, then the query string, then a JSON request body,
+     * then $default. The "either" accessor the module conventions promise.
+     */
+    public function input(string $key, mixed $default = null): mixed
+    {
+        if (array_key_exists($key, $this->post))  return $this->post[$key];
+        if (array_key_exists($key, $this->query)) return $this->query[$key];
+        $raw = ltrim($this->raw());
+        if ($raw !== '' && ($raw[0] === '{' || $raw[0] === '[')) {
+            $j = json_decode($raw, true);
+            if (is_array($j) && array_key_exists($key, $j)) return $j[$key];
+        }
+        return $default;
+    }
+
+    /**
      * Raw POST body — used by webhook handlers that need to read JSON
      * bodies posted by external providers (Stripe, SES, SendGrid,
      * Postmark, Mailgun, SMTP2GO, etc.). Cached on first read since
