@@ -31,6 +31,16 @@ $pageTitle = 'Notification preferences';
             foreach ($types as $key => $meta) {
                 $grouped[$meta['group']][$key] = $meta;
             }
+            // Channel columns: only render a column if at least one type uses it,
+            // so SMS appears once any type (e.g. task reminders) declares it.
+            $allChannels = ['in_app' => 'In-app', 'email' => 'Email', 'sms' => 'SMS'];
+            $channelCols = [];
+            foreach ($allChannels as $ch => $label) {
+                foreach ($types as $meta) {
+                    if (in_array($ch, $meta['channels'], true)) { $channelCols[$ch] = $label; break; }
+                }
+            }
+            $showSmsNote = isset($channelCols['sms']);
         ?>
 
         <?php foreach ($grouped as $groupName => $groupTypes): ?>
@@ -42,15 +52,16 @@ $pageTitle = 'Notification preferences';
                 <thead>
                     <tr style="text-align:left;font-size:12px;color:var(--text-muted)">
                         <th style="padding:.4rem 0;font-weight:500"></th>
-                        <th style="padding:.4rem .75rem;font-weight:500;width:90px;text-align:center">In-app</th>
-                        <th style="padding:.4rem .75rem;font-weight:500;width:90px;text-align:center">Email</th>
+                        <?php foreach ($channelCols as $chLabel): ?>
+                        <th style="padding:.4rem .75rem;font-weight:500;width:90px;text-align:center"><?= e($chLabel) ?></th>
+                        <?php endforeach; ?>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($groupTypes as $typeKey => $meta): ?>
                     <tr>
                         <td style="padding:.55rem 0;font-size:13.5px"><?= e($meta['label']) ?></td>
-                        <?php foreach (['in_app', 'email'] as $ch): ?>
+                        <?php foreach (array_keys($channelCols) as $ch): ?>
                         <td style="padding:.55rem .75rem;text-align:center">
                             <?php if (in_array($ch, $meta['channels'], true)): ?>
                                 <?php $on = !empty($prefs[$typeKey][$ch]); ?>
@@ -72,6 +83,12 @@ $pageTitle = 'Notification preferences';
             </table>
         </div>
         <?php endforeach; ?>
+
+        <?php if ($showSmsNote): ?>
+        <p style="margin:0;padding:.6rem 1.25rem;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--border-default)">
+            SMS reminders also need a verified mobile number on your profile and an SMS provider configured for the site — until both are set, SMS is skipped and you still get the email + in-app reminder.
+        </p>
+        <?php endif; ?>
 
         <div style="padding:1rem 1.25rem;display:flex;gap:.5rem;justify-content:flex-end;background:var(--bg-page,var(--color-gray-50))">
             <button type="submit" class="btn btn-primary">Save preferences</button>
