@@ -24,6 +24,37 @@ $pageTitle = 'Notification preferences';
     <form method="POST" action="/profile/notifications" class="card" style="padding:0">
         <?= csrf_field() ?>
 
+        <?php $delivery = $delivery ?? null; if ($delivery !== null):
+            $dMode = in_array($delivery['mode'] ?? '', ['each','digest','off'], true) ? $delivery['mode'] : 'each';
+            $dChan = in_array($delivery['channel'] ?? '', ['both','email','sms','none'], true) ? $delivery['channel'] : 'both';
+            $modeOpts = ['each' => 'A notification for each task', 'digest' => 'One daily digest', 'off' => 'Off — don\'t remind me'];
+            $chanOpts = ['both' => 'Email + SMS', 'email' => 'Email only', 'sms' => 'SMS only', 'none' => 'On-site only (no email/SMS)'];
+        ?>
+        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-default)">
+            <h2 style="margin:0 0 .35rem;font-size:.95rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Marketing task reminders</h2>
+            <p style="margin:0 0 .8rem;color:var(--text-muted);font-size:13px;max-width:70ch">How you'd like your due / overdue task reminders delivered. The per-notification grid below can still fine-tune individual channels.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:1.5rem 2.5rem">
+                <fieldset style="border:0;margin:0;padding:0;min-width:200px">
+                    <legend style="font-size:12.5px;font-weight:600;padding:0;margin-bottom:.4rem">How often</legend>
+                    <?php foreach ($modeOpts as $v => $label): ?>
+                    <label style="display:flex;align-items:center;gap:.5rem;font-size:14px;margin:.25rem 0;cursor:pointer">
+                        <input type="radio" name="delivery_mode" value="<?= e($v) ?>" <?= $dMode === $v ? 'checked' : '' ?>> <?= e($label) ?>
+                    </label>
+                    <?php endforeach; ?>
+                </fieldset>
+                <fieldset style="border:0;margin:0;padding:0;min-width:200px">
+                    <legend style="font-size:12.5px;font-weight:600;padding:0;margin-bottom:.4rem">Where to send them</legend>
+                    <?php foreach ($chanOpts as $v => $label): ?>
+                    <label style="display:flex;align-items:center;gap:.5rem;font-size:14px;margin:.25rem 0;cursor:pointer">
+                        <input type="radio" name="delivery_channel" value="<?= e($v) ?>" <?= $dChan === $v ? 'checked' : '' ?>> <?= e($label) ?>
+                    </label>
+                    <?php endforeach; ?>
+                </fieldset>
+            </div>
+            <p style="margin:.8rem 0 0;font-size:11.5px;color:var(--text-muted)">The bell (on-site) always shows reminders unless you pick “Off”. SMS also needs a verified phone + an SMS provider.</p>
+        </div>
+        <?php endif; ?>
+
         <?php
             // Group types by their `group` so the table reads naturally:
             // all Social rows together, all Messaging together, etc.
