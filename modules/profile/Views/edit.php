@@ -90,6 +90,9 @@
                 <a href="/profile" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+        <div style="border-top:1px solid var(--color-gray-200);margin-top:1.25rem;padding-top:1rem;font-size:13.5px">
+            <a href="/profile/notifications" style="color:var(--color-primary);text-decoration:none">🔔 Notification settings →</a>
+        </div>
     </div>
 </div>
 </div>

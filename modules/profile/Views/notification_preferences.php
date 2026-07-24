@@ -14,7 +14,7 @@ $pageTitle = 'Notification preferences';
                 send and aren't shown here.
             </p>
         </div>
-        <a href="/profile/edit" class="btn btn-sm btn-secondary">← Back to profile</a>
+        <a href="/profile" class="btn btn-sm btn-secondary">← Back to profile</a>
     </div>
 
     <?php if (!empty($_SESSION['success'])): ?>

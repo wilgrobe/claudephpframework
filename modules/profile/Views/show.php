@@ -122,6 +122,15 @@
             </div>
         </div>
 
+        <!-- Notifications -->
+        <div class="card">
+            <div class="card-header"><h2>Notifications</h2></div>
+            <div class="card-body">
+                <p style="color:var(--color-gray-500);font-size:13.5px;margin:0 0 .75rem">Choose which alerts you get and how they're delivered — email, SMS, or on-site only.</p>
+                <a href="/profile/notifications" class="btn btn-secondary btn-sm">Notification settings</a>
+            </div>
+        </div>
+
     </div>
 </div>
 </div>
