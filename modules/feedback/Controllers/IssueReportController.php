@@ -121,7 +121,7 @@ class IssueReportController
                     mb_substr($pageUrl, 0, 500),
                     $severity,
                     json_encode($context, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE),
-                    $user['name'] ?? null,
+                    $user ? ($this->displayName($user) ?: null) : null,
                     $email,
                     $wantsReply,
                     $ip,
@@ -205,7 +205,7 @@ class IssueReportController
             // Who — server-side, authoritative.
             'user' => $user ? [
                 'id'    => (int) $user['id'],
-                'name'  => (string) ($user['name'] ?? ''),
+                'name'  => $this->displayName($user),
                 'email' => (string) ($user['email'] ?? ''),
                 'roles' => $this->rolesFor((int) $user['id']),
             ] : ['id' => null, 'name' => null, 'email' => null, 'roles' => []],
@@ -250,6 +250,25 @@ class IssueReportController
     {
         $sid = session_status() === PHP_SESSION_ACTIVE ? session_id() : '';
         return $sid !== '' ? substr(hash('sha256', $sid), 0, 12) : '';
+    }
+
+    /**
+     * A human label for the reporter.
+     *
+     * The users table has NO `name` column — the framework stores
+     * username/first_name/last_name — so reading `$user['name']` silently
+     * yields null and every report lands with an unnamed reporter. Build the
+     * label from what actually exists, in descending order of how a person
+     * would recognise themselves.
+     */
+    private function displayName(array $user): string
+    {
+        $full = trim(((string) ($user['first_name'] ?? '')) . ' ' . ((string) ($user['last_name'] ?? '')));
+        foreach ([$full, (string) ($user['username'] ?? ''), (string) ($user['name'] ?? '')] as $candidate) {
+            $candidate = trim($candidate);
+            if ($candidate !== '') return mb_substr($candidate, 0, 200);
+        }
+        return '';
     }
 
     /** @return string[] role slugs */

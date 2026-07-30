@@ -212,10 +212,16 @@ $statusBadge = [
                             <em><?= $isIssue ? 'Signed-out visitor, no contact details' : 'Anonymous' ?></em>
                         <?php else: ?>
                             <?php
-                            // An issue from a signed-out reporter has no name,
-                            // so fall back to a label rather than a bare dash —
-                            // the email underneath is the actionable part.
-                            $who = ($r['name'] ?? '') ?: ($isIssue ? 'Signed-out visitor' : '—');
+                            // Whether someone was signed in is user_id, NOT whether
+                            // a name got stored — plenty of accounts have no name
+                            // set, and calling those "signed-out" misreports who
+                            // filed the report.
+                            $who = trim((string) ($r['name'] ?? ''));
+                            if ($who === '') {
+                                $who = !empty($r['user_id'])
+                                    ? 'Signed-in user #' . (int) $r['user_id']
+                                    : ($isIssue ? 'Signed-out visitor' : '—');
+                            }
                             ?>
                             <strong><?= $e($who) ?></strong>
                             <?php if (!empty($r['email'])): ?> · <a href="mailto:<?= $e($r['email']) ?>?subject=<?= $e(rawurlencode('Re: your report (#' . (int) $r['id'] . ')')) ?>"><?= $e($r['email']) ?></a><?php endif; ?>

@@ -56,9 +56,16 @@ final class IssueReportNotifier
         $e   = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $ctx = $report['context'] ?? [];
 
-        $who = $ctx['user']['name'] ?? null;
-        $who = $who ?: ($report['email'] ?? 'a signed-out visitor');
-        if (!empty($ctx['user']['email'])) $who .= ' (' . $ctx['user']['email'] . ')';
+        // Name when we have one, otherwise the account email — and only append
+        // the account email when it adds something, so an unnamed account
+        // doesn't render as "a@b.com (a@b.com)".
+        $accountEmail = (string) ($ctx['user']['email'] ?? '');
+        $who = trim((string) ($ctx['user']['name'] ?? ''));
+        if ($who === '') {
+            $who = $accountEmail ?: (string) ($report['email'] ?? '') ?: 'a signed-out visitor';
+        } elseif ($accountEmail !== '') {
+            $who .= ' (' . $accountEmail . ')';
+        }
 
         $rows = [
             'Reported by' => $who,
