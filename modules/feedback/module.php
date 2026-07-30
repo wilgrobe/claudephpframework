@@ -23,6 +23,22 @@ return new class extends ModuleProvider {
     public function viewsPath(): ?string      { return __DIR__ . '/Views'; }
     public function migrationsPath(): ?string { return __DIR__ . '/migrations'; }
 
+    public function register(\Core\Container\Container $c): void
+    {
+        // In-app alert raised for site admins when a customer files an issue
+        // report from the corner widget. Registering it (rather than relying
+        // on the send() call alone) is what puts the type in the user's
+        // notification-preferences list, so an admin can mute the bell and
+        // keep the email — or the reverse.
+        if (method_exists(\Core\Services\NotificationService::class, 'registerType')) {
+            \Core\Services\NotificationService::registerType('feedback.issue_reported', [
+                'label'    => 'Issue reported on your site',
+                'group'    => 'Site',
+                'channels' => ['in_app', 'email'],
+            ]);
+        }
+    }
+
     public function pages(): array
     {
         return [

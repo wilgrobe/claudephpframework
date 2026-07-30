@@ -77,14 +77,24 @@ if ($__f_showMenu) {
                     && (bool) setting('ccpa_enabled', true);
     $__f_ccpaLabel   = (string) setting('ccpa_link_label', 'Do Not Sell or Share My Personal Information');
     $__f_ccpaUrl     = (string) setting('ccpa_disclosure_url', '/do-not-sell');
+
+    // "Report an issue" footer link — opens the issue-report widget rendered
+    // at the bottom of this partial. Same visibility predicate the widget
+    // itself uses, so the link can never point at a panel that isn't there.
+    $__f_issueLink = class_exists(\Modules\Feedback\Services\IssueWidget::class)
+                  && \Modules\Feedback\Services\IssueWidget::visible()
+                  && \Modules\Feedback\Services\IssueWidget::showsFooterLink();
     ?>
-    <?php if (!empty($__f_menuItems) || $__f_ccpaEnabled): ?>
+    <?php if (!empty($__f_menuItems) || $__f_ccpaEnabled || $__f_issueLink): ?>
     <nav class="site-footer__menu" aria-label="Footer menu">
         <?php if (!empty($__f_menuItems)): foreach ($__f_menuItems as $__f_item): ?>
         <a href="<?= e($__f_item['url'] ?? '#') ?>"><?= e($__f_item['label'] ?? '') ?></a>
         <?php endforeach; unset($__f_item); endif; ?>
         <?php if ($__f_ccpaEnabled): ?>
         <a href="<?= e($__f_ccpaUrl) ?>" rel="nofollow"><?= e($__f_ccpaLabel) ?></a>
+        <?php endif; ?>
+        <?php if ($__f_issueLink): ?>
+        <a href="#" data-issue-report-open rel="nofollow">Report an issue</a>
         <?php endif; ?>
     </nav>
     <?php endif; ?>
@@ -160,3 +170,17 @@ body { padding-bottom: var(--site-footer-height); }
    pages that don't have one. */
 .layout > .sidebar { height: calc(100vh - var(--site-footer-height)); }
 </style>
+
+<?php
+// ── "Report an issue" widget ──────────────────────────────────────────────
+// The corner bubble + report panel. Included here rather than from either
+// layout because this partial is the one thing BOTH page shells share — the
+// app chrome (app/Views/layout/footer.php) and the public page
+// (app/Views/public/page.php) each include it exactly once — so a single
+// include covers every page a user can be on when something breaks.
+//
+// Self-guarding: emits nothing at all unless the site enabled the widget
+// (builder.feedback.widget.enabled) and the visitor is in its audience.
+$__f_issueWidget = BASE_PATH . '/modules/feedback/Views/widget.php';
+if (file_exists($__f_issueWidget)) include $__f_issueWidget;
+?>

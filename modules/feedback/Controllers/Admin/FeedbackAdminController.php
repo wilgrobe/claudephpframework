@@ -24,25 +24,38 @@ class FeedbackAdminController
 
     public function index(Request $request): Response
     {
-        $kind   = in_array($request->query('kind'), ['feedback', 'testimonial'], true) ? $request->query('kind') : null;
+        $kind   = in_array($request->query('kind'), ['feedback', 'testimonial', 'issue'], true) ? $request->query('kind') : null;
         $status = in_array($request->query('status'), ['new', 'reviewed', 'published', 'archived'], true) ? $request->query('status') : null;
 
         $where = []; $binds = [];
         if ($kind !== null)   { $where[] = 'kind = ?';   $binds[] = $kind; }
         if ($status !== null) { $where[] = 'status = ?'; $binds[] = $status; }
-        $sql = "SELECT id, kind, prompt, message, rating, is_anonymous, name, email, request_response, consent_display, status, created_at, responded_at
+
+        // The issue-report columns arrived in a later migration, so select
+        // them only when they exist — an admin queue that fatals on a site
+        // that hasn't migrated yet would be a bad trade for a nicer list.
+        $extra = $this->hasIssueColumns()
+            ? ', intent, user_id, page_url, severity, context'
+            : '';
+
+        $sql = "SELECT id, kind, prompt, message, rating, is_anonymous, name, email, request_response, consent_display, status, created_at, responded_at{$extra}
                 FROM feedback_submissions"
              . (!empty($where) ? ' WHERE ' . implode(' AND ', $where) : '')
-             . ' ORDER BY (status = \'new\') DESC, created_at DESC LIMIT 300';
+             // Blocking issues first — they're the ones costing someone their day.
+             . ' ORDER BY (status = \'new\') DESC, '
+             . ($extra !== '' ? "(severity = 'blocking') DESC, " : '')
+             . 'created_at DESC LIMIT 300';
 
         try { $rows = $this->db->fetchAll($sql, $binds); } catch (\Throwable) { $rows = []; }
 
-        $counts = ['new' => 0, 'reviewed' => 0, 'published' => 0, 'archived' => 0, 'testimonial' => 0];
+        $counts = ['new' => 0, 'reviewed' => 0, 'published' => 0, 'archived' => 0, 'testimonial' => 0, 'issue' => 0];
         try {
             foreach ($this->db->fetchAll("SELECT status, COUNT(*) n FROM feedback_submissions GROUP BY status") as $c) {
                 $counts[$c['status']] = (int) $c['n'];
             }
-            $counts['testimonial'] = (int) ($this->db->fetchOne("SELECT COUNT(*) n FROM feedback_submissions WHERE kind='testimonial'")['n'] ?? 0);
+            foreach ($this->db->fetchAll("SELECT kind, COUNT(*) n FROM feedback_submissions GROUP BY kind") as $c) {
+                if (isset($counts[$c['kind']])) $counts[$c['kind']] = (int) $c['n'];
+            }
         } catch (\Throwable) {}
 
         return Response::view('feedback::admin.index', [
@@ -51,7 +64,64 @@ class FeedbackAdminController
             'filterKind' => $kind,
             'filterStat' => $status,
             'user'       => Auth::getInstance()->user(),
+            'widget'     => [
+                'enabled'  => \Modules\Feedback\Services\IssueWidget::enabled(),
+                'audience' => \Modules\Feedback\Services\IssueWidget::audience(),
+                'launcher' => \Modules\Feedback\Services\IssueWidget::launcher(),
+                'notify'   => \Modules\Feedback\Services\IssueWidget::notifyEmail(),
+            ],
         ]);
+    }
+
+    /**
+     * Save the issue-widget settings from the card at the top of the queue.
+     *
+     * This lives here rather than in the settings module because the queue is
+     * where an operator already goes to read reports — the switch that turns
+     * reporting on belongs next to the reports it produces.
+     */
+    public function saveWidget(Request $request): Response
+    {
+        $audience = $request->post('audience') === 'everyone' ? 'everyone' : 'members';
+        $launcher = in_array($request->post('launcher'), ['both', 'bubble', 'footer'], true)
+            ? (string) $request->post('launcher') : 'both';
+        $notify   = trim((string) ($request->post('notify_email') ?? ''));
+
+        if ($notify !== '' && !filter_var($notify, FILTER_VALIDATE_EMAIL)) {
+            Session::flash('error', 'That notification email doesn’t look right.');
+            return Response::redirect('/admin/site-feedback?kind=issue');
+        }
+
+        try {
+            $svc = new \Core\Services\SettingsService();
+            $svc->set('builder.feedback.widget.enabled',  !empty($request->post('enabled')) ? '1' : '0', 'site');
+            $svc->set('builder.feedback.widget.audience', $audience, 'site');
+            $svc->set('builder.feedback.widget.launcher', $launcher, 'site');
+            $svc->set('builder.feedback.notify_email',    $notify, 'site');
+            Session::flash('success', 'Issue-reporting settings saved.');
+        } catch (\Throwable $e) {
+            Session::flash('error', 'Could not save: ' . $e->getMessage());
+        }
+
+        return Response::redirect('/admin/site-feedback?kind=issue');
+    }
+
+    /** Has the issue-report migration run on this site's database? */
+    private function hasIssueColumns(): bool
+    {
+        static $has = null;
+        if ($has !== null) return $has;
+        try {
+            $has = (int) $this->db->fetchColumn(
+                "SELECT COUNT(*) FROM information_schema.columns
+                  WHERE table_schema = DATABASE()
+                    AND table_name = 'feedback_submissions'
+                    AND column_name = 'context'"
+            ) > 0;
+        } catch (\Throwable) {
+            $has = false;
+        }
+        return $has;
     }
 
     public function setStatus(Request $request): Response

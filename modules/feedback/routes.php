@@ -19,6 +19,18 @@ $router->post('/feedback',
 $router->get ('/testimonials',
     'Modules\Feedback\Controllers\FeedbackController@testimonials');
 
+// ── Issue-report widget ───────────────────────────────────────────────────
+// The corner "Report an issue" widget posts here over fetch and gets JSON
+// back — it never navigates away, because the whole point is reporting a
+// problem without losing the page the problem happened on.
+//
+// Gated by builder.feedback.widget.enabled (separate from the /feedback page
+// toggle above: a site may want in-app bug reports without a public
+// testimonials page, or vice versa). CSRF via the X-CSRF-Token header.
+$router->post('/feedback/report',
+    'Modules\Feedback\Controllers\IssueReportController@submit',
+    [CsrfMiddleware::class]);
+
 // ── Admin queue (always reachable for site admins) ──────────────────────────
 // NB: /admin/site-feedback (not /admin/feedback) — on the builder apex the
 // builder-operator module owns /admin/feedback for BUILD feedback; this is
@@ -31,4 +43,9 @@ $router->post('/admin/site-feedback/{id}/status',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
 $router->post('/admin/site-feedback/{id}/delete',
     'Modules\Feedback\Controllers\Admin\FeedbackAdminController@delete',
+    [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
+
+// Issue-widget settings, edited from the card at the top of the queue.
+$router->post('/admin/site-feedback/widget',
+    'Modules\Feedback\Controllers\Admin\FeedbackAdminController@saveWidget',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
