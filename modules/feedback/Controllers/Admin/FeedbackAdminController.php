@@ -27,9 +27,21 @@ class FeedbackAdminController
         $kind   = in_array($request->query('kind'), ['feedback', 'testimonial', 'issue'], true) ? $request->query('kind') : null;
         $status = in_array($request->query('status'), ['new', 'reviewed', 'published', 'archived'], true) ? $request->query('status') : null;
 
+        // Deep link from a notification/email: ?id=N opens that one report.
+        // It overrides the kind/status filters, because the whole point is to
+        // land on the report regardless of how it's since been triaged — a
+        // report marked "reviewed" must not vanish from the link that announced
+        // it.
+        $only = (int) ($request->query('id') ?? 0);
+
         $where = []; $binds = [];
-        if ($kind !== null)   { $where[] = 'kind = ?';   $binds[] = $kind; }
-        if ($status !== null) { $where[] = 'status = ?'; $binds[] = $status; }
+        if ($only > 0) {
+            $where[] = 'id = ?'; $binds[] = $only;
+            $kind = $status = null;
+        } else {
+            if ($kind !== null)   { $where[] = 'kind = ?';   $binds[] = $kind; }
+            if ($status !== null) { $where[] = 'status = ?'; $binds[] = $status; }
+        }
 
         // The issue-report columns arrived in a later migration, so select
         // them only when they exist — an admin queue that fatals on a site
@@ -63,6 +75,7 @@ class FeedbackAdminController
             'counts'     => $counts,
             'filterKind' => $kind,
             'filterStat' => $status,
+            'filterId'   => $only > 0 ? $only : null,
             'user'       => Auth::getInstance()->user(),
             'widget'     => [
                 'enabled'  => \Modules\Feedback\Services\IssueWidget::enabled(),

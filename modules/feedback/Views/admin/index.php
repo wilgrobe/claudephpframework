@@ -77,6 +77,23 @@ $statusBadge = [
         </div>
     </details>
 
+    <?php if (!empty($filterId)): ?>
+    <!-- Arrived from a notification/email deep link. Say so, and offer the way
+         back to the full queue — otherwise a single-row page looks like the
+         list has been emptied. -->
+    <div class="card" style="margin-bottom:1rem;border-left:3px solid var(--color-primary);">
+        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.7rem 1rem;">
+            <span style="font-size:13px;">Showing report <strong>#<?= (int) $filterId ?></strong> only.</span>
+            <a href="/admin/site-feedback?kind=issue" class="btn btn-secondary btn-sm">View all issues →</a>
+        </div>
+    </div>
+    <?php if (empty($rows)): ?>
+        <div class="card"><div class="card-body" style="text-align:center;padding:2rem;color:var(--text-subtle)">
+            Report #<?= (int) $filterId ?> no longer exists — it may have been deleted.
+        </div></div>
+    <?php endif; ?>
+    <?php endif; ?>
+
     <!-- Filters -->
     <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;font-size:13px;">
         <?php
@@ -115,7 +132,9 @@ $statusBadge = [
             }
             $blocking = $isIssue && (string) ($r['severity'] ?? '') === 'blocking';
         ?>
-            <div class="card" style="margin-bottom:.85rem;<?= $blocking ? 'border-left:3px solid #dc2626;' : '' ?>">
+            <!-- id lets an email/notification link jump straight to this card
+                 (#report-N) even when the whole queue is rendered. -->
+            <div class="card" id="report-<?= (int) $r['id'] ?>" style="margin-bottom:.85rem;<?= $blocking ? 'border-left:3px solid #dc2626;' : '' ?>">
                 <div class="card-body">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
                         <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">

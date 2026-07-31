@@ -117,11 +117,15 @@ final class IssueReportNotifier
             $h .= '</div>';
         }
 
+        // Link to THIS report, not the queue — the reader is being told about
+        // one specific thing and should land on it, not go hunting.
         $base = $this->baseUrl();
         $h .= '<p style="margin:1.25rem 0 0;">'
-            . '<a href="' . $e($base . '/admin/site-feedback?kind=issue') . '" '
+            . '<a href="' . $e($base . self::reportUrl($id)) . '" '
             . 'style="display:inline-block;background:#111827;color:#fff;text-decoration:none;padding:.55rem 1rem;border-radius:6px;font-weight:600;font-size:13px;">'
-            . 'Open the issue queue</a></p>'
+            . 'Open report #' . (int) $id . '</a>'
+            . ' <a href="' . $e($base . '/admin/site-feedback?kind=issue') . '" '
+            . 'style="margin-left:.6rem;font-size:13px;color:#6b7280;">or view all issues</a></p>'
             . '<p style="margin:1rem 0 0;font-size:12px;color:#9ca3af;">'
             . 'Full diagnostics — click trail, console errors, browser environment — are attached to this report in the admin queue.</p>'
             . '</div>';
@@ -138,7 +142,14 @@ final class IssueReportNotifier
             . 'Page:  ' . ($ctx['page']['url'] ?? '—') . "\n"
             . 'Who:   ' . ($ctx['user']['email'] ?? ($report['email'] ?: 'signed-out visitor')) . "\n"
             . 'When:  ' . ($ctx['request']['server_time'] ?? '—') . "\n\n"
+            . 'Open:  ' . $this->baseUrl() . self::reportUrl($id) . "\n"
             . 'Queue: ' . $this->baseUrl() . "/admin/site-feedback?kind=issue\n";
+    }
+
+    /** Admin deep link to a single report. Shared by both channels. */
+    public static function reportUrl(int $id): string
+    {
+        return '/admin/site-feedback?id=' . $id . '#report-' . $id;
     }
 
     /**
@@ -179,7 +190,13 @@ final class IssueReportNotifier
                     'feedback.issue_reported',
                     $title,
                     $body,
-                    ['url' => '/admin/site-feedback?kind=issue', 'report_id' => $id],
+                    // data.url is the generic deep link the notifications list
+                    // renders as an action; it points at this report, not the queue.
+                    [
+                        'url'       => self::reportUrl($id),
+                        'url_label' => 'Open report #' . $id,
+                        'report_id' => $id,
+                    ],
                     'in_app'
                 );
             } catch (\Throwable) {

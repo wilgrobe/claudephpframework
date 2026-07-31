@@ -23,7 +23,7 @@
 <?php else: ?>
 <div style="display:flex;flex-direction:column;gap:.5rem">
 <?php foreach ($notifications as $n): ?>
-<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background: var(--bg-panel, var(--bg-panel));border:1px solid <?= $n['read_at'] ? 'var(--color-gray-200)' : 'var(--accent-subtle)' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:var(--color-purple-bg);' : '' ?>">
+<div class="notif-row" data-id="<?= e($n['id']) ?>" style="position:relative;background: var(--bg-panel, var(--bg-panel));border:1px solid <?= $n['read_at'] ? 'var(--color-gray-200)' : 'var(--border-strong)' ?>;border-radius:8px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;<?= !$n['read_at'] ? 'background:var(--accent-subtle);' : '' ?>">
     <?php if (!empty($n['can_delete'])): ?>
     <!-- Dismiss (×). Only rendered once the notification is read AND any
          action it carried has been resolved. Controller enforces the same
@@ -81,6 +81,31 @@
             $removalApproveUrl = "/groups/$gid/owner-removal/$rid/approve";
             $removalRejectUrl  = "/groups/$gid/owner-removal/$rid/reject";
         }
+
+        // Token transfer: inline Accept + Decline (post to the recipient's
+        // /account/transfers actions).
+        $transferId = null;
+        if ($n['type'] === 'token.transfer' && !empty($data['transfer_id'])) {
+            $transferId = (int) $data['transfer_id'];
+        }
+
+        // Generic deep link. Any notification may carry data.url (+ optional
+        // data.url_label) to point at the exact thing it is about — an issue
+        // report, an order, a document — instead of leaving the reader to hunt
+        // for it. Rendered only when no type-specific action above applied.
+        //
+        // Local paths only: a notification row is written by module code, but
+        // treating it as a trusted source of absolute URLs would make any
+        // future write path an open-redirect. Anything not starting with a
+        // single '/' is ignored.
+        $actionUrl   = null;
+        $actionLabel = 'View';
+        $rawUrl = (string) ($data['url'] ?? '');
+        if ($rawUrl !== '' && $rawUrl[0] === '/' && !str_starts_with($rawUrl, '//')) {
+            $actionUrl = $rawUrl;
+            $lbl = trim((string) ($data['url_label'] ?? ''));
+            if ($lbl !== '') $actionLabel = mb_substr($lbl, 0, 40);
+        }
         ?>
 
         <?php if ($inviteToken): ?>
@@ -100,9 +125,27 @@
             <a href="<?= e($removalRejectUrl) ?>"  class="btn btn-xs btn-secondary">Reject</a>
         </div>
 
+        <?php elseif ($transferId): ?>
+        <div style="display:flex;gap:.5rem;align-items:center;margin-top:.5rem;flex-wrap:wrap">
+            <form method="POST" action="/account/transfers/<?= $transferId ?>/accept" style="margin:0">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-xs btn-primary">Accept</button>
+            </form>
+            <form method="POST" action="/account/transfers/<?= $transferId ?>/decline" style="margin:0">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-xs btn-secondary">Decline</button>
+            </form>
+            <a href="/account/transfers" style="font-size:13px;color:var(--color-gray-500);text-decoration:none">View transfers</a>
+        </div>
+
         <?php elseif ($joinUrl): ?>
         <a href="<?= e($joinUrl) ?>" style="font-size:13px;color:var(--color-primary);text-decoration:none;display:inline-block;margin-top:.35rem">
             View invitation →
+        </a>
+
+        <?php elseif ($actionUrl): ?>
+        <a href="<?= e($actionUrl) ?>" style="font-size:13px;color:var(--color-primary);text-decoration:none;display:inline-block;margin-top:.35rem">
+            <?= e($actionLabel) ?> →
         </a>
         <?php endif; ?>
     </div>
