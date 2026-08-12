@@ -59,6 +59,20 @@ if (PHP_SAPI !== 'cli'
 // Session config
 $cfg = config('app.session');
 ini_set('session.cookie_lifetime', $cfg['lifetime'] * 60);
+// SERVER-side lifetime must match the cookie's, or the two disagree about how
+// long a session lasts and the server always wins.
+//
+// This was unset, so it fell back to php.ini's default (commonly 1440s = 24
+// minutes) while the cookie was issued for `lifetime` minutes. The effect was a
+// session that died after 24 minutes of inactivity while the browser went on
+// presenting its cookie far longer, and, worse, a LOGIN PAGE left open past that
+// window losing the CSRF token it had just rendered: you were timed out, sent to
+// /login, and then told your session had expired when you tried to sign in.
+// Both symptoms, one number.
+//
+// GC is probabilistic (gc_probability/gc_divisor), so this is the point at which
+// a session BECOMES collectable, not when it is collected.
+ini_set('session.gc_maxlifetime', $cfg['lifetime'] * 60);
 ini_set('session.cookie_httponly', $cfg['httponly'] ? '1' : '0');
 ini_set('session.cookie_secure',   $cfg['secure']   ? '1' : '0');
 ini_set('session.cookie_samesite', $cfg['samesite'] ?? 'Lax');

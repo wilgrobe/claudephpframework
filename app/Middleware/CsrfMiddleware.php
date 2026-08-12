@@ -68,8 +68,15 @@ class CsrfMiddleware
                     || $request->header('X-CSRF-Token') !== null;
                 if (!$isAjax) {
                     csrf_token(); // regenerate now so the redirected GET has a valid token
+                    // On the sign-in form itself, "your session timed out" is both
+                    // confusing and beside the point — there is no session to lose,
+                    // you are trying to start one. What actually went stale is the
+                    // form. Say that, and don't imply the credentials were wrong.
+                    $onLogin = in_array($request->path(), ['/login', 'login'], true);
                     return Response::redirect($this->safeReferer($request))
-                        ->withFlash('error', 'Your session timed out for security — please try again.');
+                        ->withFlash('error', $onLogin
+                            ? 'This sign-in form had been open too long, so it was refreshed for security. Please enter your details again.'
+                            : 'Your session timed out for security — please try again.');
                 }
                 return new Response('CSRF token mismatch. Please go back and try again.', 419);
             }
