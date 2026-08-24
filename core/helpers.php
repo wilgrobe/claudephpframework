@@ -179,8 +179,27 @@ if (!function_exists('component')) {
 if (!function_exists('old')) {
     function old(string $key, mixed $default = ''): string
     {
+        // Repopulating a failed form is a two-key affair: writers use
+        // Session::flash('old', [...]) (which lands in $_SESSION['_flash'])
+        // while this helper only ever read $_SESSION['old'] — so the two
+        // never met and every form came back blank. Read the plain key
+        // first (unchanged behaviour), then fall back to consuming the
+        // flash once per request, cached so repeated old() calls in one
+        // render all see it. Controllers that consume the flash themselves
+        // before rendering are unaffected: they simply find nothing here.
+        static $flashed = null;
+
         $old = \Core\Session::get('old', []);
-        return e($old[$key] ?? $default);
+        if (is_array($old) && array_key_exists($key, $old)) {
+            return e($old[$key]);
+        }
+
+        if ($flashed === null) {
+            $f = \Core\Session::flash('old');
+            $flashed = is_array($f) ? $f : [];
+        }
+
+        return e($flashed[$key] ?? $default);
     }
 }
 

@@ -11,6 +11,21 @@ use Core\Response;
  */
 class CsrfMiddleware
 {
+    /**
+     * Guest forms that are safe to re-present at their OWN path after a
+     * mismatch. Each has a GET route rendering the same form, so the
+     * redirect always lands on something usable — unlike Referer, which
+     * browsers omit on bfcache restores and under stricter privacy
+     * settings, and unlike the '/' fallback, which drops a failed
+     * sign-in on the home page with no form in sight.
+     */
+    private const SELF_HEAL_PATHS = [
+        '/login',
+        '/register',
+        '/password/forgot',
+        '/password/reset',
+    ];
+
     public function handle(Request $request, callable $next): Response
     {
         if (in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
@@ -68,14 +83,34 @@ class CsrfMiddleware
                     || $request->header('X-CSRF-Token') !== null;
                 if (!$isAjax) {
                     csrf_token(); // regenerate now so the redirected GET has a valid token
+
+                    // Prefer the form's OWN path over Referer for the known guest
+                    // forms. Referer is the unreliable input here (absent on
+                    // bfcache restores / with privacy settings), and its '/'
+                    // fallback lands a failed sign-in on the home page — which is
+                    // what forced the "refresh the page and try again" dance.
+                    $path   = '/' . ltrim($request->path(), '/');
+                    $onForm = in_array($path, self::SELF_HEAL_PATHS, true);
+                    $target = $onForm ? $path : $this->safeReferer($request);
+
+                    // Carry the identifier across so only the password is retyped.
+                    // Same flash key the auth controller uses, so the views pick it
+                    // up through old() with no view changes.
+                    $email = (string) $request->post('email', '');
+                    if ($email !== '') {
+                        try {
+                            \Core\Session::flash('old', ['email' => $email]);
+                        } catch (\Throwable) { /* best-effort */ }
+                    }
+
                     // On the sign-in form itself, "your session timed out" is both
                     // confusing and beside the point — there is no session to lose,
                     // you are trying to start one. What actually went stale is the
                     // form. Say that, and don't imply the credentials were wrong.
-                    $onLogin = in_array($request->path(), ['/login', 'login'], true);
-                    return Response::redirect($this->safeReferer($request))
+                    $onLogin = $path === '/login';
+                    return Response::redirect($target)
                         ->withFlash('error', $onLogin
-                            ? 'This sign-in form had been open too long, so it was refreshed for security. Please enter your details again.'
+                            ? 'This sign-in form had been open too long, so it was refreshed for security. Please enter your password again.'
                             : 'Your session timed out for security — please try again.');
                 }
                 return new Response('CSRF token mismatch. Please go back and try again.', 419);
