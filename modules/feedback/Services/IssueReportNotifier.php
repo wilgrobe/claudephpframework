@@ -34,7 +34,48 @@ final class IssueReportNotifier
     public function announce(int $id, array $report): void
     {
         try { $this->email($id, $report); }  catch (\Throwable $e) { error_log('[feedback] issue email failed: ' . $e->getMessage()); }
+        try { $this->sms($id, $report); }    catch (\Throwable $e) { error_log('[feedback] issue sms failed: ' . $e->getMessage()); }
         try { $this->inApp($id, $report); }  catch (\Throwable $e) { error_log('[feedback] issue notification failed: ' . $e->getMessage()); }
+    }
+
+    // ── SMS ───────────────────────────────────────────────────────────
+
+    /**
+     * Text the operator. Off unless a number has been set on purpose.
+     *
+     * Email is where the detail goes; this exists only to make sure the email
+     * gets READ — the whole point is the report that arrives while nobody is
+     * looking at an inbox. So it carries just enough to judge urgency and
+     * decide whether to go and look.
+     *
+     * Kept inside one segment (160 chars) where possible. Not a hard limit —
+     * the gateway will split a longer message and charge for two — but the
+     * message is trimmed to fit rather than being allowed to grow silently,
+     * because a truncated report reads as a broken alert.
+     */
+    private function sms(int $id, array $report): void
+    {
+        $to = IssueWidget::notifySms();
+        if ($to === null) return;
+
+        if (!class_exists(\Core\Services\SmsService::class)) return;
+
+        $blocking = ($report['severity'] ?? 'normal') === 'blocking';
+        $site     = (string) (setting('site_name', '') ?: 'your site');
+
+        // The reporter's own words, not a summary — it is the one thing that
+        // tells you whether to get out of your chair.
+        $what = trim(preg_replace('/\s+/', ' ', (string) ($report['message'] ?? ''))) ?: '(no detail given)';
+
+        $head = sprintf('%sIssue #%d on %s: ', $blocking ? 'BLOCKING ' : '', $id, $site);
+        $tail = ' — /admin/site-feedback?kind=issue';
+
+        $room = 160 - strlen($head) - strlen($tail);
+        if ($room > 20 && strlen($what) > $room) {
+            $what = rtrim(substr($what, 0, $room - 1)) . '…';
+        }
+
+        (new \Core\Services\SmsService())->send($to, $head . $what . $tail);
     }
 
     // ── Email ─────────────────────────────────────────────────────────

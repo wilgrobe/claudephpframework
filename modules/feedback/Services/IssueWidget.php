@@ -23,6 +23,7 @@ use Core\Auth\Auth;
  *   builder.feedback.widget.audience  'members' | 'everyone'            (default 'members')
  *   builder.feedback.widget.launcher  'both' | 'bubble' | 'footer'      (default 'both')
  *   builder.feedback.notify_email     where new reports are emailed     (default: site email)
+ *   builder.feedback.notify_sms      mobile texted on a new report     (default: off)
  */
 final class IssueWidget
 {
@@ -83,6 +84,48 @@ final class IssueWidget
             $c = trim($c);
             if ($c !== '' && filter_var($c, FILTER_VALIDATE_EMAIL)) return $c;
         }
+        return null;
+    }
+
+    /**
+     * Mobile number texted when a report comes in, or null when off.
+     *
+     * Deliberately has NO fallback, unlike notifyEmail(). An email that lands
+     * in the wrong inbox is a nuisance; a text that goes to a number inherited
+     * from some other setting wakes a stranger up and costs money per send. So
+     * this stays silent until someone types a number on purpose.
+     *
+     * Returns E.164 (+15205551234). Anything that cannot be read as a real
+     * number returns null rather than being passed to the gateway to fail.
+     */
+    public static function notifySms(): ?string
+    {
+        if (!function_exists('setting')) return null;
+
+        $raw = trim((string) setting('builder.feedback.notify_sms', ''));
+        if ($raw === '') return null;
+
+        return self::normaliseNumber($raw);
+    }
+
+    /**
+     * Best-effort E.164. Returns null when the input cannot be trusted.
+     *
+     * Assumes +1 for a bare 10-digit number because this is a US product with
+     * a US sending number; a longer number must carry its own country code,
+     * and is rejected rather than guessed at.
+     */
+    public static function normaliseNumber(string $raw): ?string
+    {
+        $plus   = str_starts_with(trim($raw), '+');
+        $digits = preg_replace('/\D+/', '', $raw) ?? '';
+
+        if ($digits === '') return null;
+
+        if ($plus)                                        return '+' . $digits;
+        if (strlen($digits) === 10)                       return '+1' . $digits;
+        if (strlen($digits) === 11 && $digits[0] === '1') return '+' . $digits;
+
         return null;
     }
 }

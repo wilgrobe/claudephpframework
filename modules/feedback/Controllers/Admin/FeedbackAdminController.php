@@ -82,6 +82,10 @@ class FeedbackAdminController
                 'audience' => \Modules\Feedback\Services\IssueWidget::audience(),
                 'launcher' => \Modules\Feedback\Services\IssueWidget::launcher(),
                 'notify'   => \Modules\Feedback\Services\IssueWidget::notifyEmail(),
+                // Read the raw setting, not notifySms() — the accessor returns
+                // null when unset, and the field must show what is stored so
+                // an operator can tell "off" from "saved but not arriving".
+                'notifySms' => (string) setting('builder.feedback.notify_sms', ''),
             ],
         ]);
     }
@@ -99,10 +103,24 @@ class FeedbackAdminController
         $launcher = in_array($request->post('launcher'), ['both', 'bubble', 'footer'], true)
             ? (string) $request->post('launcher') : 'both';
         $notify   = trim((string) ($request->post('notify_email') ?? ''));
+        $notifySms = trim((string) ($request->post('notify_sms') ?? ''));
 
         if ($notify !== '' && !filter_var($notify, FILTER_VALIDATE_EMAIL)) {
             Session::flash('error', 'That notification email doesn’t look right.');
             return Response::redirect('/admin/site-feedback?kind=issue');
+        }
+
+        // Store E.164, and refuse anything we cannot read as a number rather
+        // than saving it. A bad address bounces visibly; a bad mobile number
+        // just never arrives, and you would not find out until the alert you
+        // were relying on failed to reach you.
+        if ($notifySms !== '') {
+            $normalised = \Modules\Feedback\Services\IssueWidget::normaliseNumber($notifySms);
+            if ($normalised === null) {
+                Session::flash('error', 'That mobile number doesn’t look right — use 10 digits, or start with + and the country code.');
+                return Response::redirect('/admin/site-feedback?kind=issue');
+            }
+            $notifySms = $normalised;
         }
 
         try {
@@ -111,6 +129,7 @@ class FeedbackAdminController
             $svc->set('builder.feedback.widget.audience', $audience, 'site');
             $svc->set('builder.feedback.widget.launcher', $launcher, 'site');
             $svc->set('builder.feedback.notify_email',    $notify, 'site');
+            $svc->set('builder.feedback.notify_sms',      $notifySms, 'site');
             Session::flash('success', 'Issue-reporting settings saved.');
         } catch (\Throwable $e) {
             Session::flash('error', 'Could not save: ' . $e->getMessage());

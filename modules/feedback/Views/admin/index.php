@@ -70,6 +70,14 @@ $statusBadge = [
                         <input type="email" name="notify_email" class="form-control" style="font-size:13px;width:100%;"
                                value="<?= $e($w['notify'] ?? '') ?>" placeholder="you@example.com">
                     </label>
+                    <label style="display:block;flex:1;min-width:220px;">
+                        <span style="display:block;font-weight:600;margin-bottom:.25rem;">Also text me</span>
+                        <input type="tel" name="notify_sms" class="form-control" style="font-size:13px;width:100%;"
+                               value="<?= $e($w['notifySms'] ?? '') ?>" placeholder="(520) 555-1234">
+                        <span style="display:block;font-size:12px;color:#667085;margin-top:.25rem;">
+                            Leave blank for no texts. A short alert only — the detail stays in the email.
+                        </span>
+                    </label>
                 </div>
 
                 <button class="btn btn-primary btn-sm" type="submit">Save settings</button>
