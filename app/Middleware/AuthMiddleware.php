@@ -21,11 +21,57 @@ class AuthMiddleware
         // Case 2: No session at all — redirect to login
         if ($auth->guest()) {
             self::discardStaleSession();
+
+            // A fetch/XHR caller must be TOLD it is signed out, not handed the
+            // login page. A 302 is followed by the browser transparently, so the
+            // caller receives 200 + the login page's HTML; JSON.parse then throws
+            // and the JS is left holding an empty object that looks exactly like
+            // a successful-but-empty response. On the schedule board that opened
+            // the "Start now" dialog with every field blank — no title, no links,
+            // no hint that the session had expired.
+            //
+            // 401 + JSON makes the failure legible so the caller can say what
+            // actually happened.
+            if (self::wantsMachineReadable($request)) {
+                return Response::json([
+                    'ok'       => false,
+                    'error'    => 'session_expired',
+                    'message'  => 'Your session timed out. Sign in again to continue.',
+                    'login_url' => '/login',
+                ], 401);
+            }
+
             Session::set('intended', $request->path());
             return Response::redirect('/login');
         }
 
         return $next($request);
+    }
+
+    /**
+     * Is this a fetch/XHR rather than a browser navigation?
+     *
+     * Same three-way test CsrfMiddleware uses, and deliberately so — the two
+     * middlewares have to agree about what a background request looks like or
+     * one of them will answer the wrong way for the same caller.
+     *
+     * The X-CSRF-Token arm is the one that matters in practice: our own fetch
+     * helpers send that header but do NOT set Accept: application/json, so
+     * `wantsJson()` alone returns false for them and would miss exactly the
+     * calls this exists to fix.
+     *
+     * Note we do NOT set Session 'intended' on this path. The path here is the
+     * POST endpoint (/app/plan-tasks/157/start), which is not somewhere to land
+     * after signing in. The caller sends the user to the page they are already
+     * on; that GET sets 'intended' correctly on its own way through.
+     */
+    private static function wantsMachineReadable(Request $request): bool
+    {
+        $accept = strtolower((string) ($request->header('Accept') ?? ''));
+
+        return str_contains($accept, 'application/json')
+            || strtolower((string) ($request->header('X-Requested-With') ?? '')) === 'xmlhttprequest'
+            || $request->header('X-CSRF-Token') !== null;
     }
 
     /**
