@@ -183,6 +183,12 @@ class Auth
                     $this->db->insert('user_roles', ['user_id' => $userId, 'role_id' => $viewerRole['id']]);
                 }
                 $user = $this->db->fetchOne("SELECT * FROM users WHERE id = ?", [$userId]);
+                // If the row cannot be read back, the registration did not take.
+                // Falling through inserted a NULL user_id into user_oauth via
+                // $user['id'] below - an orphaned link, or a constraint fatal.
+                // Bailing here matches what the `!$user` check a few lines down
+                // already does for every other path: the login simply fails.
+                if (!$user) return false;
             }
             // Phase 43.195b H5 — UPSERT instead of bare INSERT to refresh
             // the encrypted token on every login and avoid a UNIQUE-

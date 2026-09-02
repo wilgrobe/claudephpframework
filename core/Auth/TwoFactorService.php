@@ -218,9 +218,23 @@ class TwoFactorService
             [$userId]
         );
 
+        // The account can be deleted between the challenge insert above and this
+        // read. `first_name` and `phone` below were already ??-guarded; `email`
+        // was not, and sendTemplate() is typed `string $to` - so a null there was
+        // a TypeError, i.e. a FATAL on the 2FA email path rather than a failed send.
+        $user = $user ?: [];
+
         if ($method === 'email') {
+            $to = (string) ($user['email'] ?? '');
+            if ($to === '') {
+                // No address to send to. The challenge row stands, but say so -
+                // a silent return leaves someone waiting for a code that is never
+                // coming, with nothing recorded anywhere to explain why.
+                error_log("[TwoFactorService] challenge {$challengeId}: user {$userId} has no email on file - code not sent");
+                return $challengeId;
+            }
             $this->mail->sendTemplate(
-                $user['email'],
+                $to,
                 'Your login verification code',
                 '2fa_otp',
                 [
