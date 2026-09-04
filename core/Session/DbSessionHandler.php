@@ -37,9 +37,74 @@ class DbSessionHandler implements SessionHandlerInterface, SessionUpdateTimestam
 {
     private Database $db;
 
+    /** Advisory lock currently held for this request, if any. */
+    private ?string $lockName = null;
+
+    /**
+     * How long to wait for another request on the same session to finish.
+     * Bounded on purpose: past this we proceed WITHOUT the lock, because a
+     * page that hangs is worse than a rare lost write.
+     */
+    private const LOCK_TIMEOUT = 3;
+
     public function __construct(Database $db)
     {
         $this->db = $db;
+    }
+
+    /**
+     * Serialise concurrent requests that share a session id.
+     *
+     * PHP's default file handler locks the session file for the life of a
+     * request, so two requests in the same session run one after the other.
+     * This handler did not, and read()/write() are a plain read-modify-write
+     * of the WHOLE payload — so the last writer won and everything the other
+     * request had stored in between was silently discarded.
+     *
+     * That is not a theoretical race. Refreshing a page that also fires
+     * background calls produced it reliably: the navigation renders /login and
+     * stores the form's CSRF token, a background call that read the session
+     * moments earlier finishes afterwards and writes the state it read, and the
+     * token is gone. Signing in then fails with "this sign-in form had been
+     * open too long" on a form that had been open for seconds. Two earlier
+     * attempts at that bug changed cookie handling and could not have fixed it.
+     *
+     * GET_LOCK rather than SELECT ... FOR UPDATE deliberately: an advisory lock
+     * holds no transaction open across the request, so it cannot interfere with
+     * whatever the application does with its own transactions.
+     */
+    private function lock(string $id): void
+    {
+        if ($this->lockName !== null) return;   // one lock per request
+
+        // Lock names are capped at 64 characters and the session id is opaque,
+        // so hash it rather than trusting its length or alphabet.
+        $name = 'sess_' . sha1($id);
+        try {
+            $got = $this->db->fetchOne("SELECT GET_LOCK(?, ?) AS ok", [$name, self::LOCK_TIMEOUT]);
+            if ($got && (int) ($got['ok'] ?? 0) === 1) {
+                $this->lockName = $name;
+                return;
+            }
+            // Timed out or errored: proceed unlocked. Log it, because a site
+            // seeing these regularly has a request holding sessions too long.
+            error_log('[DbSessionHandler] session lock not acquired for ' . substr($name, 0, 16) . '...');
+        } catch (\Throwable $e) {
+            error_log('[DbSessionHandler] session lock failed: ' . $e->getMessage());
+        }
+    }
+
+    private function unlock(): void
+    {
+        if ($this->lockName === null) return;
+        try {
+            $this->db->query("SELECT RELEASE_LOCK(?)", [$this->lockName]);
+        } catch (\Throwable $e) {
+            // The connection dropping releases it anyway; never fail a response
+            // over letting go of a lock.
+            error_log('[DbSessionHandler] session unlock failed: ' . $e->getMessage());
+        }
+        $this->lockName = null;
     }
 
     public function open(string $path, string $name): bool
@@ -50,11 +115,18 @@ class DbSessionHandler implements SessionHandlerInterface, SessionUpdateTimestam
 
     public function close(): bool
     {
+        // Always the last thing PHP calls, so this is where the lock goes back
+        // even when the request never wrote.
+        $this->unlock();
         return true;
     }
 
     public function read(string $id): string|false
     {
+        // Held until close(), so nothing else can read-modify-write this
+        // session underneath us.
+        $this->lock($id);
+
         $row = $this->db->fetchOne(
             "SELECT payload FROM sessions WHERE id = ?",
             [$id]
@@ -107,6 +179,12 @@ class DbSessionHandler implements SessionHandlerInterface, SessionUpdateTimestam
     {
         try {
             $this->db->delete('sessions', 'id = ?', [$id]);
+            // session_regenerate_id(true) destroys the old id and continues
+            // under a new one; keeping the old lock would pin it for the rest
+            // of the request and block nothing useful.
+            if ($this->lockName === 'sess_' . sha1($id)) {
+                $this->unlock();
+            }
             return true;
         } catch (\Throwable $e) {
             error_log('[DbSessionHandler] destroy failed: ' . $e->getMessage());
