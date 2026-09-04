@@ -32,7 +32,7 @@ class IntegrationConfig
             'label'          => 'Email',
             'driver_var'     => 'MAIL_DRIVER',
             'default_driver' => 'smtp',
-            'from_vars'      => ['MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'],
+            'from_vars'      => ['MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME', 'MAIL_REPLY_TO'],
             'providers' => [
                 'smtp' => [
                     'label'    => 'SMTP',

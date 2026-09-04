@@ -64,6 +64,8 @@ class MailService implements MailDriver
             'password'          => $env['password']         ?? '',
             'from_address'      => $env['from_address']     ?? 'noreply@example.com',
             'from_name'         => $env['from_name']        ?? ($_ENV['APP_NAME'] ?? 'App'),
+            // Empty unless MAIL_REPLY_TO is set, so existing installs are unchanged.
+            'reply_to'          => $env['reply_to']         ?? '',
             'sendgrid_api_key'  => $env['api_key']          ?? '',
             'mailgun_api_key'   => $env['api_key']          ?? '',
             'mailgun_domain'    => $env['domain']           ?? '',
@@ -226,6 +228,10 @@ class MailService implements MailDriver
         $fromAddress = preg_replace('/[\r\n]+/', '',  (string) $this->config['from_address']);
         $headers  = "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\n";
         $headers .= "From: $fromName <$fromAddress>\r\n";
+        $replyTo  = preg_replace('/[\r\n]+/', '', trim((string) ($this->config['reply_to'] ?? '')));
+        if ($replyTo !== '') {
+            $headers .= "Reply-To: $replyTo\r\n";
+        }
         return mail($to, $subject, $html, $headers);
     }
 
@@ -299,6 +305,13 @@ class MailService implements MailDriver
         }
 
         $mail->setFrom($this->config['from_address'], $this->config['from_name']);
+
+        // Replies belong to a human. From: stays as configured so the sending
+        // identity is unchanged; only the reply target moves.
+        $replyTo = trim((string) ($this->config['reply_to'] ?? ''));
+        if ($replyTo !== '') {
+            $mail->addReplyTo($replyTo);
+        }
         $mail->addAddress($to);
         $mail->Subject = $subject;
         $mail->isHTML(true);
