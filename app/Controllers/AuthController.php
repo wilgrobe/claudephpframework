@@ -915,6 +915,21 @@ class AuthController
         // email client gets pasted into the address bar and splits the query
         // parser's view of the params).
         $tokenHash = hash('sha256', $token);
+        // A verification link is single-use, and mail security scanners fetch
+        // every link in an email before the human ever sees it. On 2026-09-05 a
+        // real signup was verified at 05:33:44 by a HEAD request with an empty
+        // user-agent -- Microsoft's scanner, because the address was hotmail --
+        // and the person's own click 38 seconds later was told "Invalid or
+        // expired verification link" for an account that had just been
+        // verified successfully. Outlook, Hotmail, Office 365 and most
+        // corporate mail do this, so it is the common case, not the edge.
+        //
+        // A HEAD carries no body and renders nothing: no human is looking at
+        // it. Answer it without spending the token.
+        if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD') {
+            return Response::redirect($this->auth->guest() ? '/login' : '/dashboard');
+        }
+
         $record = $this->db->fetchOne(
             "SELECT id, user_id, token, expires_at
                FROM email_verifications
@@ -923,6 +938,25 @@ class AuthController
         );
 
         if (!$record) {
+            // Before calling this invalid: was this token already spent on an
+            // account that IS now verified? Then verification worked and the
+            // only thing broken is what we tell them. Races survive the guard
+            // above -- a scanner that sends GET rather than HEAD still wins --
+            // so this path has to stay friendly rather than merely rarer.
+            $spent = $this->db->fetchOne(
+                "SELECT ev.user_id, u.email_verified_at
+                   FROM email_verifications ev
+                   JOIN users u ON u.id = ev.user_id
+                  WHERE ev.token = ? AND ev.used_at IS NOT NULL",
+                [$tokenHash]
+            );
+            if ($spent && !empty($spent['email_verified_at'])) {
+                $back = $this->auth->guest() ? '/login' : '/dashboard';
+                return Response::redirect($back)->withFlash(
+                    'success',
+                    'Your email is already verified — please sign in.'
+                );
+            }
             return $failRedirect('Invalid or expired verification link.');
         }
 
