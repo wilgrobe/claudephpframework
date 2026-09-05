@@ -259,6 +259,31 @@ abstract class ModuleProvider
     public function settingsKeys(): array { return []; }
 
     /**
+     * Panels this module contributes to the settings hub's left nav.
+     *
+     * A module that ships an admin settings page has to be reachable from
+     * somewhere. Hardcoding module names into the settings module is the
+     * obvious way and the wrong one — it would have to name modules that may
+     * not be installed, and a nav link to an absent module is worse than no
+     * link. Declaring it here means the panel appears exactly when the module
+     * that owns it is loaded.
+     *
+     * Each entry:
+     *
+     *   [
+     *       'key'   => 'events',                    // required, unique-ish
+     *       'label' => 'Events',                    // required
+     *       'icon'  => '📅',                        // single emoji
+     *       'desc'  => 'Categories, RSVPs, iCal',   // one short line
+     *       'url'   => '/admin/events/settings',    // optional; defaults to
+     *                                               // /admin/settings/{key}
+     *   ]
+     *
+     * @return array<int, array<string, string>>
+     */
+    public function settingsPanels(): array { return []; }
+
+    /**
      * Sitemap entries contributed by this module. Each entry is an
      * associative array consumed by App\Controllers\SitemapController:
      *

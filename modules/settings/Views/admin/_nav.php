@@ -9,6 +9,11 @@
  * form inside `<main class="settings-main">` which closes at the end
  * of the panel view (just before the layout/footer include).
  *
+ * A panel belonging to ANOTHER module does not go here — that module
+ * declares it from ModuleProvider::settingsPanels(), so the panel appears
+ * only when the module is loaded and the settings hub never links to
+ * something that is not installed.
+ *
  * Adding a new panel: add a row to $panels here AND add a controller
  * method + route + view. Each entry is
  *   [key, label, icon, description].
@@ -29,6 +34,42 @@ $panels = [
     ['contact',      'Contact form',           '✉️',  'Recipients, autoreply, anti-spam'],
     ['other',        'Other / Unmanaged',      '🗂️',  'Free-form ad-hoc keys'],
 ];
+
+// Normalise the static rows to the 5-tuple the loop below renders. Their URL
+// is the conventional /admin/settings/<key>.
+$panels = array_map(
+    static fn(array $p): array => [$p[0], $p[1], $p[2], $p[3], '/admin/settings/' . $p[0]],
+    $panels
+);
+
+// Panels contributed by modules (ModuleProvider::settingsPanels()). A module
+// that owns an admin settings page at its own URL — /admin/events/settings and
+// the like — declares it there, and it appears here only when that module is
+// actually loaded, so an absent module cannot leave a dead link.
+try {
+    $__reg = \Core\Container\Container::global()->get(\Core\Module\ModuleRegistry::class);
+    foreach ($__reg->all() as $__provider) {
+        if (!method_exists($__provider, 'settingsPanels')) continue;
+        foreach ($__provider->settingsPanels() as $__p) {
+            $__key = trim((string) ($__p['key'] ?? ''));
+            $__label = trim((string) ($__p['label'] ?? ''));
+            // A half-declared panel is skipped rather than rendered blank.
+            if ($__key === '' || $__label === '') continue;
+            $__url = trim((string) ($__p['url'] ?? ''));
+            // Local paths only — a settings nav is not a place to let a module
+            // point somewhere off-site.
+            if ($__url === '' || $__url[0] !== '/' || str_starts_with($__url, '//')) {
+                $__url = '/admin/settings/' . $__key;
+            }
+            $panels[] = [$__key, $__label, (string) ($__p['icon'] ?? '⚙️'),
+                         (string) ($__p['desc'] ?? ''), $__url];
+        }
+    }
+} catch (\Throwable) {
+    // No registry (CLI, early bootstrap): render the built-in panels only.
+    // The settings hub must not 500 because a module list is unavailable.
+}
+
 $activePanel = $activePanel ?? '';
 ?>
 <style>
@@ -101,8 +142,8 @@ $activePanel = $activePanel ?? '';
 <div class="settings-shell">
     <aside class="settings-nav" aria-label="Settings panels">
         <div class="settings-nav-header">Settings</div>
-        <?php foreach ($panels as [$key, $label, $icon, $desc]): ?>
-        <a href="/admin/settings/<?= e($key) ?>"
+        <?php foreach ($panels as [$key, $label, $icon, $desc, $url]): ?>
+        <a href="<?= e($url) ?>"
            class="<?= $key === $activePanel ? 'is-active' : '' ?>">
             <span class="settings-nav-icon" aria-hidden="true"><?= $icon ?></span>
             <span class="settings-nav-text">
