@@ -213,6 +213,72 @@ return new class extends ModuleProvider {
                 }
             ),
 
+            // ── Generic embed ────────────────────────────────────────────
+            // Any https page in an iframe: a comparison table, a booking
+            // calendar, a form, a dashboard. siteblocks.html cannot carry
+            // these -- it sanitizes to a text allowlist, so <script> and
+            // <iframe> are stripped -- and video_embed only understands
+            // YouTube and Vimeo. Without this block there was no way to put a
+            // third-party embed on a Builder page at all.
+            //
+            // A URL rather than a pasted snippet on purpose. Accepting raw
+            // <script> from a page author would let any tenant admin run
+            // script on a *.claudephpbuilder.com origin; an iframe of a
+            // third-party origin cannot read this page or its cookies.
+            // Vendors who hand out a loader script also document a plain
+            // iframe URL, so nothing is actually out of reach.
+            new \Core\Module\BlockDescriptor(
+                key:         'siteblocks.embed',
+                label:       'Embed (iframe)',
+                description: 'Embed an external page by URL — comparison tables, booking calendars, forms, dashboards.',
+                category:    'Site Building',
+                defaultSize: 'large',
+                defaultSettings: ['url' => '', 'height_px' => 620, 'title' => 'Embedded content', 'allow_scripts' => true],
+                audience:    'any',
+                settingsSchema: [
+                    ['key' => 'url',       'label' => 'Embed URL', 'type' => 'text', 'default' => '',
+                     'placeholder' => 'https://example.com/embed/...',
+                     'help' => 'The address the vendor gives you for embedding. Must start with https://'],
+                    ['key' => 'height_px', 'label' => 'Height (px)', 'type' => 'number', 'default' => 620,
+                     'help' => 'How tall the embed box is. 300–2000.'],
+                    ['key' => 'title',     'label' => 'Description for screen readers', 'type' => 'text',
+                     'default' => 'Embedded content',
+                     'help' => 'Says what the embed contains, e.g. "Feature comparison".'],
+                ],
+                render: function (array $context, array $settings): string {
+                    $url = trim((string) ($settings['url'] ?? ''));
+                    if ($url === '') return '';
+
+                    // https only, and an absolute URL. A relative or javascript:
+                    // value here would either break or be an injection vector,
+                    // and an http:// frame on an https page is blocked by the
+                    // browser as mixed content anyway -- better to say so than
+                    // to render an empty box the author cannot explain.
+                    $ok = preg_match('~^https://[A-Za-z0-9.\-]+(:\d+)?(/[^\s"<>]*)?$~', $url) === 1;
+                    if (!$ok) {
+                        $auth = \Core\Auth\Auth::getInstance();
+                        return $auth->hasRole(['super-admin', 'admin'])
+                            ? '<div style="background:var(--color-warning-bg);border:1px dashed var(--color-warning);color:var(--color-warning-fg);padding:.6rem 1rem;border-radius:6px;font-size:12.5px">'
+                              . 'Embed URL must be a full https:// address. Got: <code>'
+                              . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '</code></div>'
+                            : '';
+                    }
+
+                    $h = (int) ($settings['height_px'] ?? 620);
+                    $h = max(300, min(2000, $h ?: 620));
+                    $title = trim((string) ($settings['title'] ?? '')) ?: 'Embedded content';
+
+                    // allow="" denies camera, microphone and geolocation by
+                    // default: an embedded page has no business prompting a
+                    // visitor for those, and an author pasting a URL has no
+                    // way to know whether it would try.
+                    return '<iframe src="' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '" '
+                         . 'title="' . htmlspecialchars($title, ENT_QUOTES | ENT_HTML5) . '" '
+                         . 'style="width:100%;height:' . $h . 'px;border:0;border-radius:6px" '
+                         . 'loading="lazy" allow="" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+                }
+            ),
+
             // ── Hero ────────────────────────────────────────────────────
             // The marketing-page starter. Heading + subheading + CTA
             // button + optional background image. Used at the top of
