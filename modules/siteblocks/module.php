@@ -233,7 +233,7 @@ return new class extends ModuleProvider {
                 description: 'Embed an external page by URL — comparison tables, booking calendars, forms, dashboards.',
                 category:    'Site Building',
                 defaultSize: 'large',
-                defaultSettings: ['url' => '', 'height_px' => 620, 'title' => 'Embedded content', 'allow_scripts' => true],
+                defaultSettings: ['url' => '', 'height_px' => 620, 'title' => 'Embedded content', 'auto_height' => true],
                 audience:    'any',
                 settingsSchema: [
                     ['key' => 'url',       'label' => 'Embed URL', 'type' => 'text', 'default' => '',
@@ -244,6 +244,8 @@ return new class extends ModuleProvider {
                     ['key' => 'title',     'label' => 'Description for screen readers', 'type' => 'text',
                      'default' => 'Embedded content',
                      'help' => 'Says what the embed contains, e.g. "Feature comparison".'],
+                    ['key' => 'auto_height', 'label' => 'Grow to fit the content', 'type' => 'checkbox', 'default' => true,
+                     'help' => 'If the embed reports its height, resize to match. Height above is the starting size.'],
                 ],
                 render: function (array $context, array $settings): string {
                     $url = trim((string) ($settings['url'] ?? ''));
@@ -272,10 +274,32 @@ return new class extends ModuleProvider {
                     // default: an embedded page has no business prompting a
                     // visitor for those, and an author pasting a URL has no
                     // way to know whether it would try.
-                    return '<iframe src="' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '" '
+                    $auto = !isset($settings['auto_height']) || !empty($settings['auto_height']);
+                    $id   = 'sb-embed-' . substr(hash('sha256', $url . $h . $title), 0, 12);
+
+                    $out = '<iframe id="' . $id . '" src="' . htmlspecialchars($url, ENT_QUOTES | ENT_HTML5) . '" '
                          . 'title="' . htmlspecialchars($title, ENT_QUOTES | ENT_HTML5) . '" '
                          . 'style="width:100%;height:' . $h . 'px;border:0;border-radius:6px" '
                          . 'loading="lazy" allow="" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+
+                    // Grow to fit the embedded content when it says how tall it
+                    // is. A host page cannot measure a cross-origin frame, so the
+                    // embed has to volunteer the number -- many do, ours included.
+                    // Messages are accepted ONLY from this iframe's own window, so
+                    // another frame or a script on the page cannot resize it, and
+                    // the value is clamped: a hostile or buggy embed should not be
+                    // able to make the page a mile long.
+                    if ($auto) {
+                        $out .= '<script>(function(){var f=document.getElementById("' . $id . '");'
+                              . 'if(!f)return;window.addEventListener("message",function(e){'
+                              . 'if(!f.contentWindow||e.source!==f.contentWindow)return;'
+                              . 'var d=e.data,h=null;'
+                              . 'if(typeof d==="number")h=d;'
+                              . 'else if(d&&typeof d==="object"&&d.height!=null)h=parseInt(d.height,10);'
+                              . 'if(h&&h>=200&&h<=5000)f.style.height=h+"px";});})();</script>';
+                    }
+
+                    return $out;
                 }
             ),
 
