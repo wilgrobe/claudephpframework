@@ -276,6 +276,32 @@ Site-scope setting keys this module owns. Listed keys are HIDDEN from the generi
 module's dedicated admin page. Otherwise the grid would silently clobber the
 setting's `type` column on save.
 
+### `settingsPanels(): array`
+
+Panels your module contributes to the settings hub's left nav
+(`/admin/settings`). Declare one whenever your module ships its own admin
+settings page, or **nobody will find it** — a page that is routed and built
+but linked from nowhere is invisible, and it looks finished from every angle
+except the one that matters.
+
+```php
+public function settingsPanels(): array {
+    return [[
+        'key'   => 'greeter',                     // required
+        'label' => 'Greeter',                     // required
+        'icon'  => '👋',                          // single emoji
+        'desc'  => 'Greeting text, quiet hours',  // one short line
+        'url'   => '/admin/greeter/settings',     // optional; defaults to
+                                                  // /admin/settings/{key}
+    ]];
+}
+```
+
+Declare it here rather than editing the settings module: the panel then
+appears exactly when your module is loaded, so an install without it can
+never show a link that 404s. Give `url` whenever your settings page lives at
+your own path — do not move the route to fit the nav.
+
 ## Database setup
 
 All schema changes go through **PHP migrations** under
