@@ -120,6 +120,24 @@ $imgSrc = "'self' data: https:" . (config('app.env') !== 'production' ? ' http:'
 // embeds are introduced — keep the list narrow rather than allowing
 // `https:` blanket so a compromised page can't phone home to anything.
 $frameSrc = "'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com";
+// The siteblocks.embed block can point at any https origin, but THIS header
+// decides what the browser will actually load — so embedding a host that is
+// not listed here fails with a blank frame and nothing in the UI to explain
+// it. The list stays narrow (see above); an operator widens it deliberately
+// via CSP_FRAME_SRC_EXTRA in .env, space- or comma-separated:
+//     CSP_FRAME_SRC_EXTRA="https://example.com https://calendly.com"
+// Each entry must be a bare https origin (scheme + host [+ port], no path).
+// Anything else is DROPPED rather than concatenated, because one malformed
+// token does not error — it silently breaks the whole directive.
+$frameExtra = trim((string) ($_ENV['CSP_FRAME_SRC_EXTRA'] ?? getenv('CSP_FRAME_SRC_EXTRA') ?: ''));
+if ($frameExtra !== '') {
+    foreach (preg_split('~[\s,]+~', $frameExtra) ?: [] as $o) {
+        $o = rtrim(trim($o), '/');
+        if ($o !== '' && preg_match('~^https://[A-Za-z0-9.\-]+(:\d+)?$~', $o)) {
+            $frameSrc .= ' ' . $o;
+        }
+    }
+}
 // font-src: 'self' + Google Fonts CDN + the configured S3/MinIO origin so
 // tenant-uploaded custom fonts (builder.branding.custom_font_url) can load.
 // CSP source-lists are origin-only, so derive scheme://host[:port] from
