@@ -101,8 +101,9 @@ class NotificationsController
     {
         if ($this->auth->guest()) return Response::json(['count' => 0]);
 
-        $count = count($this->notif->getUnread($this->auth->id(), 99));
-        return Response::json(['count' => $count]);
+        // The page chrome calls this on every load and on every back-button
+        // restore, so it must not pay for 99 rows to learn one number.
+        return Response::json(['count' => $this->notif->unreadCount((int) $this->auth->id())]);
     }
 
     /**

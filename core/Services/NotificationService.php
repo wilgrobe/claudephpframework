@@ -328,6 +328,23 @@ class NotificationService
         );
     }
 
+    /**
+     * How many unread notifications this user has.
+     *
+     * A COUNT, not count(getUnread(...)). The old form loaded up to 99 full rows
+     * - title, body and a json blob each - to produce one integer, and capped at
+     * 99, so a user with more saw a number that was simply wrong. Page chrome
+     * calls this on every load to keep the bell honest across back-button
+     * navigation, so it has to be cheap.
+     */
+    public function unreadCount(int $userId): int
+    {
+        return (int) $this->db->fetchColumn(
+            "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND read_at IS NULL",
+            [$userId]
+        );
+    }
+
     public function getAll(int $userId, int $limit = 50): array
     {
         return $this->db->fetchAll(
