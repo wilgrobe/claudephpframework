@@ -117,7 +117,7 @@ class PageController
         $isPublic      = (int) $request->post('is_public', 1);
         $featured      = (int) $request->post('featured', 0);
 
-        $id = $this->db->insert('pages', [
+        $insert = [
             'title'           => $v->get('title'),
             'slug'            => $slug,
             'body'            => $sanitizedBody,
@@ -131,7 +131,23 @@ class PageController
             'sort_order'      => (int) $request->post('sort_order', 0),
             'created_by'      => $this->auth->id(),
             'published_at'    => $status === 'published' ? date('Y-m-d H:i:s') : null,
-        ]);
+        ];
+        // hide_title + main wrapper spacing. The columns have existed since the
+        // 0001 baseline and app/Views/public/page.php already honours hide_title
+        // when rendering — but nothing here ever wrote it, so it could only be
+        // set by editing the database by hand. Column-guarded so an install that
+        // has not migrated skips them rather than erroring, and clamped
+        // server-side because these are raw pixel numbers from a form.
+        if ($this->pagesHasColumn('hide_title')) {
+            $insert['hide_title'] = (int) $request->post('hide_title', 0);
+        }
+        if ($this->pagesHasColumn('main_margin_top_px')) {
+            $insert['main_margin_top_px']    = max(0, min(160, (int) $request->post('main_margin_top_px', 0)));
+            $insert['main_margin_bottom_px'] = max(0, min(160, (int) $request->post('main_margin_bottom_px', 0)));
+            $insert['main_padding_x_px']     = max(0, min(200, (int) $request->post('main_padding_x_px', 0)));
+            $insert['main_padding_y_px']     = max(0, min(160, (int) $request->post('main_padding_y_px', 0)));
+        }
+        $id = $this->db->insert('pages', $insert);
         // Register the canonical path so slug changes later can leave a 301
         // breadcrumb in seo_links.
         $this->seo->register($slug, "/$slug", 'page', $id);
@@ -211,6 +227,23 @@ class PageController
         $newStatus     = $v->get('status');
         $newIsPublic   = (int) $request->post('is_public', 1);
         $newFeatured   = (int) $request->post('featured', 0);
+
+        // Same guarded columns as create(). Applied as a follow-up update so the
+        // main statement keeps working unchanged on an install that predates
+        // these columns.
+        $extra = [];
+        if ($this->pagesHasColumn('hide_title')) {
+            $extra['hide_title'] = (int) $request->post('hide_title', 0);
+        }
+        if ($this->pagesHasColumn('main_margin_top_px')) {
+            $extra['main_margin_top_px']    = max(0, min(160, (int) $request->post('main_margin_top_px', 0)));
+            $extra['main_margin_bottom_px'] = max(0, min(160, (int) $request->post('main_margin_bottom_px', 0)));
+            $extra['main_padding_x_px']     = max(0, min(200, (int) $request->post('main_padding_x_px', 0)));
+            $extra['main_padding_y_px']     = max(0, min(160, (int) $request->post('main_padding_y_px', 0)));
+        }
+        if ($extra) {
+            $this->db->update('pages', $extra, 'id = ?', [$id]);
+        }
 
         $this->db->update('pages', [
             'title'           => $v->get('title'),
@@ -416,5 +449,25 @@ class PageController
     private function denied(): Response
     {
         return Response::redirect('/admin')->withFlash('error', 'Access denied.');
+    }
+
+    /**
+     * Does the `pages` table have this column?
+     *
+     * These columns arrived after the first releases, so an install that has not
+     * run the migration must skip them rather than fail the whole save. Cached
+     * per request — this is called on every create and update.
+     */
+    private function pagesHasColumn(string $column): bool
+    {
+        static $cache = [];
+        if (!isset($cache[$column])) {
+            $cache[$column] = (bool) $this->db->fetchColumn(
+                "SELECT 1 FROM information_schema.columns
+                 WHERE table_schema = DATABASE() AND table_name = 'pages' AND column_name = ?",
+                [$column]
+            );
+        }
+        return $cache[$column];
     }
 }

@@ -340,6 +340,17 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                         <input type="checkbox" name="featured" value="1" <?= !empty($page['featured']) ? 'checked' : '' ?>>
                         ⭐ Featured
                     </label>
+                    <?php // app/Views/public/page.php has always honoured hide_title when
+                          // rendering, and the column has been in the 0001 baseline the whole
+                          // time — but no form ever posted it and no controller ever wrote it,
+                          // so it could only be set by editing the database by hand. The paired
+                          // hidden input is what makes an unchecked box post 0 rather than
+                          // nothing, same as Public and Featured above. ?>
+                    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer;font-weight:400;font-size:13px;color:var(--color-gray-700);text-transform:none;letter-spacing:0">
+                        <input type="hidden" name="hide_title" value="0">
+                        <input type="checkbox" name="hide_title" value="1" <?= !empty($page['hide_title']) ? 'checked' : '' ?>>
+                        Hide page title
+                    </label>
                 </div>
             </div>
         </div>
