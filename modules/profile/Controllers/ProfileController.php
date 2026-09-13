@@ -119,9 +119,17 @@ class ProfileController
                     $uploader->delete($existing['avatar']);
                 }
             } catch (\Throwable $e) {
+                // Phase 43.190b — generic user-facing flash + error_log
+                // for the detail. Pre-fix the flash embedded both
+                // $e->getMessage() AND $e::class — exposing internal
+                // SDK / storage driver class names + filesystem paths
+                // to the admin browser. Same sanitization pattern
+                // Phase 43.187b applied to the admin controllers; this
+                // site was missed because it lives in the profile
+                // module, not the apex app/Controllers/.
                 error_log('[ProfileController] avatar upload failed: ' . $e::class . ': ' . $e->getMessage());
                 Session::flash('errors', ['avatar' => [
-                    'Upload failed: ' . $e->getMessage() . ' (' . $e::class . ')'
+                    'Upload failed — see server log for details.',
                 ]]);
                 return Response::redirect('/profile/edit');
             }
@@ -129,6 +137,29 @@ class ProfileController
 
         // Password change
         if ($newPass = $request->post('password')) {
+            // Phase 43.190b — require current-password re-auth before
+            // accepting a new password. Pre-fix any authenticated
+            // session could change the password without proving the
+            // current one — a hijacked session (XSS, MITM on http-only
+            // env, physical access to unlocked machine) could lock out
+            // the legitimate user. OWASP recommends "current password"
+            // re-auth for every password change.
+            //
+            // Re-auth runs BEFORE the strength + breach checks so a
+            // user who fat-fingered the current password doesn't waste
+            // time generating + validating a new one.
+            $currentPass = (string) $request->post('current_password', '');
+            $currentUser = $this->db->fetchOne(
+                "SELECT password FROM users WHERE id = ?",
+                [$this->auth->id()]
+            );
+            if (!$currentUser || !password_verify($currentPass, (string) ($currentUser['password'] ?? ''))) {
+                Session::flash('errors', ['current_password' => [
+                    'Enter your current password to change it.',
+                ]]);
+                return Response::redirect('/profile/edit');
+            }
+
             $v2 = new Validator($request->post());
             $v2->validate([
                 'password'         => 'min:12|password_strength',
@@ -189,13 +220,15 @@ class ProfileController
             }
         }
 
-        // Cookie: 1 year, root path, Lax. Not httponly so JS can read it
-        // (useful for future client-side toggle without page reload).
-        setcookie('theme_pref', $pref, [
-            'expires'  => time() + 365 * 24 * 3600,
-            'path'     => '/',
-            'samesite' => 'Lax',
-            'secure'   => !empty($_SERVER['HTTPS']),
+        // Phase 43.197b H3 — central Cookie helper. Pre-fix used
+        // `$_SERVER['HTTPS']` directly which is false behind any TLS-
+        // terminating reverse proxy (Cloudflare/Caddy/Apache mod_proxy)
+        // unless TRUST_PROXY=1 + X-Forwarded-Proto is honored. Cookie::set
+        // does the right thing. Also flips HttpOnly=true (default in
+        // the helper) — pre-fix httponly=false was gratuitous attack
+        // surface since no current JS reads theme_pref.
+        \Core\Http\Cookie::set('theme_pref', $pref, [
+            'expires' => time() + 365 * 24 * 3600,
         ]);
 
         // Redirect back to where the user was. The referer is sanitized

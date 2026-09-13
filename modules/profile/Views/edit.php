@@ -70,6 +70,21 @@
 
             <div style="border-top:1px solid var(--color-gray-200);margin:1.25rem 0;padding-top:1.25rem">
                 <div style="font-weight:600;font-size:14px;margin-bottom:.75rem">Change Password <span style="font-weight:400;color:var(--color-gray-500)">(leave blank to keep current)</span></div>
+                <?php // The controller requires this before it will accept a new
+                      // password (OWASP re-auth). It shipped without this input,
+                      // so every password change failed with "Enter your current
+                      // password to change it" and there was no field to enter it
+                      // in. Deliberately NOT `required`: the whole block is
+                      // optional, and marking it required would block saving the
+                      // rest of the profile. The controller only demands it when a
+                      // new password was actually supplied. ?>
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password"
+                           class="form-control <?= !empty($errors['current_password'])?'is-invalid':'' ?>"
+                           autocomplete="current-password">
+                    <?php if (!empty($errors['current_password'])): ?><span class="form-error"><?= e($errors['current_password'][0]) ?></span><?php endif; ?>
+                </div>
                 <div class="form-group">
                     <label for="password-input">New Password</label>
                     <input type="password" id="password-input" name="password" class="form-control <?= !empty($errors['password'])?'is-invalid':'' ?>"
