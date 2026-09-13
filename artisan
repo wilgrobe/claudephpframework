@@ -41,6 +41,7 @@ ini_set('display_errors', '1');
 
 use Core\Console\CommandRegistry;
 use Core\Console\Commands\{
+    DeployPreflightCommand,
     HelpCommand,
     CleanupCommand,
     RetryMessagesCommand,
@@ -94,6 +95,8 @@ $registry->register(SearchReindexCommand::class);
 
 $registry->register(ModuleCacheCommand::class);
 $registry->register(ModuleClearCommand::class);
+
+$registry->register(DeployPreflightCommand::class);
 
 $registry->register(QaAdminSmokeCommand::class);
 
