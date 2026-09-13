@@ -447,15 +447,25 @@ final class PageChromeBatchATest extends TestCase
 
     // ── ChromeWrapper layout-missing fallback ────────────────────────────────
 
-    public function test_wrap_falls_back_to_unwrapped_when_layout_missing(): void
+    public function test_wrap_falls_back_to_branded_chrome_when_layout_missing(): void
     {
-        // No layout seeded — wrap() must return the original body unchanged.
+        // No layout seeded. Up to 447dea5 this returned the body BARE, which
+        // rendered unstyled (and white-in-dark-mode) because no theme CSS came
+        // with it. The contract since then: a missing layout costs you the grid
+        // layout and nothing else — the fragment still lands inside the normal
+        // branded document. The invariant the old assertion was protecting is
+        // unchanged and still asserted here: the content survives intact.
         $r = (new Response('<p>fallback body</p>', 200, ['Content-Type' => 'text/html']))
             ->withLayout('does.not.exist');
 
         $wrapped = ChromeWrapper::wrap($r);
-        $this->assertSame('<p>fallback body</p>', $wrapped,
-            'Missing layout must produce graceful fallback — broken chrome must never break the page.');
+
+        $this->assertStringContainsString('<p>fallback body</p>', $wrapped,
+            'Missing layout must never cost the page its content — broken chrome must not break the page.');
+        $this->assertStringContainsString('chrome-fallback-main', $wrapped,
+            'The fragment should sit in the fallback content container.');
+        $this->assertStringContainsString('<!DOCTYPE html>', $wrapped,
+            'Fallback must emit a full document, not a bare fragment — that is the point of the change.');
     }
 
     public function test_wrap_returns_body_unchanged_when_no_chrome_set(): void
