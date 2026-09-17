@@ -113,6 +113,30 @@ class Validator
     {
         $toRemove = [];
         foreach ($node->childNodes as $child) {
+            // Comments go, content and all.
+            //
+            // The walker below only ever examined ELEMENT nodes, so a comment
+            // survived verbatim — `<!--<script>alert(1)</script>-->` came
+            // through untouched. That is not an XSS: a comment is inert in
+            // any browser still in use, and every attempt to break out of one
+            // is caught by the element and attribute rules below. The one
+            // exception is an IE conditional comment, which is dead.
+            //
+            // It is stripped because it is a hiding place rather than because
+            // it is dangerous. A comment is invisible to the author reviewing
+            // their own page, carries whatever was put inside it, and survives
+            // into anything downstream that parses HTML differently. Nothing
+            // an author writes needs one.
+            if ($child->nodeType === XML_COMMENT_NODE) {
+                // replace:false is the honest value rather than a load-bearing
+                // one — a comment node has no CHILDREN (its payload is its
+                // nodeValue), so the unwrap branch below never runs for it and
+                // true would behave identically. Mutation testing showed that,
+                // so it is written down instead of looking like a decision.
+                $toRemove[] = ['node' => $child, 'replace' => false];
+                continue;
+            }
+
             if ($child->nodeType === XML_ELEMENT_NODE) {
                 $tag = strtolower($child->nodeName);
 
