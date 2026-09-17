@@ -4,6 +4,11 @@ namespace Core\Http;
 
 class Request
 {
+    /**
+     * The two headers PHP does NOT expose as HTTP_<NAME>. See header().
+     */
+    private const ENTITY_HEADERS = ['CONTENT_TYPE', 'CONTENT_LENGTH'];
+
     private array  $params  = [];
     private string $path    = '/';
 
@@ -188,10 +193,37 @@ class Request
         return $this->server['HTTP_USER_AGENT'] ?? '';
     }
 
+    /**
+     * A request header by name, or null when it was not sent.
+     *
+     * Nearly every header arrives as HTTP_<NAME>. The exceptions are the two
+     * entity headers: PHP puts Content-Type and Content-Length in $_SERVER
+     * WITHOUT the prefix, so the HTTP_ spelling is never set and asking for
+     * either returned null on every request ever made. Silently — null is also
+     * what a header that really is absent returns, so a check built on it looks
+     * right, passes review, and never once fires.
+     *
+     * capture() already knew this: it reads both spellings inline to find a
+     * JSON body. The knowledge was in the file, just not in this method.
+     *
+     * The fallback is deliberately limited to those two names. A blanket "try
+     * the unprefixed key as well" would turn this into an arbitrary $_SERVER
+     * reader driven by a caller-supplied string — header('Path') would hand
+     * back the system PATH, header('Request-Method') the verb, and a header
+     * name taken from user input could go looking through the environment.
+     */
     public function header(string $name): ?string
     {
         $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
-        return $this->server[$key] ?? null;
+        if (isset($this->server[$key])) {
+            return $this->server[$key];
+        }
+
+        $bare = substr($key, 5);   // drop HTTP_
+
+        return in_array($bare, self::ENTITY_HEADERS, true)
+            ? ($this->server[$bare] ?? null)
+            : null;
     }
 
     public function file(string $key): ?array
