@@ -252,20 +252,51 @@ class StripeService implements \Core\Contracts\PaymentGateway
     }
 
     /**
+     * The one line that touches the network, on its own so the rest can be tested.
+     *
+     * Everything in `call()` above it is decisions — which header, which error
+     * message an operator is shown, what counts as a refusal rather than an
+     * outage — and none of that was reachable by a test while it sat in the
+     * same method as a live HTTP call. A test overrides this and drives the
+     * real `call()`.
+     *
+     * @param  array $ctx stream context options
+     * @return string|false the response body, or false when it could not be fetched
+     */
+    protected function fetch(string $url, array $ctx): string|false
+    {
+        return @file_get_contents($url, false, stream_context_create($ctx));
+    }
+
+    /**
      * Make an HTTP call against the Stripe API. Returns the decoded JSON
      * response on 2xx, or null on any failure (auth, network, 4xx/5xx).
      * Errors are logged so the app's logs capture the response body; the
      * caller just sees null and degrades gracefully.
      *
-     * @param string $method HTTP verb (GET / POST / DELETE)
-     * @param string $path   API path starting with / (e.g. /v1/customers)
-     * @param array  $body   Form-encoded parameters; Stripe uses
-     *                       application/x-www-form-urlencoded with bracketed
-     *                       keys for nested fields.
+     * ⚠ `$error` IS FOR THE ONE CALLER THAT HAS TO EXPLAIN ITSELF. Degrading
+     * quietly is right for a checkout — a customer must never be shown the
+     * gateway's wording — but a setup or integration-test screen whose whole
+     * job is answering "why can nobody buy anything" cannot do it from a null.
+     * Stripe's own message ("No such price: price_abc", "Invalid API Key
+     * provided") is the answer, and it goes to an operator, not to a customer.
+     * Pass nothing and this behaves exactly as it always has.
+     *
+     * @param string       $method HTTP verb (GET / POST / DELETE)
+     * @param string       $path   API path starting with / (e.g. /v1/customers)
+     * @param array        $body   Form-encoded parameters; Stripe uses
+     *                             application/x-www-form-urlencoded with bracketed
+     *                             keys for nested fields.
+     * @param ?string     &$error  Set to Stripe's message, or a transport one, on
+     *                             failure; set to null on success, so it is safe to reuse.
      */
-    public function call(string $method, string $path, array $body = []): ?array
+    public function call(string $method, string $path, array $body = [], ?string &$error = null): ?array
     {
-        if (!$this->isEnabled()) return null;
+        $error = null;
+        if (!$this->isEnabled()) {
+            $error = 'No Stripe secret key is set, so nothing was asked.';
+            return null;
+        }
 
         $url = 'https://api.stripe.com' . $path;
         $headers = [
@@ -287,19 +318,26 @@ class StripeService implements \Core\Contracts\PaymentGateway
             $url .= '?' . http_build_query($body);
         }
 
-        $raw = @file_get_contents($url, false, stream_context_create($ctx));
+        $raw = $this->fetch($url, $ctx);
         if ($raw === false) {
             error_log('[stripe] network failure calling ' . $path);
+            $error = 'Stripe could not be reached.';
             return null;
         }
         $data = json_decode($raw, true);
         if (!is_array($data)) {
             error_log('[stripe] non-JSON response from ' . $path);
+            $error = 'Stripe answered with something that was not JSON.';
             return null;
         }
         if (isset($data['error'])) {
             error_log('[stripe] ' . ($data['error']['type'] ?? 'error') . ' calling ' . $path
                 . ': ' . ($data['error']['message'] ?? ''));
+            // ⚠ A refusal with an empty message is still a refusal. Falling
+            // through to "could not be reached" would send an operator to look
+            // at their network when Stripe had answered perfectly well.
+            $error = trim((string) ($data['error']['message'] ?? ''));
+            if ($error === '') { $error = 'Stripe refused the request (' . ($data['error']['type'] ?? 'error') . ').'; }
             return null;
         }
         return $data;
