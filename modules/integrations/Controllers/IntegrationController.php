@@ -154,10 +154,17 @@ class IntegrationController
                 $cfg = \Core\Services\IntegrationConfig::config('payments');
                 $prov = $cfg['driver'] ?? 'none';
                 if ($prov === 'stripe') {
-                    $res = (new \Core\Services\StripeService())->call('GET', '/v1/balance');
+                    // ⚠ THIS SCREEN EXISTS TO EXPLAIN ITSELF, so it asks for the
+                    // reason. It used to say "check the PHP error log" — sending
+                    // an operator to hunt for a sentence Stripe had already
+                    // given us. `$error` is safe to show here: this is an
+                    // authenticated admin surface, not a customer's checkout.
+                    $why = null;
+                    $res = (new \Core\Services\StripeService())->call('GET', '/v1/balance', [], $why);
                     return ['ok' => $res !== null, 'message' => $res !== null
                         ? 'Stripe credentials accepted (fetched /v1/balance successfully).'
-                        : 'Stripe rejected the request. Check STRIPE_SECRET_KEY and the PHP error log.'];
+                        : 'Stripe rejected the request: ' . ($why ?: 'no reason given')
+                          . ' Check STRIPE_SECRET_KEY.'];
                 }
                 if ($prov === 'braintree') {
                     $svc = new \Core\Services\BraintreeService();
