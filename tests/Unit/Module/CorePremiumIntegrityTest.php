@@ -111,6 +111,7 @@ final class CorePremiumIntegrityTest extends TestCase
         'store',
         'subscriptions',
         'tasks',
+        'typefaces',
         'twofactorqr',
         'webhooks-gateway',
     ];
