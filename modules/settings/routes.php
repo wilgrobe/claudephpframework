@@ -67,7 +67,7 @@ $router->get ('/admin/settings/members',      'Modules\Settings\Controllers\Sett
 // gates standalone builds only -- which is where the dead panels were.)
 $settingsHasModule = static fn (array $mods): bool => (bool) array_filter(
     $mods,
-    static fn (string $m): bool => is_dir(BASE_PATH . '/modules/' . $m)
+    static fn (string $m): bool => module_installed($m)
 );
 
 if ($settingsHasModule(['gdpr', 'cookieconsent', 'policies'])) {

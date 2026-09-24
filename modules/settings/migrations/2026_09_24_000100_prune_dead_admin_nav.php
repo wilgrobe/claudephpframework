@@ -30,7 +30,7 @@ return new class extends Migration {
     {
         foreach (self::DEAD as $url => $module) {
             // Never prune something this install actually has.
-            if (is_dir(BASE_PATH . '/modules/' . $module)) { continue; }
+            if (module_installed($module)) { continue; }
 
             try {
                 $this->db->query('DELETE FROM menu_items WHERE url = ?', [$url]);

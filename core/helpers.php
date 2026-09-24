@@ -597,3 +597,54 @@ if (!function_exists('module_active')) {
         return !empty($cache[$name]);
     }
 }
+
+if (!function_exists('module_installed')) {
+    /**
+     * Is this module PRESENT on disk, in any of the roots the app scans?
+     *
+     * Different question from module_active(), and both are needed. Active
+     * asks whether the registry booted it, which is the right question for a
+     * link in the chrome and the wrong one during ROUTE REGISTRATION: routes
+     * are registered while discovery is still running, so whether a sibling
+     * has been reached yet depends on alphabetical order, and a gate that
+     * depends on load order is not a gate.
+     *
+     * ⚠ THE OBVIOUS IMPLEMENTATION IS WRONG ON EXACTLY ONE INSTALL. Checking
+     * `BASE_PATH . '/modules/' . $slug` is right on a standalone site, where
+     * every module lives there, and wrong on the Builder and every hosted
+     * tenant, where premium modules live in a sibling repository. A settings
+     * panel gated that way disappears from the sites that PAID for the module
+     * it configures. So this reads the configured roots instead, which is the
+     * same list the registry scans.
+     *
+     * Hyphens are tried both ways because module folders are inconsistent
+     * about them: `activity-feed` ships as `activityfeed`, while `kyc-aml`
+     * keeps its hyphen.
+     */
+    function module_installed(string $slug): bool
+    {
+        static $roots = null;
+
+        if ($roots === null) {
+            $roots = [];
+            try {
+                foreach ((array) config('modules.paths', []) as $entry) {
+                    $root = is_array($entry) ? ($entry['root'] ?? null) : $entry;
+                    if (is_string($root) && $root !== '') { $roots[] = rtrim($root, "/\\"); }
+                }
+            } catch (\Throwable) {
+                // Config not loaded yet — fall through to the default below.
+            }
+            if (!$roots && defined('BASE_PATH')) { $roots = [BASE_PATH . '/modules']; }
+        }
+
+        $names = array_unique([$slug, str_replace('-', '', $slug), str_replace('-', '_', $slug)]);
+        foreach ($roots as $root) {
+            foreach ($names as $name) {
+                if ($name !== '' && is_dir($root . '/' . $name)) { return true; }
+            }
+        }
+
+        return false;
+    }
+}

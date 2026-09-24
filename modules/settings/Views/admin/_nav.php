@@ -47,7 +47,7 @@ $panels = array_values(array_filter(
     static function (array $p): bool {
         $needs = $p[4] ?? null;
         if (!is_array($needs) || $needs === []) { return true; }
-        foreach ($needs as $m) { if (is_dir(BASE_PATH . '/modules/' . $m)) { return true; } }
+        foreach ($needs as $m) { if (module_installed($m)) { return true; } }
         return false;
     }
 ));

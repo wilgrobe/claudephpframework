@@ -138,7 +138,7 @@
 <?php /* No groups module, no group policy: the card's own save target
          (/admin/settings/groups) is not registered either, so the form
          would post into nothing and report success. */ ?>
-<?php if (is_dir(BASE_PATH . '/modules/groups')): ?>
+<?php if (module_installed(\x27groups\x27)): ?>
 <!-- Group policy form. POSTs to /admin/settings/groups so the existing
      handler stays the source of truth. -->
 <div class="card" style="margin-bottom:1rem">
@@ -184,7 +184,7 @@
         </a>
         <?php /* A tile that dead-ends reads as a feature you have and cannot find,
                  which is worse than an absent one. */ ?>
-        <?php if (is_dir(BASE_PATH . '/modules/roles')): ?>
+        <?php if (module_installed(\x27roles\x27)): ?>
         <a href="/admin/roles" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Roles &amp; permissions</strong>
             <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Custom role definitions + permission grants.</div>
@@ -192,7 +192,7 @@
         <?php endif; ?>
         <?php /* A tile that dead-ends reads as a feature you have and cannot find,
                  which is worse than an absent one. */ ?>
-        <?php if (is_dir(BASE_PATH . '/modules/groups')): ?>
+        <?php if (module_installed(\x27groups\x27)): ?>
         <a href="/admin/groups" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>Groups</strong>
             <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Group membership + per-group roles.</div>
@@ -200,7 +200,7 @@
         <?php endif; ?>
         <?php /* A tile that dead-ends reads as a feature you have and cannot find,
                  which is worse than an absent one. */ ?>
-        <?php if (is_dir(BASE_PATH . '/modules/coppa')): ?>
+        <?php if (module_installed(\x27coppa\x27)): ?>
         <a href="/admin/coppa" style="padding:.75rem;border:1px solid var(--color-gray-200);border-radius:6px;color:inherit;text-decoration:none">
             <strong>COPPA rejections</strong>
             <div style="color:var(--color-gray-500);font-size:12.5px;margin-top:.2rem">Audit-log review of registrations blocked under the age gate.</div>
