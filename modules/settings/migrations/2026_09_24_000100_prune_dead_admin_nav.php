@@ -69,7 +69,15 @@ return new class extends Migration {
             return false;                       // cannot tell — keep the link
         }
 
-        if (!$row) { return false; }            // no gate here (apex): everything loads
+        // No entitlement list means this is not a gated tenant -- the apex, or
+        // a standalone site. There the question is simply whether the module
+        // LOADED, and the registry knows: the apex boots a lean premium pool,
+        // so `newsletter` is on disk and not running, which is exactly why
+        // /admin/newsletters 404s there while /admin/roles does not.
+        if (!$row) {
+            return function_exists('module_active') ? !module_active($owner) : false;
+        }
+
         $list = json_decode((string) ($row['value'] ?? ''), true);
         if (!is_array($list)) { return false; } // unreadable — keep the link
 
