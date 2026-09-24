@@ -27,13 +27,30 @@ $panels = [
     ['appearance',   'Appearance',             '🎨',  'Colors, fonts, theme tokens'],
     ['members',      'Members',                '👥',  'Registration, COPPA, group policy'],
     ['security',     'Security',               '🔒',  'Sessions, 2FA, breach checks'],
-    ['privacy',      'Privacy & Compliance',   '🛡️',  'Cookie consent, CCPA, GDPR, retention'],
-    ['content',      'Content',                '📝',  'Comments, reviews, posts, polls, forms'],
-    ['commerce',     'Commerce',               '🛒',  'Store features, currency, payments'],
+    ['privacy',      'Privacy & Compliance',   '🛡️',  'Cookie consent, CCPA, GDPR, retention',
+                                                      ['gdpr', 'cookieconsent', 'policies']],
+    ['content',      'Content',                '📝',  'Comments, reviews, posts, polls, forms',
+                                                      ['comments', 'blog', 'polls', 'forms']],
+    ['commerce',     'Commerce',               '🛒',  'Store features, currency, payments',
+                                                      ['store']],
     ['integrations', 'Integrations',           '🔌',  'Mail, analytics, Sentry, modules'],
     ['contact',      'Contact form',           '✉️',  'Recipients, autoreply, anti-spam'],
     ['other',        'Other / Unmanaged',      '🗂️',  'Free-form ad-hoc keys'],
 ];
+
+// A panel may name the modules it configures in a fifth column. If none of
+// them is installed the panel is dropped -- and routes.php drops its routes on
+// the same test, because hiding a link while the URL still saves is not
+// removing a surface. A row with no fifth column is core and always shows.
+$panels = array_values(array_filter(
+    $panels,
+    static function (array $p): bool {
+        $needs = $p[4] ?? null;
+        if (!is_array($needs) || $needs === []) { return true; }
+        foreach ($needs as $m) { if (is_dir(BASE_PATH . '/modules/' . $m)) { return true; } }
+        return false;
+    }
+));
 
 // Normalise the static rows to the 5-tuple the loop below renders. Their URL
 // is the conventional /admin/settings/<key>.

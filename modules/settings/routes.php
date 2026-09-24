@@ -51,12 +51,37 @@ $router->post('/admin/settings/general',      'Modules\Settings\Controllers\Sett
 $router->get ('/admin/settings/layout',       'Modules\Settings\Controllers\SettingsController@layout',          $auth);
 $router->post('/admin/settings/layout',       'Modules\Settings\Controllers\SettingsController@saveLayout',      $authCsrf);
 $router->get ('/admin/settings/members',      'Modules\Settings\Controllers\SettingsController@members',         $auth);
-$router->get ('/admin/settings/privacy',      'Modules\Settings\Controllers\SettingsController@privacy',         $auth);
-$router->post('/admin/settings/privacy',      'Modules\Settings\Controllers\SettingsController@savePrivacy',     $authCsrf);
-$router->get ('/admin/settings/content',      'Modules\Settings\Controllers\SettingsController@content',         $auth);
-$router->post('/admin/settings/content',      'Modules\Settings\Controllers\SettingsController@saveContent',     $authCsrf);
-$router->get ('/admin/settings/commerce',     'Modules\Settings\Controllers\SettingsController@commerce',        $auth);
-$router->post('/admin/settings/commerce',     'Modules\Settings\Controllers\SettingsController@saveCommerce',    $authCsrf);
+// Three of these panels configure OTHER modules, and an install without those
+// modules should not be offered them. Hiding the nav link is not enough: the
+// URL still answered 200 and the form still SAVED, so an author could switch
+// on "Show reviews on product pages", be told it saved, and have changed
+// nothing -- there are no product pages for it to affect. That is the mirror
+// of the settings trap already in the notes, and the more deceptive half,
+// because the app agrees with you.
+//
+// Presence is `is_dir`, not module_active(): routes are registered DURING
+// module discovery, so whether a sibling module has been registered yet
+// depends on alphabetical order, and a gate that depends on load order is not
+// a gate. The nav uses the same test so the two cannot disagree. (On a hosted
+// tenant every premium directory exists whether or not it was bought, so this
+// gates standalone builds only -- which is where the dead panels were.)
+$settingsHasModule = static fn (array $mods): bool => (bool) array_filter(
+    $mods,
+    static fn (string $m): bool => is_dir(BASE_PATH . '/modules/' . $m)
+);
+
+if ($settingsHasModule(['gdpr', 'cookieconsent', 'policies'])) {
+    $router->get ('/admin/settings/privacy',      'Modules\Settings\Controllers\SettingsController@privacy',         $auth);
+    $router->post('/admin/settings/privacy',      'Modules\Settings\Controllers\SettingsController@savePrivacy',     $authCsrf);
+}
+if ($settingsHasModule(['comments', 'blog', 'polls', 'forms'])) {
+    $router->get ('/admin/settings/content',      'Modules\Settings\Controllers\SettingsController@content',         $auth);
+    $router->post('/admin/settings/content',      'Modules\Settings\Controllers\SettingsController@saveContent',     $authCsrf);
+}
+if ($settingsHasModule(['store'])) {
+    $router->get ('/admin/settings/commerce',     'Modules\Settings\Controllers\SettingsController@commerce',        $auth);
+    $router->post('/admin/settings/commerce',     'Modules\Settings\Controllers\SettingsController@saveCommerce',    $authCsrf);
+}
 $router->get ('/admin/settings/integrations', 'Modules\Settings\Controllers\SettingsController@integrations',    $auth);
 $router->post('/admin/settings/integrations', 'Modules\Settings\Controllers\SettingsController@saveIntegrations',$authCsrf);
 $router->get ('/admin/settings/other',        'Modules\Settings\Controllers\SettingsController@other',           $auth);
