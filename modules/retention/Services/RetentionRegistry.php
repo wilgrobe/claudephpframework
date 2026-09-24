@@ -70,16 +70,32 @@ class RetentionRegistry
             // Sessions — DB sessions table. Expired rows are useless;
             // 30 days past their last_activity is a generous keep
             // (gives admins log/forensic data without bloat).
+            // ⚠⚠⚠ `last_activity < {cutoff}`, NOT `< UNIX_TIMESTAMP({cutoff})`.
+            // The rule shipped comparing a TIMESTAMP column against an integer,
+            // and its own description asserted "last_activity is stored as a
+            // Unix timestamp" — which `0001_framework_schema.php` contradicts:
+            // it is `timestamp NULL DEFAULT CURRENT_TIMESTAMP`. MySQL coerces
+            // rather than erroring, so the comparison quietly matched NOTHING
+            // and expired sessions were never purged. A retention rule that
+            // silently deletes zero rows is indistinguishable from one that has
+            // nothing to do — see the counted-preview control below.
+            //
+            // ⚠⚠ THE DESCRIPTION IS WHY IT SURVIVED. It states the assumption
+            // confidently, in the same voice as the true statements beside it,
+            // so anybody checking read the claim rather than the schema. This
+            // is broken upstream too — the framework's own schema has the same
+            // column type — so it is not a porting artefact.
             new RetentionRule(
                 key:         'core.security.sessions.expired',
                 module:      'core.security',
                 label:       'Expired sessions',
                 tableName:   'sessions',
-                whereClause: 'last_activity < UNIX_TIMESTAMP({cutoff})',
+                whereClause: 'last_activity < {cutoff}',
                 daysKeep:    30,
                 action:      RetentionRule::ACTION_PURGE,
                 dateColumn:  'last_activity',
-                description: 'Sessions inactive for >N days. last_activity is stored as a Unix timestamp.',
+                description: 'Sessions inactive for more than N days. last_activity is a DATETIME/TIMESTAMP '
+                           . 'column, so the cutoff is compared directly.',
             ),
 
             // Login attempts — keep 90 days for forensics; older rows
