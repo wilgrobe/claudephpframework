@@ -71,6 +71,32 @@ class CsrfMiddleware
                 // be reused for further attempts. Session_regenerate_id
                 // is best-effort (might fail in test contexts without an
                 // active session).
+                // Is this a returning human with a stale form, or a security event?
+                //
+                // They are not the same thing and must not be logged the same way.
+                // A signed-out visitor posting a guest form from a browser is the
+                // exact case the self-heal below exists for: their login page sat
+                // open (or came back from bfcache) and the token aged out. Nothing
+                // was attacked and nothing was blocked that should not have been.
+                //
+                // Logging that as security.csrf_mismatch made the health check
+                // count it as a "blocked attempt", which raised a WARNING, which
+                // sent the owner an SMS and an email — every time their own session
+                // timed out and they signed back in. An alert that fires on the
+                // owner's own routine behaviour is an alert they learn to ignore.
+                $isAjax  = $this->isAjaxCaller($request);
+                $path    = '/' . ltrim($request->path(), '/');
+                $onForm  = in_array($path, self::SELF_HEAL_PATHS, true);
+                $signedIn = false;
+                try {
+                    $signedIn = class_exists(\Core\Auth\Auth::class)
+                        && \Core\Auth\Auth::getInstance()->check();
+                } catch (\Throwable) { /* treat unknown as signed out */ }
+                // Benign only when ALL of it holds: a guest, on a known guest form,
+                // in a browser. An authenticated user losing a token, or any AJAX
+                // caller, or a POST to anything else, stays a security event.
+                $benign = !$isAjax && $onForm && !$signedIn;
+
                 unset($_SESSION['csrf_token']);
                 try {
                     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -79,7 +105,11 @@ class CsrfMiddleware
                 } catch (\Throwable) { /* best-effort */ }
                 try {
                     if (class_exists(\Core\Auth\Auth::class)) {
-                        \Core\Auth\Auth::getInstance()->auditLog('security.csrf_mismatch', null, null, [
+                        // auth.csrf_refreshed is deliberately NOT under security.*
+                        // or auth.failed*, the two prefixes the health check counts
+                        // as blocked attempts. One stale form must not page anyone.
+                        \Core\Auth\Auth::getInstance()->auditLog(
+                            $benign ? 'auth.csrf_refreshed' : 'security.csrf_mismatch', null, null, [
                             'path'   => $request->path(),
                             'method' => $request->method(),
                             'ip'     => $request->ip(),
@@ -98,7 +128,6 @@ class CsrfMiddleware
                 // session. AJAX / fetch callers (which send Accept: json, an
                 // X-Requested-With header, or the X-CSRF-Token header) still get the
                 // 419 so their JS can handle it explicitly.
-                $isAjax = $this->isAjaxCaller($request);
                 if (!$isAjax) {
                     csrf_token(); // regenerate now so the redirected GET has a valid token
 
@@ -107,8 +136,6 @@ class CsrfMiddleware
                     // bfcache restores / with privacy settings), and its '/'
                     // fallback lands a failed sign-in on the home page — which is
                     // what forced the "refresh the page and try again" dance.
-                    $path   = '/' . ltrim($request->path(), '/');
-                    $onForm = in_array($path, self::SELF_HEAL_PATHS, true);
                     $target = $onForm ? $path : $this->safeReferer($request);
 
                     // Carry the identifier across so only the password is retyped.
