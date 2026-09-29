@@ -61,7 +61,8 @@ use Core\Console\Commands\{
     SearchReindexCommand,
     ModuleCacheCommand,
     ModuleClearCommand,
-    QaAdminSmokeCommand
+    QaAdminSmokeCommand,
+    QaNullGuardCommand
 };
 
 $registry = new CommandRegistry($container);
@@ -99,6 +100,7 @@ $registry->register(ModuleClearCommand::class);
 $registry->register(DeployPreflightCommand::class);
 
 $registry->register(QaAdminSmokeCommand::class);
+$registry->register(QaNullGuardCommand::class);
 
 // Help comes last so it sees everything else that was registered first.
 // (The registry itself is stable — we just want `help` to exist after

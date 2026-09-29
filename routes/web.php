@@ -154,6 +154,26 @@ $router->get('/.well-known/security.txt', function (\Core\Request $req) {
 // ── 2FA — Challenge (called during login, no full auth required) ──────────────
 
 $router->get('/auth/2fa/challenge',        'TwoFactorController@showChallenge');
+// A fresh CSRF token for a form that has been sitting open.
+// No CSRF middleware (it is a GET) and no auth (the forms that go stale are
+// the GUEST ones: sign-in, register, reset). This hands out a token bound to
+// the caller's own session, which is exactly what the form needs and is of no
+// use to anyone else.
+$router->get('/csrf-token', function () {
+    return \Core\Response::json(['token' => csrf_token()]);
+});
+
+// ── Session lifetime ─────────────────────────────────────────────────────
+// status is READ-ONLY on purpose and is excluded from the activity stamp in
+// AuthMiddleware: every other request touches sessions.last_activity, so a
+// countdown that polled a normal endpoint would keep the session alive by
+// asking about it, and the timeout it warns about would never arrive.
+$router->get ('/session/status', 'SessionLifetimeController@status', [AuthMiddleware::class]);
+$router->post('/session/extend', 'SessionLifetimeController@extend', [AuthMiddleware::class, CsrfMiddleware::class]);
+// No AuthMiddleware: this is called precisely when the session is dying, and
+// bouncing it to /login would defeat the point of clearing the cookie first.
+$router->post('/session/expire', 'SessionLifetimeController@expire');
+
 $router->post('/auth/2fa/challenge',       'TwoFactorController@verifyChallenge',  [CsrfMiddleware::class]);
 $router->post('/auth/2fa/resend',          'TwoFactorController@resendCode',       [CsrfMiddleware::class]);
 $router->get('/auth/2fa/recovery',         'TwoFactorController@showRecoveryForm');

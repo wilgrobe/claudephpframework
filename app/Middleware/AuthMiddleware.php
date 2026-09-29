@@ -54,6 +54,19 @@ class AuthMiddleware
             return Response::redirect('/login');
         }
 
+        // Stamp REAL activity, so the countdown measures idleness rather than
+        // request traffic.
+        //
+        // Everything except /session/status counts. That one exclusion is the
+        // whole design: DbSessionHandler touches sessions.last_activity on every
+        // request, so if asking "how long have I got?" also reset the clock, a
+        // tab left open would never time out and the warning would be the reason
+        // it never fired. Asking is not activity; doing something is.
+        if ('/' . ltrim($request->path(), '/') !== '/session/status') {
+            try { Session::set(\App\Controllers\SessionLifetimeController::LAST_SEEN, time()); }
+            catch (\Throwable) { /* best-effort: never block a request over a timestamp */ }
+        }
+
         return $next($request);
     }
 
