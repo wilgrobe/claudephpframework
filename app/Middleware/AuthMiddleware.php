@@ -20,7 +20,6 @@ class AuthMiddleware
 
         // Case 2: No session at all — redirect to login
         if ($auth->guest()) {
-            self::discardStaleSession();
 
             // A fetch/XHR caller must be TOLD it is signed out, not handed the
             // login page. A 302 is followed by the browser transparently, so the
@@ -40,6 +39,16 @@ class AuthMiddleware
                     'login_url' => '/login',
                 ], 401);
             }
+
+            // Only a real browser navigation may rotate the cookie, and only
+            // here -- AFTER the XHR branch above has returned. Doing it for every
+            // guest request meant a single page refresh (navigation + the page's
+            // own background calls, all in flight together) produced several
+            // independent Set-Cookie headers. The browser keeps whichever landed
+            // last, the login form's token was minted in a different session, and
+            // the POST failed with "this form had been open too long" on a form
+            // that had been open for seconds.
+            self::discardStaleSession();
 
             Session::set('intended', $request->path());
             return Response::redirect('/login');
@@ -84,7 +93,7 @@ class AuthMiddleware
      * sign-in attempt came back "your session timed out", which is a confusing
      * thing to be told while trying to START a session.
      *
-     * session_regenerate_id(true) is the whole fix: it deletes the old row and
+     * session_regenerate_id(true) deletes the old row and
      * issues a fresh id, so the login page's token is bound to a session that is
      * new as of this redirect. $_SESSION carries over, which is what we want —
      * `intended` is set immediately after and must survive.
@@ -92,6 +101,14 @@ class AuthMiddleware
      * Only when a cookie was actually presented. A first-time visitor clicking a
      * protected link has a brand-new session already; rotating it would be churn
      * for nothing.
+     *
+     * CORRECTION (2026-09-03): rotating was also most of the bug it was added to
+     * fix. This ran on EVERY guest request, background fetches included, so a
+     * single page refresh emitted several competing Set-Cookie headers; the login
+     * form's token was minted in one session while the browser kept another, and
+     * the sign-in came back "this form had been open too long" on a form that had
+     * been open for seconds. It now runs only on a browser navigation (after the
+     * XHR branch has returned) and only when there is a dead login to discard.
      */
     private static function discardStaleSession(): void
     {
@@ -103,11 +120,39 @@ class AuthMiddleware
         // but this makes the precondition explicit rather than inherited.
         if (!empty($_SESSION['user_id'])) return;
 
+        // Nothing stale, nothing to discard. Two cases land here and neither
+        // wants a new cookie:
+        //
+        //   the session row was garbage-collected -- $_SESSION is empty and the
+        //   cookie is merely orphaned. PHP writes a fresh row under that id and
+        //   everything works; rotating would only add a racy Set-Cookie.
+        //
+        //   an ordinary signed-out visitor who already has a login form open.
+        //   Rotating here would invalidate the very token on that form -- this
+        //   fix causing the bug it is meant to fix.
+        if (!self::looksLikeDeadLogin()) return;
+
         try {
             session_regenerate_id(true);
         } catch (\Throwable) {
             // Best-effort. A failed rotation leaves the previous behaviour, which
             // is imperfect but not broken — never block the redirect over it.
         }
+    }
+
+    /**
+     * Does this session carry the remains of a login that is now gone?
+     *
+     * A session that only holds anonymous scaffolding -- a CSRF token, a flash,
+     * an intended path -- is a normal signed-out visitor, not a corpse. Only
+     * keys that could not exist without a prior login mark it as dead.
+     */
+    private static function looksLikeDeadLogin(): bool
+    {
+        $benign = ['csrf_token', 'old', '_flash', 'flash', 'intended', '_previous'];
+        foreach (array_keys($_SESSION) as $k) {
+            if (!in_array($k, $benign, true)) return true;
+        }
+        return false;
     }
 }
