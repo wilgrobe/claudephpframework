@@ -23,7 +23,22 @@ RewriteRule ^ index.php [L]
 # ── Security Headers ──────────────────────────────────────────────────────────
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options   "nosniff"
+    # Convention: anything under /embed/ exists to be framed by OTHER sites
+    # (public/index.php follows the same rule and governs those routes with a
+    # CSP frame-ancestors header instead), so it must NOT carry X-Frame-Options
+    # — that header is honoured ahead of, or alongside, frame-ancestors, and a
+    # cross-origin frame is simply refused. A site with no /embed/ routes is
+    # unaffected. SetEnvIf rather than <If>: the latter is not honoured for
+    # header directives here.
+    SetEnvIf Request_URI "^/embed/" EMBEDDABLE=1
     Header always set X-Frame-Options          "SAMEORIGIN"
+    # Both spellings on purpose: everything is rewritten to index.php, and
+    # after that internal redirect Apache renames EMBEDDABLE to
+    # REDIRECT_EMBEDDABLE — so a plain env=EMBEDDABLE condition no longer
+    # matches by the time the header is written, and the exclusion silently
+    # does nothing. (Found on MarketOtter, where it cost two deploys.)
+    Header always unset X-Frame-Options env=EMBEDDABLE
+    Header always unset X-Frame-Options env=REDIRECT_EMBEDDABLE
     Header always set Referrer-Policy          "strict-origin-when-cross-origin"
     Header always set Permissions-Policy       "geolocation=(), microphone=(), camera=()"
     # Enable HSTS in production — uncomment once HTTPS is confirmed working

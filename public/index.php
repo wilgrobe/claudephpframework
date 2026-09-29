@@ -104,7 +104,15 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Security headers
 header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: SAMEORIGIN');
+// Embeddable surfaces are meant to be framed by other people's sites, so a
+// blanket SAMEORIGIN would break the feature. Those routes govern framing
+// with a Content-Security-Policy frame-ancestors header instead, which is
+// the modern mechanism and is per-route rather than app-wide. Everything
+// else keeps the deny-by-default.
+$__path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if (!str_starts_with($__path, '/embed/')) {
+    header('X-Frame-Options: SAMEORIGIN');
+}
 // X-XSS-Protection is deprecated in modern browsers; CSP is the correct mechanism
 // header('X-XSS-Protection: 1; mode=block');
 //
