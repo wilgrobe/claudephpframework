@@ -21,7 +21,13 @@
 Thumbs.db
 .idea/
 .vscode/
+# *.bak alone does not match a suffixed backup like
+# ScheduleBoardService.php.bak-20260720-accounts, which is the form these
+# actually take. 61 of them accumulated on the production box in July.
 *.bak
+*.bak-*
+*.orig
+*.pre-*
 *.tmpmv
 
 # Premium modules are tracked in claudephpframeworkpremium, never in this repo.

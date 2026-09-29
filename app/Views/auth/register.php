@@ -278,6 +278,12 @@
 })();
 </script>
 
-<script src="/assets/js/app.js"></script>
+<?php /* asset() appends ?v=<mtime>. Without it Cloudflare serves this from
+         its edge cache for weeks - measured 2026-09-11: the auth pages were
+         getting a copy 10.4 hours stale (cf-cache-status HIT, age 37504),
+         which is why the CSRF refresher shipped but never actually ran on the
+         sign-in page. The app layout has always used asset(); these standalone
+         auth documents did not. */ ?>
+<script src="<?= e(asset("/assets/js/app.js")) ?>"></script>
 </body>
 </html>
