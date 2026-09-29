@@ -24,6 +24,15 @@ use Tests\TestCase;
  */
 final class AccountDataChromeTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // A generated site ships only the modules it was built with (#390).
+        if (!is_dir(BASE_PATH . '/modules/gdpr')) {
+            $this->markTestSkipped('gdpr module not installed on this site');
+        }
+    }
+
     public function test_seed_migration_exists_and_targets_correct_layout_name(): void
     {
         $path = BASE_PATH . '/modules/gdpr/migrations/2026_05_02_400000_seed_account_data_chrome.php';

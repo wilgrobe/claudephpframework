@@ -20,6 +20,10 @@ final class CookieConsentControllerRegressionTest extends TestCase
     public function test_controller_uses_fetchOne_not_fetchRow(): void
     {
         $path = BASE_PATH . '/modules/cookieconsent/Controllers/CookieConsentController.php';
+        // A generated site ships only the modules it was built with (#390).
+        if (!is_dir(BASE_PATH . '/modules/cookieconsent')) {
+            $this->markTestSkipped('cookieconsent module not installed on this site');
+        }
         $this->assertFileExists($path);
         $src  = (string) file_get_contents($path);
 

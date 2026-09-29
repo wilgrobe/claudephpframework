@@ -119,6 +119,14 @@ final class PanelsMatchTheirModulesTest extends TestCase
     /** Whatever a row asks for has to be a real module, or the panel can never appear. */
     public function test_every_named_module_is_a_real_module_directory_name(): void
     {
+        // On a GENERATED site (the Tenant shim, no CentralDatabase) there are no
+        // sibling framework/premium trees to resolve names against, and a panel
+        // naming a module the site was not built with is correct - that panel is
+        // simply gated off. The typo check runs wherever every name resolves:
+        // the framework and Builder repos. (MarketOtter republish, #390.)
+        if (is_file(BASE_PATH . '/app/Tenancy/Tenant.php') && !is_file(BASE_PATH . '/app/Database/CentralDatabase.php')) {
+            $this->markTestSkipped('generated site: module names are checked in the framework and Builder repos');
+        }
         $known = [];
         foreach (glob(BASE_PATH . '/modules/*', GLOB_ONLYDIR) as $d) { $known[basename($d)] = true; }
         // The premium and framework trees are the other places a module can come from.

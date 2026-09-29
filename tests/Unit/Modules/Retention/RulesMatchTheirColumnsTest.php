@@ -26,6 +26,16 @@ use Tests\TestCase;
  */
 final class RulesMatchTheirColumnsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // A generated site ships only the modules it was built with; without the
+        // retention module there are no rules to check (MarketOtter, #390).
+        if (!is_dir(BASE_PATH . '/modules/retention')) {
+            $this->markTestSkipped('retention module not installed on this site');
+        }
+    }
+
     /** @return list<object> */
     private function rules(): array
     {
