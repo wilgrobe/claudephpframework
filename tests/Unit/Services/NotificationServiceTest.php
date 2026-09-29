@@ -96,7 +96,12 @@ final class NotificationServiceTest extends TestCase
             $this->assertArrayHasKey('channels', $meta);
             $this->assertNotEmpty($meta['channels']);
             foreach ($meta['channels'] as $ch) {
-                $this->assertContains($ch, ['in_app', 'email']);
+                // sms joined the set when task reminders shipped (2026-07-23):
+                // plan-synthesizer registers reminder types with an sms channel
+                // and TaskReminderService genuinely delivers on it. The point of
+                // this assertion is to catch a typo'd channel, not to freeze the
+                // list — so widen it rather than dropping it.
+                $this->assertContains($ch, ['in_app', 'email', 'sms']);
             }
         }
     }

@@ -111,8 +111,8 @@ final class CorePremiumIntegrityTest extends TestCase
         'store',
         'subscriptions',
         'tasks',
-        'typefaces',
         'twofactorqr',
+        'typefaces',
         'webhooks-gateway',
     ];
 
@@ -159,6 +159,23 @@ final class CorePremiumIntegrityTest extends TestCase
      */
     public function test_no_module_in_core_repo_declares_premium_tier(): void
     {
+        // Premise check. This asserts that nothing under modules/ is premium,
+        // which holds for the framework and builder repos but is false by
+        // design on a GENERATED site: the kit bundles the premium modules the
+        // customer paid for directly into modules/, because there is no premium
+        // sibling repo to load them from. Same discriminator the LTD route gate
+        // uses in production — a generated site ships the Tenant shim but no
+        // CentralDatabase, which only ever exists on a multi-tenant host.
+        $isGeneratedSite = is_file(BASE_PATH . '/app/Tenancy/Tenant.php')
+            && !is_file(BASE_PATH . '/app/Database/CentralDatabase.php');
+        if ($isGeneratedSite) {
+            $this->markTestSkipped(
+                'Generated site: premium modules are bundled into modules/ on purpose, '
+                . 'so "nothing under modules/ is premium" does not apply here. The '
+                . 'core-must-not-require-premium tests in this file still run.'
+            );
+        }
+
         $registry = $this->buildCoreOnlyRegistry();
 
         $misclassified = [];

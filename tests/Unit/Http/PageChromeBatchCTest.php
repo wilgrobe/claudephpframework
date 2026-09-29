@@ -104,6 +104,15 @@ final class PageChromeBatchCTest extends TestCase
     public function test_each_surface_seeds_its_slug_chains_withLayout_and_view_is_a_fragment(): void
     {
         foreach (self::surfaces() as $s) {
+            // The surface list describes the full framework. A generated site
+            // ships only the modules it was built with, so a surface whose
+            // module is absent has nothing to chain and is not a failure —
+            // skip it, and keep checking every surface that IS installed.
+            if (preg_match('~^modules/([^/]+)/~', $s['migration'], $m)
+                && !is_dir(BASE_PATH . '/modules/' . $m[1])) {
+                continue;
+            }
+
             $migPath = BASE_PATH . '/' . $s['migration'];
             $ctlPath = BASE_PATH . '/' . $s['controller_or_route'];
             $viewPath = BASE_PATH . '/' . $s['view'];
