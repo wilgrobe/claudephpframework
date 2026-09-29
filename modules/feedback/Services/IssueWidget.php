@@ -88,6 +88,24 @@ final class IssueWidget
     }
 
     /**
+     * Where ABUSE reports go, which is not necessarily where bug reports go.
+     *
+     * These two share a queue and a notifier but not an audience: a bug report
+     * wants whoever fixes things, a report that a hosted page is phishing wants
+     * whoever answers for the company. Pointing the one setting at a legal
+     * address would have quietly redirected every bug report along with it.
+     *
+     * Falls back to the general notification address, so a site that never sets
+     * this keeps working exactly as before.
+     */
+    public static function notifyAbuseEmail(): ?string
+    {
+        $own = trim((string) setting('builder.feedback.notify_abuse_email', ''));
+        if ($own !== '' && filter_var($own, FILTER_VALIDATE_EMAIL)) return $own;
+        return self::notifyEmail();
+    }
+
+    /**
      * Mobile number texted when a report comes in, or null when off.
      *
      * Deliberately has NO fallback, unlike notifyEmail(). An email that lands

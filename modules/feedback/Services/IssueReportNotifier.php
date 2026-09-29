@@ -67,8 +67,14 @@ final class IssueReportNotifier
         // tells you whether to get out of your chair.
         $what = trim(preg_replace('/\s+/', ' ', (string) ($report['message'] ?? ''))) ?: '(no detail given)';
 
-        $head = sprintf('%sIssue #%d on %s: ', $blocking ? 'BLOCKING ' : '', $id, $site);
-        $tail = ' — /admin/site-feedback?kind=issue';
+        // Abuse reports share this notifier, and a takedown request that texts
+        // you the word "Issue" reads as something that can wait. It cannot.
+        $isAbuse = trim((string) ($report['label'] ?? '')) === 'Reported content';
+        $head = sprintf('%s%s #%d on %s: ',
+            $blocking ? 'BLOCKING ' : '',
+            $isAbuse ? 'REPORTED PAGE' : 'Issue',
+            $id, $site);
+        $tail = ' — /admin/site-feedback?kind=' . ($isAbuse ? 'abuse' : 'issue');
 
         $room = 160 - strlen($head) - strlen($tail);
         if ($room > 20 && strlen($what) > $room) {
@@ -82,12 +88,20 @@ final class IssueReportNotifier
 
     private function email(int $id, array $report): void
     {
-        $to = IssueWidget::notifyEmail();
+        // Abuse reports may go somewhere other than bug reports: the two share
+        // this notifier but not their audience. Falls back to the general
+        // address when no separate one is set.
+        $isAbuse = trim((string) ($report['label'] ?? '')) === 'Reported content';
+        $to = $isAbuse ? IssueWidget::notifyAbuseEmail() : IssueWidget::notifyEmail();
         if ($to === null) return;
 
         $site     = (string) (setting('site_name', '') ?: 'Your site');
         $blocking = ($report['severity'] ?? 'normal') === 'blocking';
-        $subject  = sprintf('%s[%s] Issue report #%d', $blocking ? '🔴 BLOCKING — ' : '', $site, $id);
+        // Abuse reports come through this same notifier and must not arrive
+        // titled "Issue report" — an operator triaging by subject line would
+        // read a takedown request as a bug.
+        $label    = trim((string) ($report['label'] ?? '')) ?: 'Issue report';
+        $subject  = sprintf('%s[%s] %s #%d', $blocking ? '🔴 BLOCKING — ' : '', $site, $label, $id);
 
         (new MailService())->send($to, $subject, $this->html($id, $report), $this->text($id, $report));
     }

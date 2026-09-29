@@ -44,6 +44,10 @@ $router->post('/admin/site-feedback/{id}/status',
 $router->post('/admin/site-feedback/{id}/delete',
     'Modules\Feedback\Controllers\Admin\FeedbackAdminController@delete',
     [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
+// Take a reported hosted page offline, straight from the report.
+$router->post('/admin/site-feedback/{id}/unpublish-page',
+    'Modules\Feedback\Controllers\Admin\FeedbackAdminController@unpublishPage',
+    [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
 
 // Issue-widget settings, edited from the card at the top of the queue.
 $router->post('/admin/site-feedback/widget',

@@ -71,6 +71,15 @@ $statusBadge = [
                                value="<?= $e($w['notify'] ?? '') ?>" placeholder="you@example.com">
                     </label>
                     <label style="display:block;flex:1;min-width:220px;">
+                        <span style="display:block;font-weight:600;margin-bottom:.25rem;">Email reported content to</span>
+                        <input type="email" name="notify_abuse_email" class="form-control" style="font-size:13px;width:100%;"
+                               value="<?= $e($w['notifyAbuse'] ?? '') ?>" placeholder="legal@example.com">
+                        <span style="display:block;font-size:12px;color:#667085;margin-top:.25rem;">
+                            Reports about pages we host, which are not the same audience as bug reports.
+                            Blank sends them to the address above.
+                        </span>
+                    </label>
+                    <label style="display:block;flex:1;min-width:220px;">
                         <span style="display:block;font-weight:600;margin-bottom:.25rem;">Also text me</span>
                         <input type="tel" name="notify_sms" class="form-control" style="font-size:13px;width:100%;"
                                value="<?= $e($w['notifySms'] ?? '') ?>" placeholder="(520) 555-1234">
@@ -109,6 +118,7 @@ $statusBadge = [
             ''                          => 'All',
             '?status=new'               => 'New (' . (int) ($counts['new'] ?? 0) . ')',
             '?kind=issue'               => '🐞 Issues (' . (int) ($counts['issue'] ?? 0) . ')',
+            '?kind=abuse'               => '🚩 Reported (' . (int) ($counts['abuse'] ?? 0) . ')',
             '?kind=feedback'            => 'Feedback',
             '?kind=testimonial'         => 'Testimonials (' . (int) ($counts['testimonial'] ?? 0) . ')',
             '?status=published'         => 'Published (' . (int) ($counts['published'] ?? 0) . ')',
@@ -130,11 +140,12 @@ $statusBadge = [
         <?php foreach ($rows as $r):
             $isTest  = ($r['kind'] ?? '') === 'testimonial';
             $isIssue = ($r['kind'] ?? '') === 'issue';
+            $isAbuse = ($r['kind'] ?? '') === 'abuse';
             $anon    = (int) ($r['is_anonymous'] ?? 0) === 1;
             $rating  = (int) ($r['rating'] ?? 0);
             $status  = (string) ($r['status'] ?? 'new');
             $ctx     = [];
-            if ($isIssue && !empty($r['context'])) {
+            if (($isIssue || $isAbuse) && !empty($r['context'])) {
                 $decoded = json_decode((string) $r['context'], true);
                 if (is_array($decoded)) $ctx = $decoded;
             }
@@ -257,6 +268,32 @@ $statusBadge = [
 
                     <!-- Actions -->
                     <div style="display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap;">
+                        <?php
+                          // A reported item comes down from here. Anything that makes the
+                          // operator go and find it first is how "fast" becomes "tomorrow".
+                          // The module that PUBLISHED it answers through the takedown seam —
+                          // this view never names another module's routes or tables.
+                          $take = $isAbuse
+                              ? \Modules\Feedback\Services\TakedownRegistry::resolve((array) ($ctx['abuse'] ?? []))
+                              : null;
+                          $takeUrl = $take ? $take['handler']->url($take['ref']) : null;
+                          $takeLive = false;
+                          if ($take) {
+                              try { $takeLive = $take['handler']->isPublished($take['ref']) === true; }
+                              catch (\Throwable) { $takeLive = false; }
+                          }
+                        ?>
+                        <?php if ($takeUrl !== null && $takeUrl !== ''): ?>
+                            <a href="<?= $e($takeUrl) ?>" target="_blank" rel="noopener nofollow"
+                               class="btn btn-secondary btn-xs">Look at the <?= $e($take['handler']->label()) ?></a>
+                        <?php endif; ?>
+                        <?php if ($takeLive): ?>
+                            <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/unpublish-page" style="display:inline;"
+                                  onsubmit="return confirm('Take this <?= $e($take['handler']->label()) ?> offline now?');">
+                                <input type="hidden" name="_token" value="<?= $e($csrf) ?>">
+                                <button class="btn btn-xs" style="background:#b42318;color:#fff;" type="submit">Take it offline</button>
+                            </form>
+                        <?php endif; ?>
                         <?php if ($status !== 'reviewed'): ?>
                             <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/status" style="display:inline;">
                                 <input type="hidden" name="_token" value="<?= $e($csrf) ?>"><input type="hidden" name="status" value="reviewed">

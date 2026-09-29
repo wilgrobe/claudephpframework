@@ -7,6 +7,7 @@ use Core\Request;
 use Core\Response;
 use Core\Session;
 use Core\Database\Database;
+use Modules\Feedback\Services\TakedownRegistry;
 
 /**
  * Admin queue for end-user feedback + testimonials. Route-gated by
@@ -24,7 +25,7 @@ class FeedbackAdminController
 
     public function index(Request $request): Response
     {
-        $kind   = in_array($request->query('kind'), ['feedback', 'testimonial', 'issue'], true) ? $request->query('kind') : null;
+        $kind   = in_array($request->query('kind'), ['feedback', 'testimonial', 'issue', 'abuse'], true) ? $request->query('kind') : null;
         $status = in_array($request->query('status'), ['new', 'reviewed', 'published', 'archived'], true) ? $request->query('status') : null;
 
         // Deep link from a notification/email: ?id=N opens that one report.
@@ -60,7 +61,7 @@ class FeedbackAdminController
 
         try { $rows = $this->db->fetchAll($sql, $binds); } catch (\Throwable) { $rows = []; }
 
-        $counts = ['new' => 0, 'reviewed' => 0, 'published' => 0, 'archived' => 0, 'testimonial' => 0, 'issue' => 0];
+        $counts = ['new' => 0, 'reviewed' => 0, 'published' => 0, 'archived' => 0, 'testimonial' => 0, 'issue' => 0, 'abuse' => 0];
         try {
             foreach ($this->db->fetchAll("SELECT status, COUNT(*) n FROM feedback_submissions GROUP BY status") as $c) {
                 $counts[$c['status']] = (int) $c['n'];
@@ -86,6 +87,10 @@ class FeedbackAdminController
                 // null when unset, and the field must show what is stored so
                 // an operator can tell "off" from "saved but not arriving".
                 'notifySms' => (string) setting('builder.feedback.notify_sms', ''),
+                // Raw, not the accessor: the accessor falls back to the general
+                // address, and the field must show what is STORED so "unset"
+                // is distinguishable from "set to the same thing".
+                'notifyAbuse' => (string) setting('builder.feedback.notify_abuse_email', ''),
             ],
         ]);
     }
@@ -103,8 +108,13 @@ class FeedbackAdminController
         $launcher = in_array($request->post('launcher'), ['both', 'bubble', 'footer'], true)
             ? (string) $request->post('launcher') : 'both';
         $notify   = trim((string) ($request->post('notify_email') ?? ''));
+        $notifyAbuse = trim((string) ($request->post('notify_abuse_email') ?? ''));
         $notifySms = trim((string) ($request->post('notify_sms') ?? ''));
 
+        if ($notifyAbuse !== '' && !filter_var($notifyAbuse, FILTER_VALIDATE_EMAIL)) {
+            Session::flash('error', 'That reported-content email doesn’t look right.');
+            return Response::redirect('/admin/site-feedback?kind=abuse');
+        }
         if ($notify !== '' && !filter_var($notify, FILTER_VALIDATE_EMAIL)) {
             Session::flash('error', 'That notification email doesn’t look right.');
             return Response::redirect('/admin/site-feedback?kind=issue');
@@ -129,6 +139,7 @@ class FeedbackAdminController
             $svc->set('builder.feedback.widget.audience', $audience, 'site');
             $svc->set('builder.feedback.widget.launcher', $launcher, 'site');
             $svc->set('builder.feedback.notify_email',    $notify, 'site');
+            $svc->set('builder.feedback.notify_abuse_email', $notifyAbuse, 'site');
             $svc->set('builder.feedback.notify_sms',      $notifySms, 'site');
             Session::flash('success', 'Issue-reporting settings saved.');
         } catch (\Throwable $e) {
@@ -180,6 +191,61 @@ class FeedbackAdminController
             Session::flash('success', 'Updated.');
         } catch (\Throwable $e) {
             Session::flash('error', 'Could not update: ' . $e->getMessage());
+        }
+        return Response::redirect('/admin/site-feedback' . ($request->post('back') ? (string) $request->post('back') : ''));
+    }
+
+    /**
+     * Take a reported page offline, from the report itself.
+     *
+     * The whole point of the reporting path is that a bad page comes down fast.
+     * Making the operator find the customer, find the product, find the widget
+     * and untick a box is how "fast" turns into "tomorrow".
+     *
+     * Unpublishing rather than deleting: it clears published_at, so the page
+     * 404s immediately (these pages are served no-store, so there is no cache to
+     * wait out) while the row, its code and its history survive for whatever
+     * conversation follows. Republishing is a deliberate act by the owner.
+     */
+    public function unpublishPage(Request $request): Response
+    {
+        $id  = (int) $request->param(0);
+        $row = $this->db->fetchOne("SELECT kind, context FROM feedback_submissions WHERE id = ?", [$id]);
+        if (!$row || $row['kind'] !== 'abuse') {
+            Session::flash('error', 'That is not an abuse report.');
+            return Response::redirect('/admin/site-feedback');
+        }
+
+        $ctx  = json_decode((string) ($row['context'] ?? ''), true) ?: [];
+
+        // ⚠ The module that PUBLISHED the item takes it down, through the
+        // TakedownHandler seam. This controller used to run
+        // `UPDATE cp_newsletter_widgets …` itself — a table that exists on one
+        // site — so every other site shipped a button that queried a table it
+        // did not have.
+        $take = TakedownRegistry::resolve((array) ($ctx['abuse'] ?? []));
+        if ($take === null) {
+            Session::flash('error', 'Nothing on this site can take that item down — handle it by hand.');
+            return Response::redirect('/admin/site-feedback');
+        }
+        $label = $take['handler']->label();
+
+        try {
+            $take['handler']->unpublish($take['ref']);
+            // Verified by reading it back rather than trusting the write: this is
+            // the one action where believing it worked and being wrong is worst.
+            if ($take['handler']->isPublished($take['ref']) !== false) {
+                Session::flash('error', "The $label is still published — take it down manually.");
+                return Response::redirect('/admin/site-feedback');
+            }
+
+            $this->db->query(
+                "UPDATE feedback_submissions SET status = 'reviewed', responded_at = NOW() WHERE id = ?",
+                [$id]
+            );
+            Session::flash('success', ucfirst($label) . ' taken offline.');
+        } catch (\Throwable $e) {
+            Session::flash('error', 'Could not take it down: ' . $e->getMessage());
         }
         return Response::redirect('/admin/site-feedback' . ($request->post('back') ? (string) $request->post('back') : ''));
     }
