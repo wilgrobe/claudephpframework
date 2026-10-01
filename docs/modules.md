@@ -482,7 +482,7 @@ under `tests/Unit/` (fast, no DB) and `tests/Feature/` (boots the container).
 For a manual smoke test of the full module discovery pipeline:
 
 ```bash
-bin/php storage/tmp/split-smoke-test.php
+bin/php bin/smoke/split-smoke-test.php
 ```
 
 That script loads both module roots, exercises the entitlement gate, and verifies the

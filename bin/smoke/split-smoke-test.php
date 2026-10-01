@@ -1,6 +1,6 @@
 <?php
 /**
- * storage/tmp/split-smoke-test.php
+ * bin/smoke/split-smoke-test.php
  *
  * Smoke test for the core/premium module split:
  *   1. Boot the registry with BOTH roots (core + premium sibling) — verify
@@ -10,7 +10,7 @@
  *   3. Re-boot with EntitlementCheck returning false for one premium
  *      module — verify the module is in unlicensed and not in active.
  *
- * Run via: bin/php storage/tmp/split-smoke-test.php
+ * Run via: bin/php bin/smoke/split-smoke-test.php
  */
 
 declare(strict_types=1);

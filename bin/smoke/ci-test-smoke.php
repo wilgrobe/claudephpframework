@@ -1,6 +1,6 @@
 <?php
 /**
- * storage/tmp/ci-test-smoke.php
+ * bin/smoke/ci-test-smoke.php
  *
  * Standalone sanity runner for CorePremiumIntegrityTest. The sandbox PHP
  * is 8.1 but vendor's composer platform_check insists on 8.4, so the
