@@ -31,6 +31,60 @@ class SessionLifetimeController
     /** The session key AuthMiddleware stamps. Shared constant, not a copy. */
     public const LAST_SEEN = '_last_seen';
 
+    /** When the session cookie was last re-sent with a fresh expiry. */
+    public const COOKIE_SENT = '_cookie_sent';
+
+    /** Re-send at most this often: the expiry only has to stay ahead of the idle limit. */
+    public const COOKIE_REFRESH_EVERY = 60;
+
+    /**
+     * Should the session cookie be re-sent now?
+     *
+     * ⚠ PHP sends the session cookie when a session STARTS (or its id is
+     * regenerated) and never again — so `session.cookie_lifetime` is an absolute
+     * limit counted from sign-in, not an idle one. The browser dropped the cookie
+     * two hours after sign-in however busy the person was, with no warning, even
+     * after "Keep me signed in" (2026-10-01). Sliding it on activity makes the
+     * idle limit the only limit, which is what this controller's countdown
+     * already promised.
+     */
+    public static function cookieRefreshDue(int $now, int $lastSent, int $cookieLifetime, bool $force = false): bool
+    {
+        if ($cookieLifetime <= 0) { return false; }   // a browser-session cookie has no expiry to slide
+        if ($force || $lastSent <= 0) { return true; }
+        return ($now - $lastSent) >= self::COOKIE_REFRESH_EVERY;
+    }
+
+    /**
+     * Re-send the CURRENT session cookie (same id) with a fresh expiry.
+     *
+     * Same id, so several of these in flight together are harmless — unlike the
+     * id rotation AuthMiddleware deliberately does only once, on a navigation.
+     */
+    public static function refreshCookie(bool $force = false): void
+    {
+        try {
+            if (PHP_SAPI === 'cli' || headers_sent() || session_status() !== PHP_SESSION_ACTIVE || !ini_get('session.use_cookies')) {
+                return;
+            }
+            $now      = time();
+            $lifetime = (int) ini_get('session.cookie_lifetime');
+            if (!self::cookieRefreshDue($now, (int) (Session::get(self::COOKIE_SENT) ?? 0), $lifetime, $force)) {
+                return;
+            }
+            $p = session_get_cookie_params();
+            setcookie(session_name(), (string) session_id(), [
+                'expires'  => $now + $lifetime,
+                'path'     => $p['path'] ?: '/',
+                'domain'   => $p['domain'] ?? '',
+                'secure'   => (bool) ($p['secure'] ?? false),
+                'httponly' => (bool) ($p['httponly'] ?? true),
+                'samesite' => $p['samesite'] ?: 'Lax',
+            ]);
+            Session::set(self::COOKIE_SENT, $now);
+        } catch (\Throwable) { /* best-effort: never block a request over a cookie */ }
+    }
+
     /** Idle limit in seconds, from the same config the session handler uses. */
     private function lifetime(): int
     {
@@ -70,6 +124,9 @@ class SessionLifetimeController
             return Response::json(['ok' => false, 'error' => 'session_expired'], 401);
         }
         Session::set(self::LAST_SEEN, time());
+        // …and the cookie, or "Keep me signed in" kept the server side alive while
+        // the browser threw the cookie away on its original schedule anyway.
+        self::refreshCookie(true);
 
         return Response::json(['ok' => true, 'remaining' => $this->lifetime()]);
     }

@@ -65,6 +65,9 @@ class AuthMiddleware
         if ('/' . ltrim($request->path(), '/') !== '/session/status') {
             try { Session::set(\App\Controllers\SessionLifetimeController::LAST_SEEN, time()); }
             catch (\Throwable) { /* best-effort: never block a request over a timestamp */ }
+            // Activity slides the COOKIE too. Without this its expiry was fixed at
+            // sign-in, so a busy author was signed out two hours in, mid-work.
+            \App\Controllers\SessionLifetimeController::refreshCookie();
         }
 
         return $next($request);

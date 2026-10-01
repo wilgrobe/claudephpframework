@@ -19,6 +19,9 @@ use Core\Database\Database;
  */
 class SessionCleanupService
 {
+    /** Rows per DELETE when purging sessions. */
+    public const SESSION_BATCH = 5000;
+
     private Database $db;
 
     public function __construct()
@@ -32,10 +35,18 @@ class SessionCleanupService
 
         // Sessions: remove any session inactive for longer than the configured lifetime
         $sessionLifetime = (int) (config('app.session.lifetime', 120)) * 60;
-        $n = $this->db->query(
-            "DELETE FROM sessions WHERE last_activity < DATE_SUB(NOW(), INTERVAL ? SECOND)",
-            [$sessionLifetime]
-        )->rowCount();
+        // In batches. Nothing had ever run this on the Builder box (it was not in
+        // the cron), so the first run met 157,348 rows — one DELETE of all of them
+        // holds locks on a table every request reads. Small batches let requests
+        // through between them; the loop ends on the first short batch.
+        $n = 0;
+        do {
+            $batch = $this->db->query(
+                "DELETE FROM sessions WHERE last_activity < DATE_SUB(NOW(), INTERVAL ? SECOND) LIMIT " . self::SESSION_BATCH,
+                [$sessionLifetime]
+            )->rowCount();
+            $n += $batch;
+        } while ($batch === self::SESSION_BATCH);
         $results['sessions_purged'] = $n;
 
         // 2FA challenges: remove used or expired challenges older than 24h
