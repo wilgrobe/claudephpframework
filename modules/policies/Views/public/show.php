@@ -33,6 +33,16 @@ $pageTitle = ($kind['label'] ?? 'Policy')
         // Body was sanitized when first stored on the source page; we
         // re-sanitize on render in case the storage was bypassed.
         echo \Core\Validation\Validator::sanitizeHtml((string) ($version['body_html'] ?? ''));
+
+        // Module-contributed clauses (e.g. analytics) — appended only when the
+        // relevant module is installed on this site, so the document reflects
+        // exactly what's running here. See PolicyController::moduleSections().
+        foreach (($moduleSections ?? []) as $__sec) {
+            if (!empty($__sec['heading'])) {
+                echo '<h2>' . htmlspecialchars((string) $__sec['heading'], ENT_QUOTES) . '</h2>';
+            }
+            echo \Core\Validation\Validator::sanitizeHtml((string) $__sec['body_html']);
+        }
         ?>
     </article>
 <?php else: ?>

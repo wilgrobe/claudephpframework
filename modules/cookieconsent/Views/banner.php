@@ -305,8 +305,14 @@ body.theme-dark .cc-btn--reject { background: var(--text-default); }
     if (!banner || !modal || !form) return;
 
     function csrfToken() {
+        // Prefer the page's csrf-token meta (authed shell renders it), but
+        // fall back to this banner's own form _token field — guest/public
+        // pages don't render the meta, and without this fallback the JS
+        // "Accept all" POST ships an empty token and fails CSRF.
         var m = document.querySelector('meta[name="csrf-token"]');
-        return m ? m.getAttribute('content') : '';
+        if (m && m.getAttribute('content')) return m.getAttribute('content');
+        var input = form.querySelector('input[name="_token"]');
+        return input ? input.value : '';
     }
 
     function postAction(action, categories) {

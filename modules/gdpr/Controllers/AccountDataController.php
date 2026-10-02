@@ -128,11 +128,14 @@ class AccountDataController
         // downloads rather than displays. The actual streaming is
         // delegated to the framework's Response::file helper if it
         // exists; otherwise emit headers + readfile().
-        $filename = basename((string) $row['file_path']);
-        if (method_exists(Response::class, 'file')) {
-            return Response::file((string) $row['file_path'], $filename, 'application/zip');
-        }
-
+        // Phase 43.197a C4 — sanitize filename via central helper. The
+        // method_exists check for Response::file was speculative future
+        // code path; the current Response::file expects a body string
+        // (not a path), so we keep the streaming readfile() path but
+        // run the filename through safeFilename to block CRLF injection
+        // via any future code path that stores user-influenced names
+        // in account_data_exports.file_path.
+        $filename = \Core\Response::safeFilename(basename((string) $row['file_path']), 'account-export.zip');
         header('Content-Type: application/zip');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . (int) ($row['file_size'] ?? filesize($row['file_path'])));
@@ -222,8 +225,35 @@ class AccountDataController
             ->withFlash('success', "Your account is scheduled for deletion in {$graceDays} days. Check your email for a cancel link.");
     }
 
-    public function eraseCancel(Request $request, string $token): Response
+    /**
+     * Phase 43.193a — controller signature normalized to match Router
+     * contract (was `(Request, string $token)` — would TypeError on
+     * every call since Router::callHandler only passes Request). Read
+     * token via `param(0)` matching the project-wide convention.
+     *
+     * Phase 43.193b — rate-limit guard so a leaked URL (server logs,
+     * browser history, shared inbox) can't be quietly brute-forced;
+     * audit-log the failed attempt so the legitimate user sees it
+     * in their /admin/audit-log; preserve token uniqueness across
+     * brute-force attempts (token is the 256-bit secret — guessing
+     * is already infeasible, but the limiter is defense-in-depth).
+     */
+    public function eraseCancel(Request $request): Response
     {
+        $token = (string) $request->param(0);
+        $ip    = $request->ip();
+
+        // Phase 43.193b — rate-limit the cancel-token endpoint.
+        // Token entropy is 256 bits via bin2hex(random_bytes(32))
+        // so brute-force is infeasible, but a leaked URL combined
+        // with account creds is a compound exploit worth gating.
+        // Key by IP so a flood from one host doesn't lock everyone.
+        $limiter = new \Core\Auth\RateLimiter();
+        if ($limiter->tooManyAttempts("gdpr-cancel:$token", $ip)) {
+            return Response::redirect('/login')
+                ->withFlash('error', 'Too many attempts. Try again in a few minutes.');
+        }
+
         // Cancel via signed link — works whether the user is signed in
         // or not (the token IS the proof of identity). We do still
         // require login to complete it, so an attacker who steals the
@@ -234,12 +264,14 @@ class AccountDataController
             [$token]
         );
         if (!$row) {
+            $limiter->hit("gdpr-cancel:$token", $ip);
             return Response::redirect('/login')
                 ->withFlash('error', 'That cancel link is invalid or has expired.');
         }
 
         $userId = (int) $row['id'];
         if ($this->auth->guest() || (int) $this->auth->id() !== $userId) {
+            $limiter->hit("gdpr-cancel:$token", $ip);
             return Response::redirect('/login')
                 ->withFlash('error', 'Please sign in to cancel your account deletion.');
         }
@@ -250,6 +282,7 @@ class AccountDataController
             'deletion_token'        => null,
         ], 'id = ?', [$userId]);
 
+        $limiter->clear("gdpr-cancel:$token", $ip);
         $this->auth->auditLog('gdpr.erasure.cancelled', 'users', $userId);
 
         return Response::redirect('/account/data')

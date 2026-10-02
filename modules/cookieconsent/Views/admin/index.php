@@ -49,7 +49,7 @@
         <div class="card-body" style="padding:1.25rem">
 
             <!-- Master toggle -->
-            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--accent-subtle);border-radius:6px;margin-bottom:1.25rem">
+            <div class="form-group" style="padding:.85rem 1rem;background:var(--accent-subtle);border:1px solid var(--border-strong);border-radius:6px;margin-bottom:1.25rem">
                 <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500;margin:0">
                     <?= function_exists('toggle_switch')
                         ? toggle_switch('cookieconsent_enabled', !empty($values['cookieconsent_enabled']) && $values['cookieconsent_enabled'] !== 'false')
@@ -57,7 +57,7 @@
                     ?>
                     Cookie consent banner enabled
                 </label>
-                <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.35rem;line-height:1.5">
+                <div style="font-size:12.5px;color:var(--color-primary);margin-top:.35rem;line-height:1.5">
                     Master switch. When off, the banner never renders and
                     <code>consent_allowed()</code> returns false for every non-essential
                     category. Existing consent records in the database stay intact.

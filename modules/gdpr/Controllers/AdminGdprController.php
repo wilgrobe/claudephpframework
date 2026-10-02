@@ -92,9 +92,18 @@ class AdminGdprController
         ]);
     }
 
-    public function dsarShow(Request $request, int $id): Response
+    // Phase 43.193a — controller method signatures fixed. Pre-fix
+    // these 5 actions all declared `(Request, int $id|$userId)` but
+    // `Router::callHandler` invokes `$controller->$method($request)`
+    // with only the Request — every call TypeError'd, breaking the
+    // admin GDPR queue entirely. Project-wide convention: read route
+    // params via `$request->param(0)` inside the body. Same pattern
+    // every other controller (AdminTenantController, ProjectController,
+    // etc.) uses.
+    public function dsarShow(Request $request): Response
     {
         if (!$this->canManage()) return $this->denied();
+        $id = (int) $request->param(0);
 
         $row = $this->dsar->find($id);
         if (!$row) return Response::redirect('/admin/gdpr');
@@ -110,9 +119,10 @@ class AdminGdprController
         ]);
     }
 
-    public function dsarSetStatus(Request $request, int $id): Response
+    public function dsarSetStatus(Request $request): Response
     {
         if (!$this->canManage()) return $this->denied();
+        $id = (int) $request->param(0);
 
         $status = (string) $request->post('status', '');
         $notes  = (string) $request->post('notes', '');
@@ -128,9 +138,10 @@ class AdminGdprController
             ->withFlash('success', "DSAR marked {$status}.");
     }
 
-    public function userErase(Request $request, int $userId): Response
+    public function userErase(Request $request): Response
     {
         if (!$this->canManage()) return $this->denied();
+        $userId = (int) $request->param(0);
 
         $confirm = (string) $request->post('confirm', '');
         if (strtolower(trim($confirm)) !== 'erase') {
@@ -151,13 +162,14 @@ class AdminGdprController
         } catch (\Throwable $e) {
             error_log('Admin erase failed for user ' . $userId . ': ' . $e->getMessage());
             return Response::redirect('/admin/users/' . $userId)
-                ->withFlash('error', 'Erasure failed: ' . $e->getMessage());
+                ->withFlash('error', 'Erasure failed — see server log for details.');
         }
     }
 
-    public function userBuildExport(Request $request, int $userId): Response
+    public function userBuildExport(Request $request): Response
     {
         if (!$this->canManage()) return $this->denied();
+        $userId = (int) $request->param(0);
 
         $dsarId = (int) $request->post('dsar_id', 0) ?: null;
         try {
@@ -169,14 +181,16 @@ class AdminGdprController
             return Response::redirect($dsarId ? '/admin/gdpr/dsar/' . $dsarId : '/admin/users/' . $userId)
                 ->withFlash('success', 'Export built. Use the download link in the user\'s data exports.');
         } catch (\Throwable $e) {
+            error_log('Admin GDPR export build failed for user ' . $userId . ': ' . $e->getMessage());
             return Response::redirect('/admin/gdpr')
-                ->withFlash('error', 'Export failed: ' . $e->getMessage());
+                ->withFlash('error', 'Export failed — see server log for details.');
         }
     }
 
-    public function userRestrict(Request $request, int $userId): Response
+    public function userRestrict(Request $request): Response
     {
         if (!$this->canManage()) return $this->denied();
+        $userId = (int) $request->param(0);
 
         $user = $this->db->fetchOne("SELECT processing_restricted_at FROM users WHERE id = ?", [$userId]);
         if (!$user) return Response::redirect('/admin/users');

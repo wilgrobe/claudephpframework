@@ -107,7 +107,7 @@
             <?php else: foreach ($versions as $v):
                 $current = (int) ($kind['current_version_id'] ?? 0) === (int) $v['id'];
             ?>
-                <tr style="border-top:1px solid var(--color-gray-100);<?= $current ? 'background:var(--color-purple-bg)' : '' ?>">
+                <tr style="border-top:1px solid var(--color-gray-100);<?= $current ? 'background:var(--accent-subtle)' : '' ?>">
                     <td style="padding:.5rem .75rem">
                         <strong>v<?= htmlspecialchars((string) $v['version_label'], ENT_QUOTES) ?></strong>
                         <?php if ($current): ?><span style="font-size:10px;background:var(--color-primary);color:var(--bg-panel);padding:.1rem .35rem;border-radius:999px;margin-left:.25rem">CURRENT</span><?php endif; ?>

@@ -235,10 +235,19 @@ class CookieConsentService
 
     private function signingKey(): string
     {
-        // SECRETS-H1 — never fall back to a hardcoded, source-published key.
-        // A globally-known HMAC secret lets anyone forge consent cookies and
-        // bypass the GDPR consent audit trail. Fail fast instead (matches
-        // TrackingTokenService::secret + CredentialBox::deriveKey).
+        // Phase 43.191a — refuse on empty APP_KEY. Pre-fix fell back
+        // to literal string 'cookieconsent-fallback-key-change-me'
+        // when APP_KEY was empty — globally-known HMAC secret means
+        // any install missing APP_KEY shipped with a forgeable
+        // consent cookie (attacker can claim analytics/marketing
+        // consent without user interaction, bypassing GDPR audit).
+        //
+        // Phase 43.189b boot-time assertion catches the empty case
+        // in production, but dev installs that skip the boot check
+        // OR CLI contexts that reach this method should also fail
+        // fast rather than silently use the weak fallback. Matches
+        // TrackingTokenService::secret + CredentialBox::deriveKey
+        // (both throw on empty APP_KEY).
         $k = (string) ($_ENV['APP_KEY'] ?? getenv('APP_KEY') ?? '');
         if ($k === '') {
             throw new \RuntimeException(

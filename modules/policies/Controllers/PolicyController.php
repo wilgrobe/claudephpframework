@@ -37,19 +37,41 @@ class PolicyController
         if (!$kind) return Response::view('errors.404', [], 404);
 
         $version = $this->svc->findCurrentVersion((int) $kind['id']);
-        if (!$version) {
-            return Response::view('policies::public.show', [
-                'kind'    => $kind,
-                'version' => null,
-                'user'    => $this->auth->user(),
-            ]);
-        }
-
         return Response::view('policies::public.show', [
-            'kind'    => $kind,
-            'version' => $version,
-            'user'    => $this->auth->user(),
+            'kind'           => $kind,
+            'version'        => $version ?: null,
+            'user'           => $this->auth->user(),
+            'moduleSections' => $this->moduleSections($slug),
         ]);
+    }
+
+    /**
+     * Policy clauses contributed by currently-LOADED modules for this policy
+     * kind (e.g. the analytics module's privacy clause). Appended after the
+     * stored version so the document reflects only the data practices of the
+     * modules actually installed on this site. Tolerant — any error yields [].
+     *
+     * @return array<int, array{heading:string, body_html:string}>
+     */
+    private function moduleSections(string $slug): array
+    {
+        $out = [];
+        try {
+            $registry = \Core\Container\Container::global()->get(\Core\Module\ModuleRegistry::class);
+            if (!$registry instanceof \Core\Module\ModuleRegistry) return [];
+            foreach ($registry->all() as $provider) {
+                if (!$provider instanceof \Core\Module\ModuleProvider) continue;
+                $sections = $provider->policySections();
+                if (!is_array($sections) || !isset($sections[$slug])) continue;
+                $s = $sections[$slug];
+                if (is_array($s) && !empty($s['body_html'])) {
+                    $out[] = ['heading' => (string) ($s['heading'] ?? ''), 'body_html' => (string) $s['body_html']];
+                }
+            }
+        } catch (\Throwable) {
+            return [];
+        }
+        return $out;
     }
 
     /** GET /policies/{slug}/v/{versionId} */

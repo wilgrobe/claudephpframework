@@ -79,7 +79,12 @@ class CookieConsentController
         if ($request->wantsJson()) {
             return Response::json(['ok' => true, 'action' => $action]);
         }
-        return Response::redirect($request->server('HTTP_REFERER') ?: '/');
+        // Phase 43.187c — open-redirect defense. Bare $referer was
+        // attacker-controllable via cross-origin form post; safeRedirect
+        // rejects offsite + protocol-relative + javascript: URLs.
+        return Response::redirect(\Core\Auth\Auth::safeRedirect(
+            (string) ($request->server('HTTP_REFERER') ?: ''), '/'
+        ));
     }
 
     /**
@@ -98,8 +103,10 @@ class CookieConsentController
             $this->auth->auditLog('cookieconsent.withdraw');
         }
 
-        return Response::redirect($request->server('HTTP_REFERER') ?: '/')
-            ->withFlash('success', 'Your cookie preferences have been reset. The banner will reappear on your next page view.');
+        // Phase 43.187c — open-redirect defense via safeRedirect.
+        return Response::redirect(\Core\Auth\Auth::safeRedirect(
+            (string) ($request->server('HTTP_REFERER') ?: ''), '/'
+        ))->withFlash('success', 'Your cookie preferences have been reset. The banner will reappear on your next page view.');
     }
 
     // ── Admin endpoints ────────────────────────────────────────────────
