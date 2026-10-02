@@ -43,7 +43,7 @@ class UploadsController
             return new Response('', 400);
         }
 
-        $storageDir  = $_ENV['STORAGE_PATH'] ?? BASE_PATH . '/storage';
+        $storageDir  = ($_ENV['STORAGE_PATH'] ?? '') ?: BASE_PATH . '/storage';
         $uploadsBase = realpath($storageDir . '/uploads');
 
         if (!$uploadsBase) {

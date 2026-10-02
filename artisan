@@ -76,6 +76,7 @@ $container->instance(CommandRegistry::class, $registry);
 $registry->register(CleanupCommand::class);
 $registry->register(RetryMessagesCommand::class);
 $registry->register(StorageCheckCommand::class);
+$registry->register(\Core\Console\Commands\AdminPasswordCommand::class);
 $registry->register(SentryTestCommand::class);
 
 $registry->register(MigrateCommand::class);

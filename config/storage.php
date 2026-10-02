@@ -20,7 +20,7 @@ return [
 
     // Local-disk settings (driver='local')
     'local' => [
-        'root_path' => ($_ENV['STORAGE_PATH'] ?? BASE_PATH . '/storage') . '/uploads',
+        'root_path' => (($_ENV['STORAGE_PATH'] ?? '') ?: BASE_PATH . '/storage') . '/uploads',
         'public_url_base' => rtrim((string)($_ENV['APP_URL'] ?? ''), '/') . '/uploads',
     ],
 

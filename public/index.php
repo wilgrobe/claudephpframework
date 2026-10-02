@@ -245,7 +245,7 @@ if (!config('app.debug', false)) {
     error_reporting(0);
     ini_set('display_errors', '0');
     ini_set('log_errors', '1');
-    ini_set('error_log', ($_ENV['LOG_PATH'] ?? BASE_PATH . '/storage/logs') . '/php_error.log');
+    ini_set('error_log', (($_ENV['LOG_PATH'] ?? '') ?: BASE_PATH . '/storage/logs') . '/php_error.log');
 
     set_exception_handler(function (\Throwable $e) {
         // Forward to Sentry first (no-op when disabled). Wrapped so a
@@ -286,7 +286,7 @@ if (!config('app.debug', false)) {
     ini_set('display_errors', '1');
     ini_set('display_startup_errors', '1');
     ini_set('log_errors', '1');
-    ini_set('error_log', ($_ENV['LOG_PATH'] ?? BASE_PATH . '/storage/logs') . '/php_error.log');
+    ini_set('error_log', (($_ENV['LOG_PATH'] ?? '') ?: BASE_PATH . '/storage/logs') . '/php_error.log');
     // Hide noisy non-fatal classes from the response body (still logged).
     // Note: E_STRICT was removed in PHP 8.4 — don't reference it or you
     // trip the very deprecation warning this line is meant to suppress.

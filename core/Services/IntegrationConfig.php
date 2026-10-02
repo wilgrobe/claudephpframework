@@ -142,8 +142,9 @@ class IntegrationConfig
             'providers' => [
                 'local' => [
                     'label'    => 'Local filesystem',
-                    'required' => ['STORAGE_PATH'],
-                    'optional' => [],
+                    // STORAGE_PATH defaults to <app>/storage — local storage needs nothing set.
+                    'required' => [],
+                    'optional' => ['STORAGE_PATH'],
                 ],
                 's3' => [
                     'label'    => 'S3-compatible',

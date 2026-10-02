@@ -209,19 +209,35 @@ return new class extends Migration {
 
     private function seedUsers(): void
     {
-        // Password hash for "Admin@123" — same for all three seed users.
-        $pw = '$2y$12$HFVsCqoJuxXGuRkIZfNsDeUYwsaj0RDwpDVbvld4ETM40dCr.30ru';
-        $rows = [
-            ['admin',  'admin@example.com',  $pw, 'System', 'Admin',  1, 1],
-            ['editor', 'editor@example.com', $pw, 'Jane',   'Editor', 1, 0],
-            ['viewer', 'viewer@example.com', $pw, 'John',   'Viewer', 1, 0],
-        ];
+        // ⚠ Never a known password outside development. This used to seed all
+        // three accounts below with "Admin@123" on EVERY install, so an app
+        // deployed as shipped had a super-admin anyone could sign in as. Now a
+        // production install gets one super-admin with a random password,
+        // printed once (CLI only — a web-run install, e.g. tenant provisioning,
+        // never echoes it) and resettable with `php artisan admin:password`.
+        // The demo editor/viewer and the known password are development-only.
+        $dev   = \Core\Auth\InstallAccounts::isDevelopment();
+        $plain = $dev ? null : \Core\Auth\InstallAccounts::randomPassword();
+        $admin = $dev ? \Core\Auth\InstallAccounts::DEV_PASSWORD_HASH : password_hash($plain, PASSWORD_DEFAULT);
+
+        $rows = [['admin', 'admin@example.com', $admin, 'System', 'Admin', 1, 1]];
+        if ($dev) {
+            $rows[] = ['editor', 'editor@example.com', \Core\Auth\InstallAccounts::DEV_PASSWORD_HASH, 'Jane', 'Editor', 1, 0];
+            $rows[] = ['viewer', 'viewer@example.com', \Core\Auth\InstallAccounts::DEV_PASSWORD_HASH, 'John', 'Viewer', 1, 0];
+        }
         $stmt = $this->db->pdo()->prepare(
             "INSERT IGNORE INTO users
                 (username, email, `password`, first_name, last_name, is_active, is_superadmin, email_verified_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, NOW())"
         );
-        foreach ($rows as $r) $stmt->execute($r);
+        $created = false;
+        foreach ($rows as $i => $r) {
+            $stmt->execute($r);
+            if ($i === 0) $created = $stmt->rowCount() === 1;
+        }
+        if ($plain !== null && $created && PHP_SAPI === 'cli') {
+            fwrite(STDOUT, \Core\Auth\InstallAccounts::announce('admin@example.com', $plain));
+        }
     }
 
     private function seedUserRoles(): void

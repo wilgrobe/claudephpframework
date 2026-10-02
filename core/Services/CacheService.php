@@ -56,7 +56,7 @@ class CacheService
 
     public function __construct()
     {
-        $this->fileDir = rtrim((string) ($_ENV['STORAGE_PATH'] ?? (BASE_PATH . '/storage')), '/') . '/cache';
+        $this->fileDir = rtrim((string) (($_ENV['STORAGE_PATH'] ?? '') ?: (BASE_PATH . '/storage')), '/') . '/cache';
         $this->driver  = $this->resolveDriver();
     }
 
