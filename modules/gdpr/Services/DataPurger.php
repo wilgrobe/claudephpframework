@@ -5,7 +5,9 @@ namespace Modules\Gdpr\Services;
 use Core\Database\Database;
 
 /**
- * Executes the per-user erasure pipeline. Walks every active GdprHandler
+ * Executes the per-user erasure pipeline. Runs every custom erase handler
+ * first (they find rows through parents the table pass would delete), then
+ * walks every active GdprHandler
  * and applies its declared `action` to each table:
  *
  *   - 'erase'      DELETE FROM {table} WHERE {user_column} = {user_id}
@@ -52,8 +54,33 @@ class DataPurger
 
         $this->db->beginTransaction();
         try {
-            // 1. Walk handlers in declared order.
-            foreach ($this->registry->all() as $handler) {
+            $handlers = $this->registry->all();
+
+            // 1. Custom erase handlers FIRST, before any declared table is
+            //    touched. A custom handler is how a module erases rows it can
+            //    only find through a parent — chapters through the user's
+            //    books — and handlers run in module order, so a table pass
+            //    that deleted the parent first left that handler nothing to
+            //    find. StoriesDen's erasure removed the books and kept every
+            //    chapter, scene and plan under them, and reported success.
+            foreach ($handlers as $handler) {
+                if ($handler->customErase === null) { continue; }
+                try {
+                    ($handler->customErase)($userId, $marker);
+                    $stats['custom_handlers']++;
+                } catch (\Throwable $e) {
+                    // A custom handler throwing in a transaction is
+                    // a soft failure — the rollback below will
+                    // catch it. Re-throw so the txn rolls back.
+                    throw new \RuntimeException(
+                        "Custom erase handler for module '{$handler->module}' failed: " . $e->getMessage(),
+                        0, $e
+                    );
+                }
+            }
+
+            // 2. Declared tables, in declared order.
+            foreach ($handlers as $handler) {
                 foreach ($handler->tables as $tbl) {
                     $action = (string) ($tbl['action'] ?? GdprHandler::ACTION_KEEP);
                     $table  = (string) $tbl['table'];
@@ -99,24 +126,9 @@ class DataPurger
                             break;
                     }
                 }
-
-                if ($handler->customErase !== null) {
-                    try {
-                        ($handler->customErase)($userId, $marker);
-                        $stats['custom_handlers']++;
-                    } catch (\Throwable $e) {
-                        // A custom handler throwing in a transaction is
-                        // a soft failure — the rollback below will
-                        // catch it. Re-throw so the txn rolls back.
-                        throw new \RuntimeException(
-                            "Custom erase handler for module '{$handler->module}' failed: " . $e->getMessage(),
-                            0, $e
-                        );
-                    }
-                }
             }
 
-            // 2. Scrub the users row itself. We anonymize first so any
+            // 3. Scrub the users row itself. We anonymize first so any
             //    audit_log row whose FK points at users.id can still
             //    resolve to a row (with stripped PII), then we mark
             //    deleted_at. We deliberately don't DELETE FROM users
@@ -146,7 +158,7 @@ class DataPurger
                 [$userId]
             );
 
-            // 3. Audit-trail row, BEFORE commit so a transaction abort
+            // 4. Audit-trail row, BEFORE commit so a transaction abort
             //    rolls it back too. Route through AuditChainService when
             //    available so the row is sealed for tamper detection.
             $auditRow = [
