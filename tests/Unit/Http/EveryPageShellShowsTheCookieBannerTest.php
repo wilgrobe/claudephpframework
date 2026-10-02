@@ -11,8 +11,9 @@ use Tests\TestCase;
  * pages (login, register, password reset, 2FA), signup / claim and the
  * unsubscribe pages are full HTML documents that never include the footer —
  * so a site whose front door is /login showed no banner until after
- * sign-in (found on a taskflow kit, 2026-10-02). Email templates are the one
- * exception: a banner has no place in an email.
+ * sign-in (found on a taskflow kit, 2026-10-02). Email templates are excepted
+ * (a banner has no place in an email), and so is an iframe embed that says so
+ * with a `cookie-banner: none — <reason>` comment.
  */
 final class EveryPageShellShowsTheCookieBannerTest extends TestCase
 {
@@ -34,6 +35,10 @@ final class EveryPageShellShowsTheCookieBannerTest extends TestCase
             $src = (string) file_get_contents($f);
             if (!str_contains($src, '</body>')) { continue; }
             $shells++;
+            // A document rendered INSIDE somebody else's page (an iframe embed)
+            // must not draw this site's banner over theirs. It opts out on
+            // purpose, with its reason: `cookie-banner: none — <why>`.
+            if (preg_match('/cookie-banner:\s*none\s*[—-]+\s*\S/u', $src)) { continue; }
             if (!str_contains($src, self::PARTIAL)) { $missing[] = $rel; }
         }
         $this->assertGreaterThan(5, $shells, 'Found almost no page shells — the glob is wrong, not the views.');
