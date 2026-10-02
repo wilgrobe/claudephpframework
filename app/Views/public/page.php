@@ -497,12 +497,7 @@ $__mainStyleG = ' style="' . implode(';', $__mainStylePartsG) . '"';
 // renders this via layout/footer.php; this include covers the
 // standalone shell so the banner appears on public marketing pages too.
 // Gated on cookieconsent.banner-ui (off when external CMP handles UI).
-$__cc = BASE_PATH . '/modules/cookieconsent/Views/banner.php';
-if (file_exists($__cc)
-    && (!class_exists(\Core\Module\SubmoduleRegistry::class)
-        || \Core\Module\SubmoduleRegistry::featureEnabled('cookieconsent', 'banner-ui'))) {
-    include $__cc;
-}
+include BASE_PATH . '/app/Views/partials/_cookie_banner.php';
 ?>
 </body>
 </html>

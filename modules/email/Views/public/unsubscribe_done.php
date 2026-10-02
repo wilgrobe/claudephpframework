@@ -20,5 +20,6 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--color-gray
     <p>You won't receive any more <?= e($category) ?> emails from us.</p>
     <p>If you change your mind, you can <a href="/account/email-preferences">manage your preferences</a> any time after signing in.</p>
 </div>
+<?php include BASE_PATH . '/app/Views/partials/_cookie_banner.php'; ?>
 </body>
 </html>

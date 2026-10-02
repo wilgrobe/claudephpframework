@@ -30,5 +30,6 @@ button:hover{background:#dc2626}
         <a class="cancel" href="<?= e(setting('app.url') ?? '/') ?>">Never mind, keep me subscribed</a>
     </form>
 </div>
+<?php include BASE_PATH . '/app/Views/partials/_cookie_banner.php'; ?>
 </body>
 </html>

@@ -12,12 +12,7 @@
 // Gated on cookieconsent.banner-ui submodule (default-on without
 // project_submodules; deliberately off for sites running an external
 // CMP that handles the banner UI themselves).
-$__cc = BASE_PATH . '/modules/cookieconsent/Views/banner.php';
-if (file_exists($__cc)
-    && (!class_exists(\Core\Module\SubmoduleRegistry::class)
-        || \Core\Module\SubmoduleRegistry::featureEnabled('cookieconsent', 'banner-ui'))) {
-    include $__cc;
-}
+include BASE_PATH . '/app/Views/partials/_cookie_banner.php';
 ?>
 
 <?php

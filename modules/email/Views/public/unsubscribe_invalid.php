@@ -20,5 +20,6 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:var(--color-gray
     <p>This unsubscribe link has expired or wasn't recognized. You can manage your email preferences from your account.</p>
     <p><a href="/account/email-preferences">Sign in to manage preferences</a></p>
 </div>
+<?php include BASE_PATH . '/app/Views/partials/_cookie_banner.php'; ?>
 </body>
 </html>

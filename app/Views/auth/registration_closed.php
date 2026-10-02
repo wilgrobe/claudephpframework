@@ -25,5 +25,6 @@
          sign-in page. The app layout has always used asset(); these standalone
          auth documents did not. */ ?>
 <script src="<?= e(asset("/assets/js/app.js")) ?>"></script>
+<?php include BASE_PATH . '/app/Views/partials/_cookie_banner.php'; ?>
 </body>
 </html>
