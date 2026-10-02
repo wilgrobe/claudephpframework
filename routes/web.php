@@ -101,6 +101,7 @@ $router->get('/uploads/{folder}/{sub}/{file}',     'UploadsController@serve');
 // ── Sitemap & SEO ─────────────────────────────────────────────────────────────
 
 $router->get('/sitemap.xml', 'SitemapController@index');
+$router->get('/robots.txt', 'SitemapController@robots');
 
 // ── Public / Guest ────────────────────────────────────────────────────────────
 

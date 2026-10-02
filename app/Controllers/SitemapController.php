@@ -133,4 +133,45 @@ class SitemapController
             'Vary'          => 'Cookie',
         ]);
     }
+
+    /**
+     * /robots.txt — served by PHP, not a static file, for the same reason as
+     * the sitemap: the Sitemap: line has to name the host the site is actually
+     * on. A static public/robots.txt can only carry a guess (it said
+     * http://claudephpframework/, and kits shipped https://example.com/), and
+     * because the web server serves a file before PHP it also hid this route.
+     */
+    public function robots(Request $request): Response
+    {
+        $baseUrl = function_exists('site_base_url') ? site_base_url() : rtrim((string) config('app.url', ''), '/');
+        return new Response(self::robotsTxt($baseUrl), 200, [
+            'Content-Type'  => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=600',
+        ]);
+    }
+
+    public static function robotsTxt(string $baseUrl): string
+    {
+        $lines = [
+            'User-agent: *',
+            'Disallow: /admin/',
+            'Disallow: /auth/',
+            'Disallow: /account',
+            'Disallow: /password',
+            'Disallow: /api/',
+            'Disallow: /profile/',
+            'Disallow: /dashboard',
+            'Disallow: /notifications',
+            'Disallow: /groups/*/invite',
+            'Disallow: /groups/*/roles',
+            'Disallow: /content/*/edit',
+            '',
+            'Allow: /',
+        ];
+        if ($baseUrl !== '') {
+            $lines[] = '';
+            $lines[] = 'Sitemap: ' . rtrim($baseUrl, '/') . '/sitemap.xml';
+        }
+        return implode("\n", $lines) . "\n";
+    }
 }
