@@ -103,6 +103,8 @@ class DataExporter
             }
 
             // ── 2. Walk every handler and export its tables ─────────
+            $identity = GdprHandler::identityFor($this->db, $userId);
+            $written  = [];
             foreach ($this->registry->all() as $handler) {
                 $folder      = $this->safePath($handler->module);
                 $folderAdded = false;
@@ -112,13 +114,14 @@ class DataExporter
                     if (isset($tbl['export']) && $tbl['export'] === false) continue;
 
                     $table  = (string) $tbl['table'];
-                    $col    = (string) $tbl['user_column'];
                     $select = (string) ($tbl['export_select'] ?? '*');
+                    $match  = GdprHandler::matchFor($tbl, $identity);
+                    if ($match === null) continue;
 
                     try {
                         $rows = $this->db->fetchAll(
-                            "SELECT {$select} FROM `{$table}` WHERE `{$col}` = ?",
-                            [$userId]
+                            "SELECT {$select} FROM `{$table}` WHERE {$match[0]}",
+                            [$match[1]]
                         );
                     } catch (\Throwable $e) {
                         // Table missing on this install — module ships
@@ -129,7 +132,13 @@ class DataExporter
 
                     if (empty($rows)) continue;
 
+                    // One table can be declared twice (message_log by email AND by
+                    // phone) — the second must not overwrite the first's file.
                     $entry = $folder . '/' . $this->safePath($table) . '.json';
+                    if (isset($written[$entry])) {
+                        $entry = $folder . '/' . $this->safePath($table . '.' . (string) ($tbl['match'] ?? 'id')) . '.json';
+                    }
+                    $written[$entry] = true;
                     $zip->addFromString($entry, json_encode($rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
                     if (!$folderAdded) {

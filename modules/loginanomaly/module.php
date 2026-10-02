@@ -75,6 +75,9 @@ return new class extends ModuleProvider {
                         'table'             => 'login_anomalies',
                         'user_column'       => 'user_id',
                         'action'            => \Modules\Gdpr\Services\GdprHandler::ACTION_ANONYMIZE,
+                        // user_id is NOT NULL (FK, ON DELETE CASCADE): nulling it failed
+                        // the whole UPDATE, so IP / UA / city were never scrubbed.
+                        'keep_link'         => true,
                         'anonymize_columns' => [
                             'ip_address' => null,
                             'user_agent' => null,

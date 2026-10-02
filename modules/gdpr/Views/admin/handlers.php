@@ -48,7 +48,7 @@
             ?>
                 <tr style="border-top:1px solid var(--color-gray-100)">
                     <td style="padding:.4rem .75rem;font-family:monospace;font-size:12px"><?= htmlspecialchars((string) $t['table'], ENT_QUOTES) ?></td>
-                    <td style="padding:.4rem .75rem;font-family:monospace;font-size:12px;color:var(--color-gray-500)"><?= htmlspecialchars((string) $t['user_column'], ENT_QUOTES) ?></td>
+                    <td style="padding:.4rem .75rem;font-family:monospace;font-size:12px;color:var(--color-gray-500)"><?= htmlspecialchars((string) $t['user_column'], ENT_QUOTES) ?><?php if (($t['match'] ?? 'id') !== 'id'): ?> <span style="font-family:inherit">(by <?= htmlspecialchars(str_replace('_', ' ', (string) $t['match']), ENT_QUOTES) ?>)</span><?php endif; ?></td>
                     <td style="padding:.4rem .75rem">
                         <span style="display:inline-block;padding:.1rem .5rem;border-radius:999px;color:var(--bg-panel);font-size:11px;background:<?= $color ?>"><?= htmlspecialchars($action, ENT_QUOTES) ?></span>
                     </td>

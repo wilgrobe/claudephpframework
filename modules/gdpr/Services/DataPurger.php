@@ -55,6 +55,9 @@ class DataPurger
         $this->db->beginTransaction();
         try {
             $handlers = $this->registry->all();
+            // Read who this user is BEFORE anything is deleted: step 3 scrubs the
+            // users row, and tables keyed by email/phone are matched from this.
+            $identity = GdprHandler::identityFor($this->db, $userId);
 
             // 1. Custom erase handlers FIRST, before any declared table is
             //    touched. A custom handler is how a module erases rows it can
@@ -85,13 +88,15 @@ class DataPurger
                     $action = (string) ($tbl['action'] ?? GdprHandler::ACTION_KEEP);
                     $table  = (string) $tbl['table'];
                     $col    = (string) $tbl['user_column'];
+                    $match  = GdprHandler::matchFor($tbl, $identity);
+                    if ($match === null) continue;
 
                     switch ($action) {
                         case GdprHandler::ACTION_ERASE:
                             try {
                                 $this->db->query(
-                                    "DELETE FROM `{$table}` WHERE `{$col}` = ?",
-                                    [$userId]
+                                    "DELETE FROM `{$table}` WHERE {$match[0]}",
+                                    [$match[1]]
                                 );
                                 $stats['tables_erased']++;
                             } catch (\Throwable $e) {
@@ -101,17 +106,23 @@ class DataPurger
                             break;
 
                         case GdprHandler::ACTION_ANONYMIZE:
-                            $sets = ["`{$col}` = NULL"];
+                            // keep_link: scrub the listed columns but leave the user
+                            // column — for a NOT NULL link (login_anomalies.user_id),
+                            // where `= NULL` failed the whole UPDATE and left the IP,
+                            // user agent and city in place. The users row it points
+                            // at is scrubbed below, so the link names nobody.
+                            $sets = empty($tbl['keep_link']) ? ["`{$col}` = NULL"] : [];
                             $args = [];
                             $cols = (array) ($tbl['anonymize_columns'] ?? []);
                             foreach ($cols as $name => $val) {
                                 $sets[] = "`{$name}` = ?";
                                 $args[] = $val;
                             }
-                            $args[] = $userId;
+                            if (!$sets) { $stats['tables_kept']++; break; }
+                            $args[] = $match[1];
                             try {
                                 $this->db->query(
-                                    "UPDATE `{$table}` SET " . implode(', ', $sets) . " WHERE `{$col}` = ?",
+                                    "UPDATE `{$table}` SET " . implode(', ', $sets) . " WHERE {$match[0]}",
                                     $args
                                 );
                                 $stats['tables_anonymized']++;

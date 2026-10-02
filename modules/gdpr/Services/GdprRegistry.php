@@ -99,10 +99,13 @@ class GdprRegistry
                 description: 'Sessions, login attempts, password resets, 2FA challenges, email verifications.',
                 tables: [
                     ['table' => 'sessions',                'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE],
-                    ['table' => 'password_resets',         'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE, 'export' => false],
+                    // password_resets + login_attempts never stored a user id: a reset is
+                    // filed by the address it was sent to, a lockout by `email:<sha256>`
+                    // (RateLimiter::key). Matched by user_id they erased nothing.
+                    ['table' => 'password_resets',         'user_column' => 'email',       'match' => GdprHandler::MATCH_EMAIL, 'action' => GdprHandler::ACTION_ERASE, 'export' => false],
                     ['table' => 'two_factor_challenges',   'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE, 'export' => false],
                     ['table' => 'email_verifications',     'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE, 'export' => false],
-                    ['table' => 'login_attempts',          'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE],
+                    ['table' => 'login_attempts',          'user_column' => 'attempt_key', 'match' => GdprHandler::MATCH_EMAIL_SHA256, 'key_prefix' => 'email:', 'action' => GdprHandler::ACTION_ERASE],
                     ['table' => 'api_keys',                'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE],
                 ],
             ),
@@ -112,7 +115,10 @@ class GdprRegistry
                 description: 'Notifications and messaging-log entries addressed to you.',
                 tables: [
                     ['table' => 'notifications', 'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE],
-                    ['table' => 'message_log',   'user_column' => 'user_id', 'action' => GdprHandler::ACTION_ERASE],
+                    // message_log is filed by recipient — an email address or, for SMS,
+                    // a phone number. Webhook rows (recipient = a URL) are not a person's.
+                    ['table' => 'message_log',   'user_column' => 'recipient', 'match' => GdprHandler::MATCH_EMAIL, 'action' => GdprHandler::ACTION_ERASE],
+                    ['table' => 'message_log',   'user_column' => 'recipient', 'match' => GdprHandler::MATCH_PHONE, 'action' => GdprHandler::ACTION_ERASE],
                 ],
             ),
 
