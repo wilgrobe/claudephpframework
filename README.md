@@ -149,7 +149,9 @@ php artisan cleanup              # purge stale sessions / tokens / nonces
 - HTTPS configured; HSTS uncommented in `.htaccess`
 - `TRUSTED_PROXY=` set only if behind a load balancer
 - All migrations applied (`php artisan migrate:status` shows nothing pending)
-- Cron job: `*/15 * * * * php /path/to/artisan cleanup`
+- Cron job: `*/15 * * * * php /path/to/artisan cleanup` — **required, not optional.** Ubuntu/Debian
+  ship `session.gc_probability = 0`, so PHP never clears the `sessions` table itself; without this
+  line it grows forever (two of our own servers had 128k–157k dead sessions before it was added).
 - Cron job: `* * * * * php /path/to/artisan schedule:run`
 - Queue worker running under supervisord or systemd
 - At least one email driver configured in `.env`
