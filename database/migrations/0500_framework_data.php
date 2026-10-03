@@ -294,7 +294,10 @@ return new class extends Migration {
         $rows = [
             // Core site identity
             ['site', 'site_name',           'My Application',               'string',  1],
-            ['site', 'site_tagline',        'Built with ClaudePHPFramework',  'string',  1],
+            // Empty, not a brand line: site_tagline is every page's default meta description, so
+            // our "Built with …" brand line was what search results showed for sites built on it.
+            // Empty = no description tag until the owner writes one (Settings → General).
+            ['site', 'site_tagline',        '',                             'string',  1],
             ['site', 'contact_email',       'hello@example.com',            'string',  0],
             ['site', 'allow_registration',  'true',                         'boolean', 1],
             ['site', 'require_email_verify','true',                         'boolean', 0],
