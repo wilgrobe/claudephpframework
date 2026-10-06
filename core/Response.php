@@ -208,10 +208,12 @@ class Response
         return new self('', $code, ['Location' => $url]);
     }
 
-    public static function view(string $view, array $data = []): self
+    public static function view(string $view, array $data = [], int $status = 200): self
     {
+        // $status: a not-found page rendered as a view (Response::view('errors.404', [], 404) in policies,
+        // gdpr, ccpa) must still answer 404 — before 2026-10-06 the third argument was silently dropped.
         $content = View::render($view, $data);
-        $r = new self($content, 200, [
+        $r = new self($content, $status, [
             'Content-Type'  => 'text/html; charset=UTF-8',
             // Prevent sensitive page content from being cached in browser history or proxies
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
