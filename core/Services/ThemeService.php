@@ -58,7 +58,7 @@ class ThemeService
         // customized see zero change. a bound ThemeExtension overrides these
         // when a brand color is picked, producing a brand-tinted dark
         // header to match the rest of the chrome.
-        'theme.color.chrome.header_bg'    => ['css' => 'chrome-header-bg',    'default' => '#ffffff', 'default_dark' => '#111827', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header background'],
+        'theme.color.chrome.header_bg'    => ['css' => 'chrome-header-bg',    'default' => '#ffffff', 'default_dark' => '#231e1b', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header background'],
         'theme.color.chrome.header_text'  => ['css' => 'chrome-header-text',  'default' => '#111827', 'default_dark' => '#f9fafb', 'validator' => 'color', 'group' => 'chrome', 'label' => 'Header text'],
 
         // ── Radius ──
@@ -338,17 +338,12 @@ class ThemeService
             // Always emit a full dark palette. Color tokens use `<key>.dark`
             // (or default_dark); length/unitless tokens are mode-agnostic
             // so we don't include them in the dark block.
+            // Hue source for a colourless light value that has to turn dark (a white header): the site's own
+            // dark page background, so the surface sits in the same family as the page under it.
+            $pageDark = $this->darkValueFor('theme.palette.default.bg', self::TOKEN_DEFINITIONS['theme.palette.default.bg'], $ordinalDerived, null);
             foreach (self::TOKEN_DEFINITIONS as $settingKey => $def) {
                 if (($def['validator'] ?? '') !== 'color') continue;
-                $raw = trim((string) $this->settings->get($settingKey . '.dark', '', 'site'));
-                if ($raw === '' && isset(self::LEGACY_FALLBACK[$settingKey])) {
-                    $raw = trim((string) $this->settings->get(self::LEGACY_FALLBACK[$settingKey] . '.dark', '', 'site'));
-                }
-                $css = (string) $def['css'];
-                $value = ($raw !== '' && $this->validate($raw, 'color'))
-                    ? $raw
-                    : ($ordinalDerived[$css] ?? (string) $def['default_dark']);
-                $out[$css] = $value;
+                $out[(string) $def['css']] = $this->darkValueFor($settingKey, $def, $ordinalDerived, $pageDark);
             }
             // Batch F2 (done): the gray-* ramp is now aliased onto the theme
             // neutrals in app.css (--color-gray-N: var(--bg-page|--text-*|…)),
@@ -384,6 +379,124 @@ class ThemeService
         // neutral tokens, and the ramp follows.
         $this->tokenMemo[$memoKey] = $out;
         return $out;
+    }
+
+    /**
+     * One colour token's dark value: the site's saved `<key>.dark`; else — when the site customised the LIGHT
+     * value — a dark value derived from it; else the shipped `default_dark` (or the ordinal derivation).
+     *
+     * Why the middle step exists (StoriesDen, 2026-10-07, board #403): a site that set only light colours got
+     * the STOCK dark palette for those tokens, which belongs to a different design — a warm brown sidebar
+     * turned indigo (#1e1b4b), the white header turned slate (#111827) under a dark-text logo, and the brand
+     * rust #a85632 became the stock coral. The site's own colour is a far better starting point.
+     *
+     * @param array{css:string, default:string, default_dark:string} $def
+     * @param array<string,string> $ordinalDerived
+     */
+    private function darkValueFor(string $settingKey, array $def, array $ordinalDerived, ?string $pageDark): string
+    {
+        $css = (string) $def['css'];
+        $raw = trim((string) $this->settings->get($settingKey . '.dark', '', 'site'));
+        if ($raw === '' && isset(self::LEGACY_FALLBACK[$settingKey])) {
+            $raw = trim((string) $this->settings->get(self::LEGACY_FALLBACK[$settingKey] . '.dark', '', 'site'));
+        }
+        if ($raw !== '' && $this->validate($raw, 'color')) return $raw;
+
+        $light = trim((string) $this->settings->get($settingKey, '', 'site'));
+        if ($light === '' && isset(self::LEGACY_FALLBACK[$settingKey])) {
+            $light = trim((string) $this->settings->get(self::LEGACY_FALLBACK[$settingKey], '', 'site'));
+        }
+        if ($light !== '' && $this->validate($light, 'color')) {
+            $derived = self::deriveDark($light, (string) $def['default'], (string) $def['default_dark'], $pageDark);
+            if ($derived !== null) return $derived;
+        }
+        return $ordinalDerived[$css] ?? (string) $def['default_dark'];
+    }
+
+    /**
+     * Turn a site's LIGHT-mode colour into its dark-mode counterpart, using the shipped light/dark defaults of
+     * the same token to tell what role it plays:
+     *
+     *  - the defaults stay on the same side (a brand colour, a chrome surface that is dark in both modes, text
+     *    on a brand fill): keep the site's hue and saturation and move its lightness by the same amount the
+     *    defaults move. Rust stays rust, a little brighter; a dark brown sidebar stays that sidebar.
+     *  - the defaults flip sides (a light surface that goes dark, dark text that goes light): if the site's
+     *    colour is already on the dark-mode side, it was chosen for that and is kept. Otherwise it flips to the
+     *    default's dark-mode lightness in the site's own hue (surfaces lose some saturation, so a cream panel
+     *    becomes a deep warm brown, not a muddy orange). A colourless value — a white header — borrows the hue
+     *    of the site's dark page background ($tint) so it does not go cold against a warm page.
+     *
+     * Only #rgb / #rgba / #rrggbb / #rrggbbaa are derived (alpha kept); anything else returns null and the
+     * caller falls back to the shipped default, exactly as before.
+     */
+    public static function deriveDark(string $light, string $default, string $defaultDark, ?string $tint = null): ?string
+    {
+        $site = self::hexToRgba($light);
+        $d    = self::hexToRgba($default);
+        $dd   = self::hexToRgba($defaultDark);
+        if ($site === null || $d === null || $dd === null) return null;
+
+        [$h, $s, $l] = self::rgbToHsl($site[0], $site[1], $site[2]);
+        $ld  = self::rgbToHsl($d[0], $d[1], $d[2])[2];
+        $ldd = self::rgbToHsl($dd[0], $dd[1], $dd[2])[2];
+
+        if (($ld < 0.5) === ($ldd < 0.5)) {
+            $l = max(0.0, min(1.0, $l + ($ldd - $ld)));
+        } elseif (($l < 0.5) === ($ldd < 0.5)) {
+            return $light;   // already right for dark mode
+        } else {
+            if ($s < 0.08 && $tint !== null && ($t = self::hexToRgba($tint)) !== null) {
+                [$h, $s] = self::rgbToHsl($t[0], $t[1], $t[2]);
+            } elseif ($ldd < 0.5) {
+                $s *= 0.6;   // a dark surface reads better a little quieter than the light one
+            }
+            $l = $ldd;
+        }
+
+        [$r, $g, $b] = self::hslToRgb($h, $s, $l);
+        $hex = sprintf('#%02x%02x%02x', $r, $g, $b);
+        return $site[3] < 255 ? $hex . sprintf('%02x', $site[3]) : $hex;
+    }
+
+    /** @return array{0:int,1:int,2:int,3:int}|null r,g,b,a 0–255 */
+    private static function hexToRgba(string $hex): ?array
+    {
+        if (!preg_match('/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i', trim($hex), $m)) return null;
+        $x = $m[1];
+        if (strlen($x) <= 4) $x = implode('', array_map(static fn ($c) => $c . $c, str_split($x)));
+        $p = array_map('hexdec', str_split($x, 2));
+        return [$p[0], $p[1], $p[2], $p[3] ?? 255];
+    }
+
+    /** @return array{0:float,1:float,2:float} h 0–1, s 0–1, l 0–1 */
+    private static function rgbToHsl(int $r, int $g, int $b): array
+    {
+        $r /= 255; $g /= 255; $b /= 255;
+        $max = max($r, $g, $b); $min = min($r, $g, $b);
+        $l = ($max + $min) / 2;
+        if ($max === $min) return [0.0, 0.0, $l];
+        $dlt = $max - $min;
+        $s = $l > 0.5 ? $dlt / (2 - $max - $min) : $dlt / ($max + $min);
+        $h = match (true) {
+            $max === $r => ($g - $b) / $dlt + ($g < $b ? 6 : 0),
+            $max === $g => ($b - $r) / $dlt + 2,
+            default     => ($r - $g) / $dlt + 4,
+        };
+        return [$h / 6, $s, $l];
+    }
+
+    /** @return array{0:int,1:int,2:int} */
+    private static function hslToRgb(float $h, float $s, float $l): array
+    {
+        if ($s <= 0.0) { $v = (int) round($l * 255); return [$v, $v, $v]; }
+        $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
+        $p = 2 * $l - $q;
+        $f = static function (float $t) use ($p, $q): int {
+            if ($t < 0) $t += 1; if ($t > 1) $t -= 1;
+            $v = $t < 1 / 6 ? $p + ($q - $p) * 6 * $t : ($t < 1 / 2 ? $q : ($t < 2 / 3 ? $p + ($q - $p) * (2 / 3 - $t) * 6 : $p));
+            return (int) round(max(0, min(1, $v)) * 255);
+        };
+        return [$f($h + 1 / 3), $f($h), $f($h - 1 / 3)];
     }
 
     /**
