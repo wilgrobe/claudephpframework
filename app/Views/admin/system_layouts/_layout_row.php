@@ -36,16 +36,20 @@ if (!is_string($__settings)) {
 }
 
 $__isSlot = $__type === 'content_slot';
+// The row number people see (aria labels). The two <template> rows are rendered with $i = '__INDEX__',
+// which the page script replaces when a row is added; `'__INDEX__' + 1` is a TypeError on PHP 8, so the
+// editor could not load AT ALL (board #407, 2026-10-07). Keep the placeholder for the template rows.
+$__num = is_int($i) ? $i + 1 : $i;
 ?>
 <tr class="placement-row" data-placement-row data-placement-type="<?= e($__type) ?>">
-    <td><input type="number" name="placements[<?= $i ?>][row]" value="<?= $__row ?>" min="0" max="5" class="form-control" style="font-size:13px" aria-label="Placement <?= $i + 1 ?> row"></td>
-    <td><input type="number" name="placements[<?= $i ?>][col]" value="<?= $__col ?>" min="0" max="3" class="form-control" style="font-size:13px" aria-label="Placement <?= $i + 1 ?> column"></td>
-    <td><input type="number" name="placements[<?= $i ?>][sort_order]" value="<?= $__order ?>" min="0" max="999" class="form-control" style="font-size:13px" aria-label="Placement <?= $i + 1 ?> sort order"></td>
+    <td><input type="number" name="placements[<?= $i ?>][row]" value="<?= $__row ?>" min="0" max="5" class="form-control" style="font-size:13px" aria-label="Placement <?= $__num ?> row"></td>
+    <td><input type="number" name="placements[<?= $i ?>][col]" value="<?= $__col ?>" min="0" max="3" class="form-control" style="font-size:13px" aria-label="Placement <?= $__num ?> column"></td>
+    <td><input type="number" name="placements[<?= $i ?>][sort_order]" value="<?= $__order ?>" min="0" max="999" class="form-control" style="font-size:13px" aria-label="Placement <?= $__num ?> sort order"></td>
     <td>
         <select name="placements[<?= $i ?>][placement_type]"
                 class="form-control placement-type-select"
                 style="font-size:13px"
-                aria-label="Placement <?= $i + 1 ?> kind">
+                aria-label="Placement <?= $__num ?> kind">
             <option value="block"        <?= $__type === 'block'        ? 'selected' : '' ?>>Block</option>
             <option value="content_slot" <?= $__type === 'content_slot' ? 'selected' : '' ?>>Page content</option>
         </select>
@@ -58,7 +62,7 @@ $__isSlot = $__type === 'content_slot';
     </td>
     <td>
         <div class="placement-block-cell" style="<?= $__isSlot ? 'display:none' : '' ?>">
-            <select name="placements[<?= $i ?>][block_key]" class="form-control placement-block-select" style="font-size:13px" aria-label="Placement <?= $i + 1 ?> block">
+            <select name="placements[<?= $i ?>][block_key]" class="form-control placement-block-select" style="font-size:13px" aria-label="Placement <?= $__num ?> block">
                 <option value="">— Pick a block —</option>
                 <?php foreach (($blocksByCategory ?? []) as $__cat => $__blocks): ?>
                 <optgroup label="<?= e($__cat) ?>">
@@ -88,7 +92,7 @@ $__isSlot = $__type === 'content_slot';
                    placeholder="primary"
                    maxlength="64"
                    pattern="[a-zA-Z0-9_-]+"
-                   aria-label="Placement <?= $i + 1 ?> slot name">
+                   aria-label="Placement <?= $__num ?> slot name">
             <small style="display:block;color:var(--color-gray-500);font-size:11px;margin-top:.2rem">
                 Filled by the route's controller. Default: <code>primary</code>.
             </small>
@@ -98,7 +102,7 @@ $__isSlot = $__type === 'content_slot';
         <select name="placements[<?= $i ?>][visible_to]"
                 class="form-control placement-visibility-select"
                 style="font-size:13px;<?= $__isSlot ? 'opacity:.45;pointer-events:none' : '' ?>"
-                aria-label="Placement <?= $i + 1 ?> audience"
+                aria-label="Placement <?= $__num ?> audience"
                 <?= $__isSlot ? 'disabled' : '' ?>>
             <option value="any"   <?= $__vis === 'any'   ? 'selected' : '' ?>>Anyone</option>
             <option value="auth"  <?= $__vis === 'auth'  ? 'selected' : '' ?>>Logged in</option>
@@ -113,7 +117,7 @@ $__isSlot = $__type === 'content_slot';
     <td>
         <textarea name="placements[<?= $i ?>][settings]" rows="1" class="form-control"
                   style="font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace"
-                  placeholder='{"limit": 5}' aria-label="Placement <?= $i + 1 ?> settings JSON"><?= e($__settings) ?></textarea>
+                  placeholder='{"limit": 5}' aria-label="Placement <?= $__num ?> settings JSON"><?= e($__settings) ?></textarea>
     </td>
     <td style="text-align:center">
         <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.2rem;font-size:11px">
