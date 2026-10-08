@@ -114,7 +114,7 @@ $pretty = $detail['payload_decoded'] !== null
             <form method="post" action="/admin/webhooks/<?= e($source) ?>/<?= (int) $detail['id'] ?>/replay">
                 <input type="hidden" name="_token" value="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>">
                 <button type="submit" class="btn-primary"
-                        onclick="return confirm('Replay this Stripe event? Idempotent on event_id — a re-run is safe even on a fully-processed event, but it will fire any side-effect listeners again.');">
+                        data-mo-confirm="Replay this Stripe event? Idempotent on event_id — a re-run is safe even on a fully-processed event, but it will fire any side-effect listeners again.">
                     🔄 Replay event
                 </button>
             </form>

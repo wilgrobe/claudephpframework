@@ -249,8 +249,8 @@ $pageTitle = 'Menu Items - ' . $menu['name'];
                 });
                 row.querySelector('[data-act="del"]').addEventListener('click', e => {
                     e.stopPropagation();
-                    if (!confirm('Remove "' + (item.label || '(item)') + '" and any children?')) return;
-                    removeItemAndDescendants(item.client_id);
+                    moDialog.confirm(e.currentTarget, 'Remove "' + (item.label || '(item)') + '" and any children?',
+                        () => removeItemAndDescendants(item.client_id));
                 });
                 wireDrag(row);
                 container.appendChild(row);
@@ -464,7 +464,7 @@ $pageTitle = 'Menu Items - ' . $menu['name'];
         const next = {};
         for (const f of schema) {
             const v = readModalField(f, '');
-            if (v && typeof v === 'object' && '__error' in v) { alert(v.__error); return; }
+            if (v && typeof v === 'object' && '__error' in v) { moDialog.notice(document.getElementById('cb-modal-save'), v.__error, true); return; }
             next[f.key] = v;
         }
         item.label  = String(next.label  || '').trim();

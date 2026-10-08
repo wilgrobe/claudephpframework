@@ -86,7 +86,7 @@ $mailtoSubject = ($row['subject'] ?? '') !== '' ? 'Re: ' . $row['subject'] : 'Re
             </form>
         <?php endif; ?>
         <form method="post" action="/admin/contact-messages/<?= (int) $row['id'] ?>/delete"
-              onsubmit="return confirm('Delete this message permanently? This cannot be undone.');">
+              data-mo-confirm="Delete this message permanently? This cannot be undone.">
             <input type="hidden" name="_token" value="<?= e(csrf_token()) ?>">
             <button type="submit" class="delete">Delete</button>
         </form>

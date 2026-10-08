@@ -289,7 +289,7 @@ $statusBadge = [
                         <?php endif; ?>
                         <?php if ($takeLive): ?>
                             <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/unpublish-page" style="display:inline;"
-                                  onsubmit="return confirm('Take this <?= $e($take['handler']->label()) ?> offline now?');">
+                                  data-mo-confirm="Take this <?= $e($take['handler']->label()) ?> offline now?">
                                 <input type="hidden" name="_token" value="<?= $e($csrf) ?>">
                                 <button class="btn btn-xs" style="background:#b42318;color:#fff;" type="submit">Take it offline</button>
                             </form>
@@ -312,7 +312,7 @@ $statusBadge = [
                                 <button class="btn btn-secondary btn-xs" type="submit">Archive</button>
                             </form>
                         <?php endif; ?>
-                        <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/delete" style="display:inline;" onsubmit="return confirm('Delete this feedback permanently?');">
+                        <form method="post" action="/admin/site-feedback/<?= (int) $r['id'] ?>/delete" style="display:inline;" data-mo-confirm="Delete this feedback permanently?">
                             <input type="hidden" name="_token" value="<?= $e($csrf) ?>">
                             <button class="btn btn-danger btn-xs" type="submit">Delete</button>
                         </form>

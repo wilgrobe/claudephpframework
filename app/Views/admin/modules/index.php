@@ -105,13 +105,13 @@
                     <td>
                         <?php if ($m['state'] === 'active'): ?>
                             <form method="POST" action="/admin/modules/<?= e(rawurlencode($m['name'])) ?>/disable" style="margin:0"
-                                  onsubmit="return confirm('Disable \'<?= e($m['name']) ?>\'? Routes, views, and blocks from this module stop loading on the next request. Modules that require it will cascade to disabled_dependency.')">
+                                  data-mo-confirm="Disable '<?= e($m['name']) ?>'? Routes, views, and blocks from this module stop loading on the next request. Modules that require it will cascade to disabled_dependency.">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-xs btn-secondary" title="Mark this module as disabled by admin">Disable</button>
                             </form>
                         <?php elseif ($m['state'] === 'disabled_admin'): ?>
                             <form method="POST" action="/admin/modules/<?= e(rawurlencode($m['name'])) ?>/enable" style="margin:0"
-                                  onsubmit="return confirm('Re-enable \'<?= e($m['name']) ?>\'? It will return to active on the next request (or to disabled_dependency if its requires() can\'t be satisfied).')">
+                                  data-mo-confirm="Re-enable '<?= e($m['name']) ?>'? It will return to active on the next request (or to disabled_dependency if its requires() can't be satisfied).">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-xs btn-primary">Enable</button>
                             </form>

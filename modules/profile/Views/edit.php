@@ -112,12 +112,13 @@
 </div>
 </div>
 
+<?php include BASE_PATH . '/app/Views/partials/_inline_dialogs.php'; ?>
 <script>
 function previewAvatar(input) {
     const file = input.files[0];
     if (!file) return;
     if (file.size > 2097152) {
-        alert('Image is too large. Maximum size is 2 MB.');
+        moDialog.notice(input, 'Image is too large. Maximum size is 2 MB.', true);
         input.value = '';
         return;
     }

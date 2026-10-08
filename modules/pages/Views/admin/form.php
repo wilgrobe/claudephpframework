@@ -282,7 +282,7 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
     </div>
     <?php if ($page && $hasLayout): ?>
     <form method="POST" action="/admin/pages/<?= (int) $page['id'] ?>/layout/delete"
-          onsubmit="return confirm('Remove this layout and all its block placements? The page will revert to rendering its body content.')">
+          data-mo-confirm="Remove this layout and all its block placements? The page will revert to rendering its body content.">
         <?= csrf_field() ?>
         <button type="submit" class="btn btn-sm btn-danger">Remove layout</button>
     </form>
@@ -1256,7 +1256,7 @@ function readCommonStyleFromModal(extras) {
     const all = [...__commonStyleSchema, ...(extras || [])];
     for (const f of all) {
         const v = readModalField(f, '__style_');
-        if (v && typeof v === 'object' && '__error' in v) { alert(v.__error); throw v; }
+        if (v && typeof v === 'object' && '__error' in v) { moDialog.notice(document.getElementById('cb-modal-save'), v.__error, true); throw v; }
         if (v === '' || v == null || v === false || v === 0) continue;
         out[f.key] = v;
     }
@@ -1288,14 +1288,14 @@ function saveBlockModal() {
                 const next = {};
                 for (const f of schema) {
                     const v = readModalField(f, '');
-                    if (v && typeof v === 'object' && '__error' in v) { alert(v.__error); return; }
+                    if (v && typeof v === 'object' && '__error' in v) { moDialog.notice(document.getElementById('cb-modal-save'), v.__error, true); return; }
                     if (v !== undefined) next[f.key] = v;
                 }
                 p.settings = next;
             } else {
                 const ta = document.getElementById('cb-field-__json');
                 try { p.settings = ta.value.trim() === '' ? {} : JSON.parse(ta.value); }
-                catch (err) { alert('Invalid JSON: ' + err.message); return; }
+                catch (err) { moDialog.notice(document.getElementById('cb-modal-save'), 'Invalid JSON: ' + err.message, true); return; }
             }
 
             // Block wrapper style — independent of block-specific settings.

@@ -52,6 +52,8 @@ $descs = [
     'analytics'   => (string) setting('cookieconsent_desc_analytics',   ''),
     'marketing'   => (string) setting('cookieconsent_desc_marketing',   ''),
 ];
+// Inline replacement for alert() (#421) — the banner also renders on the standalone auth pages, which have no layout.
+if (is_file(BASE_PATH . '/app/Views/partials/_inline_dialogs.php')) include BASE_PATH . '/app/Views/partials/_inline_dialogs.php';
 ?>
 <div id="cc-banner" class="cc-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
     <div class="cc-banner__inner">
@@ -356,7 +358,7 @@ body.theme-dark .cc-btn--reject { background: var(--text-default); }
             postAction(action).catch(function() {
                 // Restore on failure — the user should see the banner again.
                 banner.style.display = '';
-                alert('Could not save your cookie preferences. Please try again.');
+                moDialog.notice(null, 'Could not save your cookie preferences. Please try again.', true);
             });
         }
     });

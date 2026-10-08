@@ -57,7 +57,7 @@
             <form method="POST" action="/profile/2fa/recovery-codes" style="display:flex;gap:.6rem;align-items:flex-start">
                 <?= csrf_field() ?>
                 <input type="password" name="password" class="form-control" placeholder="Confirm password" required style="max-width:220px" aria-label="Confirm password">
-                <button type="submit" class="btn btn-secondary btn-sm" onclick="return confirm('Regenerate all recovery codes? Existing codes will stop working.')">Regenerate</button>
+                <button type="submit" class="btn btn-secondary btn-sm" data-mo-confirm="Regenerate all recovery codes? Existing codes will stop working.">Regenerate</button>
             </form>
         </div>
     </div>

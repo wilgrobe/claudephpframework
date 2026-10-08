@@ -112,7 +112,7 @@
                              form attribute on the button — keeps the save POST clean. -->
                         <button type="submit" form="del-<?= e($key) ?>" class="btn btn-sm btn-secondary"
                                 style="color:var(--color-danger);border-color:var(--color-danger-bg)" title="Delete this setting"
-                                onclick="return confirm('Delete <?= e($key) ?>?')">×</button>
+                                data-mo-confirm="Delete <?= e($key) ?>?">×</button>
                     </td>
                 </tr>
                 <?php endforeach; ?>

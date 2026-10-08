@@ -42,7 +42,7 @@
                                 <form method="POST"
                                       action="/admin/users/<?= (int) $user_detail['id'] ?>/resend-verification"
                                       style="margin:0"
-                                      onsubmit="return confirm('Send a fresh verification email to <?= e($user_detail['email']) ?>? This invalidates any previous link.')">
+                                      data-mo-confirm="Send a fresh verification email to <?= e($user_detail['email']) ?>? This invalidates any previous link.">
                                     <?= csrf_field() ?>
                                     <button type="submit" class="btn btn-xs btn-secondary"
                                             title="Issue a new 24-hour verification link and email it">
@@ -54,7 +54,7 @@
                                 <form method="POST"
                                       action="/admin/users/<?= (int) $user_detail['id'] ?>/mark-verified"
                                       style="margin:0"
-                                      onsubmit="return confirm('Mark <?= e($user_detail['email']) ?> as verified without an email round-trip? The action is audit-logged.')">
+                                      data-mo-confirm="Mark <?= e($user_detail['email']) ?> as verified without an email round-trip? The action is audit-logged.">
                                     <?= csrf_field() ?>
                                     <button type="submit" class="btn btn-xs btn-warning"
                                             title="Superadmin-only: bypass email click and stamp email_verified_at = NOW()">

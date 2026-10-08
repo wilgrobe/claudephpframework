@@ -16,7 +16,7 @@
     </div>
     <?php if ($hasLayout): ?>
     <form method="POST" action="/admin/pages/<?= (int) $page['id'] ?>/layout/delete"
-          onsubmit="return confirm('Remove this layout and all its block placements? The page will revert to rendering its body content.')">
+          data-mo-confirm="Remove this layout and all its block placements? The page will revert to rendering its body content.">
         <?= csrf_field() ?>
         <button type="submit" class="btn btn-sm btn-danger">Remove layout</button>
     </form>

@@ -40,6 +40,8 @@ $__wy_bar    = 'wysiwyg-toolbar-'  . $wy_scope;
 $__wy_edit   = 'wysiwyg-editor-'   . $wy_scope;
 $__wy_ta     = 'wysiwyg-textarea-' . $wy_scope;
 $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
+// The link button asks for its URL inline (#421) — never prompt().
+include BASE_PATH . '/app/Views/partials/_inline_dialogs.php';
 ?>
 
 <div style="display:flex;align-items:center;justify-content:<?= $wy_label !== null ? 'space-between' : 'flex-end' ?>;margin-bottom:.4rem">
@@ -138,12 +140,21 @@ $__wy_toggle = 'wysiwyg-toggle-'   . $wy_scope;
         } else if (btn.dataset.block) {
             document.execCommand('formatBlock', false, btn.dataset.block);
         } else if (btn.dataset.action === 'link') {
-            const url = prompt('Link URL (http/https only):');
-            if (url && /^https?:\/\//i.test(url)) {
-                document.execCommand('createLink', false, url);
-            } else if (url) {
-                alert('Only http:// and https:// links are allowed.');
-            }
+            // Asked inline, so the editor loses focus while the field is open: keep the selection and put it back.
+            const sel = window.getSelection();
+            const range = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+            moDialog.ask(btn, 'Link URL (http/https only):', '', (url) => {
+                editor.focus();
+                if (range) { sel.removeAllRanges(); sel.addRange(range); }
+                if (/^https?:\/\//i.test(url)) {
+                    document.execCommand('createLink', false, url);
+                    syncToTextarea();
+                    updateActiveButtons();
+                } else {
+                    moDialog.notice(null, 'Only http:// and https:// links are allowed.', true);
+                }
+            }, { type: 'url' });
+            return;
         } else if (btn.dataset.action === 'unlink') {
             document.execCommand('unlink', false, null);
         } else if (btn.dataset.action === 'clear') {

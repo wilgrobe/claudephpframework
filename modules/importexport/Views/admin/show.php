@@ -50,7 +50,7 @@
             <input type="hidden" name="dry_run" value="1">
             <button type="submit" class="btn btn-secondary">Dry run</button>
         </form>
-        <form method="post" action="/admin/import/<?= (int) $import['id'] ?>/run" onsubmit="return confirm('Import will modify the database. Continue?')">
+        <form method="post" action="/admin/import/<?= (int) $import['id'] ?>/run" data-mo-confirm="Import will modify the database. Continue?">
             <?= csrf_field() ?>
             <button type="submit" class="btn btn-primary">Run import</button>
         </form>

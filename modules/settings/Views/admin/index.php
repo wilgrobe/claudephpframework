@@ -113,7 +113,7 @@
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="key" value="<?= e($key) ?>">
                                 <input type="hidden" name="scope" value="<?= e($scope) ?>">
-                                <button class="btn btn-xs btn-danger" onclick="return confirm('Delete setting?')">×</button>
+                                <button class="btn btn-xs btn-danger" data-mo-confirm="Delete setting?">×</button>
                             </form>
                         </td>
                     </tr>

@@ -13,6 +13,8 @@
 // project_submodules; deliberately off for sites running an external
 // CMP that handles the banner UI themselves).
 include BASE_PATH . '/app/Views/partials/_cookie_banner.php';
+// Inline replacements for alert/confirm/prompt (#421): every page that uses the layout has moDialog + data-confirm.
+include BASE_PATH . '/app/Views/partials/_inline_dialogs.php';
 ?>
 
 <?php
@@ -64,12 +66,7 @@ document.querySelectorAll('.alert').forEach(a => {
     setTimeout(() => { a.style.opacity = '0'; a.style.transition = 'opacity .5s'; setTimeout(() => a.remove(), 500); }, 5000);
 });
 
-// Simple confirm dialogs for delete forms
-document.querySelectorAll('form[data-confirm]').forEach(form => {
-    form.addEventListener('submit', e => {
-        if (!confirm(form.dataset.confirm || 'Are you sure?')) e.preventDefault();
-    });
-});
+// <form data-confirm="…"> asks inline before it submits — handled by partials/_inline_dialogs.php (#421).
 
 // AJAX superadmin toggle — uses csrfPost from app.js
 document.querySelectorAll('.ajax-toggle').forEach(btn => {
@@ -78,7 +75,7 @@ document.querySelectorAll('.ajax-toggle').forEach(btn => {
             await csrfPost(this.closest('form').action, { enable: this.checked ? 1 : 0 });
         } catch (e) {
             this.checked = !this.checked;
-            alert('Action failed.');
+            moDialog.notice(this, 'Action failed.', true);
         }
     });
 });

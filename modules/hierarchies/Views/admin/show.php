@@ -78,7 +78,7 @@
                 echo '<input name="url"   placeholder="URL (optional)">';
                 echo '<button type="submit" class="btn btn-sm btn-primary">Add</button>';
                 echo '</form></details>';
-                echo '<form method="post" action="/admin/hierarchies/nodes/' . (int) $n['id'] . '/delete" style="display:inline" onsubmit="return confirm(\'Delete node and children?\')">';
+                echo '<form method="post" action="/admin/hierarchies/nodes/' . (int) $n['id'] . '/delete" style="display:inline" data-mo-confirm="Delete node and children?">';
                 echo csrf_field();
                 echo '<button type="submit" class="btn btn-sm btn-danger">×</button>';
                 echo '</form>';
@@ -271,8 +271,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             tree.classList.remove('hn-busy');
         }).catch(function (err) {
-            alert('Could not save that move: ' + (err.message || err) + '\nReloading to resync.');
-            location.reload();
+            // Said inline, then the reload — after a moment, so the message can be read.
+            moDialog.notice(null, 'Could not save that move: ' + (err.message || err) + '\nReloading to resync.', true);
+            setTimeout(function () { location.reload(); }, 2500);
         });
     }
 

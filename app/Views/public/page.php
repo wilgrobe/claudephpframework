@@ -498,6 +498,8 @@ $__mainStyleG = ' style="' . implode(';', $__mainStylePartsG) . '"';
 // standalone shell so the banner appears on public marketing pages too.
 // Gated on cookieconsent.banner-ui (off when external CMP handles UI).
 include BASE_PATH . '/app/Views/partials/_cookie_banner.php';
+// Inline replacements for alert/confirm/prompt (#421): moDialog + data-confirm on public pages too.
+include BASE_PATH . '/app/Views/partials/_inline_dialogs.php';
 ?>
 </body>
 </html>

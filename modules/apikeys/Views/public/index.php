@@ -42,7 +42,7 @@
             <td><?= $revoked ? '<span class="badge badge-gray">revoked</span>' : '<span class="badge badge-success">active</span>' ?></td>
             <td>
                 <?php if (!$revoked): ?>
-                <form method="post" action="/account/api-keys/<?= (int) $k['id'] ?>/revoke" style="display:inline" onsubmit="return confirm('Revoke key?')">
+                <form method="post" action="/account/api-keys/<?= (int) $k['id'] ?>/revoke" style="display:inline" data-mo-confirm="Revoke key?">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm btn-danger">Revoke</button>
                 </form>

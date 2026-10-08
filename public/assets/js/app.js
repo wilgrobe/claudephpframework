@@ -50,12 +50,18 @@ async function csrfPost(url, data = {}) {
     return safeJson(url, { method: 'POST', body: fd });
 }
 
+// An error said inline, beside the row (#421) — never alert(). moDialog comes from partials/_inline_dialogs.php,
+// which the layout footer includes; without it the message still reaches the console.
+function notifyInline(anchor, message) {
+    if (window.moDialog) moDialog.notice(anchor, message, true); else console.error(message);
+}
+
 /**
  * Dismiss a notification row via the × button.
  * Finds the enclosing .notif-row, POSTs to the delete endpoint, and
  * removes the row on success. The button is only rendered server-side
  * when the notification is deletable, so 409s are a rare race and get
- * surfaced as an alert rather than handled silently.
+ * surfaced inline beside the row rather than handled silently.
  *
  * @param {HTMLElement} btn  The clicked × button.
  */
@@ -71,12 +77,12 @@ async function dismissNotification(btn) {
         // Non-JSON response: typically a 419 CSRF rejection (plain text)
         // or a 500 HTML error page. Surface it rather than swallowing.
         console.error('dismissNotification network/parse failure', e);
-        alert('Could not dismiss this notification. Please reload the page and try again.');
+        notifyInline(row, 'Could not dismiss this notification. Please reload the page and try again.');
         return;
     }
     // JSON response with a structured error (e.g., 409 "action still pending").
     if (res && res.error) {
-        alert(res.error);
+        notifyInline(row, res.error);
         return;
     }
     row.remove();

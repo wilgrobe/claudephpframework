@@ -187,10 +187,10 @@ async function markRead(id, btn) {
         res = await csrfPost('/notifications/' + id + '/read');
     } catch (e) {
         console.error('markRead network/parse failure', e);
-        alert('Could not mark this notification as read. Please reload the page and try again.');
+        moDialog.notice(row, 'Could not mark this notification as read. Please reload the page and try again.', true);
         return;
     }
-    if (res && res.error) { alert(res.error); return; }
+    if (res && res.error) { moDialog.notice(row, res.error, true); return; }
 
     row.style.background  = '#fff';
     row.style.borderColor = 'var(--color-gray-200)';

@@ -52,7 +52,7 @@
                             <?= e($agoLabel) ?>
                         </td>
                         <td>
-                            <form method="post" action="/admin/sessions/<?= e((string) $s['id']) ?>/terminate" style="display:inline" onsubmit="return confirm('Terminate this session?')">
+                            <form method="post" action="/admin/sessions/<?= e((string) $s['id']) ?>/terminate" style="display:inline" data-mo-confirm="Terminate this session?">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-sm btn-danger">Terminate</button>
                             </form>
@@ -79,7 +79,7 @@
                     <strong><?= e((string) ($u['username'] ?: $u['email'])) ?></strong>
                     <div style="font-size:11px;color:var(--color-gray-400)"><?= (int) $u['session_count'] ?> session<?= (int) $u['session_count'] === 1 ? '' : 's' ?></div>
                 </a>
-                <form method="post" action="/admin/sessions/user/<?= (int) $u['id'] ?>/terminate-all" style="display:inline" onsubmit="return confirm('Kick ALL of <?= e((string) ($u['username'] ?: $u['email'])) ?>\'s sessions?')">
+                <form method="post" action="/admin/sessions/user/<?= (int) $u['id'] ?>/terminate-all" style="display:inline" data-mo-confirm="Kick ALL of <?= e((string) ($u['username'] ?: $u['email'])) ?>'s sessions?">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm btn-danger" title="Kick all">×</button>
                 </form>

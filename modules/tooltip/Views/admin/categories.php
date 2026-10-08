@@ -27,7 +27,7 @@
             <td><?= (int) $c['tooltip_count'] ?></td>
             <td><?= (int) $c['sort_order'] ?></td>
             <td style="text-align:right">
-                <form method="post" action="/admin/tooltips/categories/<?= (int) $c['id'] ?>/delete" onsubmit="return confirm('Delete category? Its tooltips are kept (detached).')"><?= csrf_field() ?>
+                <form method="post" action="/admin/tooltips/categories/<?= (int) $c['id'] ?>/delete" data-mo-confirm="Delete category? Its tooltips are kept (detached)."><?= csrf_field() ?>
                     <button class="btn btn-sm btn-danger">Delete</button>
                 </form>
             </td>

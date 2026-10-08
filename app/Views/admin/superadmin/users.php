@@ -31,7 +31,7 @@
                     <?php else: ?>
                     <form method="POST" action="/admin/superadmin/users/<?= $u['id'] ?>/superadmin" style="display:inline">
                         <?= csrf_field() ?><input type="hidden" name="enable" value="1">
-                        <button class="btn btn-xs btn-secondary" onclick="return confirm('Grant superadmin to this user?')">Grant SA</button>
+                        <button class="btn btn-xs btn-secondary" data-mo-confirm="Grant superadmin to this user?">Grant SA</button>
                     </form>
                     <?php endif; ?>
                 </td>

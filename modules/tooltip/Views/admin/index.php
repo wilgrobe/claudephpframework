@@ -50,7 +50,7 @@
             <td style="text-align:right;white-space:nowrap">
                 <a href="/admin/tooltips/<?= (int) $t['id'] ?>" class="btn btn-sm btn-secondary">Edit</a>
                 <?php if (!empty($overridesOn)): ?><a href="/admin/tooltips/<?= (int) $t['id'] ?>/overrides" class="btn btn-sm btn-secondary">Overrides</a><?php endif; ?>
-                <form method="post" action="/admin/tooltips/<?= (int) $t['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Delete this tooltip?')"><?= csrf_field() ?>
+                <form method="post" action="/admin/tooltips/<?= (int) $t['id'] ?>/delete" style="display:inline" data-mo-confirm="Delete this tooltip?"><?= csrf_field() ?>
                     <button class="btn btn-sm btn-danger">Delete</button>
                 </form>
             </td>

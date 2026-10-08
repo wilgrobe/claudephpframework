@@ -26,7 +26,7 @@
             <td style="font-size:12px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e(mb_substr((string) ($o['content_html'] ?? ''), 0, 80)) ?></td>
             <td><?= ((int) $o['is_active'] === 1) ? 'Yes' : 'No' ?></td>
             <td style="text-align:right">
-                <form method="post" action="/admin/tooltips/overrides/<?= (int) $o['id'] ?>/delete" onsubmit="return confirm('Remove this override?')"><?= csrf_field() ?>
+                <form method="post" action="/admin/tooltips/overrides/<?= (int) $o['id'] ?>/delete" data-mo-confirm="Remove this override?"><?= csrf_field() ?>
                     <button class="btn btn-sm btn-danger">Remove</button>
                 </form>
             </td>

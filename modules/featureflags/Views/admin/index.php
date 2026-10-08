@@ -30,7 +30,7 @@
             <td>
                 <a href="/admin/feature-flags/<?= e((string) $f['key']) ?>/edit" class="btn btn-sm btn-secondary">Edit</a>
                 <a href="/admin/feature-flags/<?= e((string) $f['key']) ?>/overrides" class="btn btn-sm btn-secondary">Overrides</a>
-                <form method="post" action="/admin/feature-flags/<?= e((string) $f['key']) ?>/delete" style="display:inline" onsubmit="return confirm('Delete flag + all overrides?')">
+                <form method="post" action="/admin/feature-flags/<?= e((string) $f['key']) ?>/delete" style="display:inline" data-mo-confirm="Delete flag + all overrides?">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>

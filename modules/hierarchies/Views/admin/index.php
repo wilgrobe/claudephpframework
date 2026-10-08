@@ -21,7 +21,7 @@
             <td><?= (int) $h['active'] ? '✓' : '—' ?></td>
             <td>
                 <a href="/admin/hierarchies/<?= e($h['slug']) ?>" class="btn btn-sm btn-secondary">Edit tree</a>
-                <form method="post" action="/admin/hierarchies/<?= (int) $h['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Delete hierarchy and all nodes?')">
+                <form method="post" action="/admin/hierarchies/<?= (int) $h['id'] ?>/delete" style="display:inline" data-mo-confirm="Delete hierarchy and all nodes?">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>

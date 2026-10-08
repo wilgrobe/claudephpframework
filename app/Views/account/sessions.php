@@ -37,7 +37,7 @@
         </div>
     </div>
     <form method="post" action="/account/sessions/<?= e((string) $s['id']) ?>/terminate"
-          onsubmit="return confirm('<?= !empty($s['is_current']) ? 'Sign out of this device? You will need to log in again.' : 'Sign out this device?' ?>')">
+          data-mo-confirm="<?= !empty($s['is_current']) ? 'Sign out of this device? You will need to log in again.' : 'Sign out this device?' ?>">
         <?= csrf_field() ?>
         <button type="submit" class="btn btn-sm btn-danger">
             <?= !empty($s['is_current']) ? 'Sign out' : 'Sign out' ?>
