@@ -10,7 +10,9 @@
  *   <form data-confirm="Delete this?">         the framework's hook: asks inline beside the submit button first
  *   <form|button|a data-mo-confirm="…">        the same, and for a click outside a form
  *   <form data-mo-ask="New name" data-mo-ask-field="name" data-mo-ask-value="Old">  asks for a value inline first
+ *        (add data-mo-ask-optional to let an empty answer through; Cancel always submits nothing)
  *   moDialog.confirm(anchorEl, 'Delete this?', onYes)        inline "Are you sure? [Yes] [Cancel]" beside anchorEl
+ *   await moDialog.confirmed('Delete this?')                 the same as a promise, beside the clicked control
  *   moDialog.notice(anchorEl|null, 'Saved.', isError)        an inline status line (near anchorEl, or a toast)
  *   moDialog.ask(anchorEl, 'Label', 'default', onValue, {type:'url', onCancel: fn})   an inline field + OK/Cancel
  *
@@ -66,6 +68,13 @@ $GLOBALS['__cpf_inline_dialogs'] = true;
     box.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); no.click(); } });
     place(anchor, box);
     no.focus();
+  }
+
+  // `if (!(await moDialog.confirmed('Delete?'))) return;` — the same question as a promise (true = Yes). With no
+  // anchor it sits beside the control whose click is being handled (read now, so call it before any await).
+  function confirmed(message, anchor) {
+    if (anchor === undefined) { var t = window.event && window.event.currentTarget; anchor = (t && t.nodeType === 1) ? t : null; }
+    return new Promise(function (res) { confirmInline(anchor, message, function () { res(true); }, { onNo: function () { res(false); } }); });
   }
 
   function notice(anchor, message, isError) {
@@ -129,7 +138,7 @@ $GLOBALS['__cpf_inline_dialogs'] = true;
       field.value = v;
       f._moOk = true;
       if (f.requestSubmit) { sub && sub.form === f ? f.requestSubmit(sub) : f.requestSubmit(); } else { f.submit(); }
-    });
+    }, { required: !f.hasAttribute('data-mo-ask-optional') });
   }, true);
   // <button|a data-mo-confirm="…"> outside a confirming form: the click asks; Yes repeats the click.
   document.addEventListener('click', function (e) {
@@ -140,6 +149,6 @@ $GLOBALS['__cpf_inline_dialogs'] = true;
     confirmInline(b, b.getAttribute('data-mo-confirm'), function () { b._moOk = true; b.click(); });
   }, true);
 
-  window.moDialog = { confirm: confirmInline, notice: notice, ask: ask };
+  window.moDialog = { confirm: confirmInline, confirmed: confirmed, notice: notice, ask: ask };
 })();
 </script>
