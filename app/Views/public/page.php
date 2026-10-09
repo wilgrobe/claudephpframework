@@ -138,7 +138,11 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     $__canonical_path = ($__home_slug !== '' && $__home_slug === $page['slug']) ? '/' : '/' . $page['slug'];
     ?>
     <?= \Core\SEO\SeoManager::metaTags([
-        'title'       => ($page['seo_title'] ?: $page['title']) . ' — ' . setting('site_name', 'App'),
+        // The site name is appended unless the SEO title already carries it ("About StoriesDen — …" became
+        // "About StoriesDen — … — StoriesDen").
+        'title'       => (static function (string $t, string $site): string {
+            return ($site !== '' && stripos($t, $site) !== false) ? $t : $t . ' — ' . $site;
+        })((string) ($page['seo_title'] ?: $page['title']), (string) setting('site_name', 'App')),
         'description' => $page['seo_description'] ?? '',
         'keywords'    => $page['seo_keywords'] ?? '',
         'canonical'   => config('app.url') . $__canonical_path,
