@@ -170,10 +170,16 @@
                 <div style="font-size:12.5px;color:var(--color-primary-dark);margin-top:.45rem;line-height:1.5">
                     Lines starting with <code>#</code> are comments. IPv4 + IPv6 supported.
                     Your current IP detected by the framework: <code><?= e((string) ($_SERVER['REMOTE_ADDR'] ?? '')) ?></code>
-                    <?php if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && empty($_ENV['TRUSTED_PROXY'])): ?>
-                        <br><strong>Note:</strong> X-Forwarded-For header detected but
-                        <code>TRUSTED_PROXY</code> isn't set in <code>.env</code> — the
-                        framework will use the direct connection IP, not the forwarded one.
+                    <?php if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && ($_SERVER['REMOTE_ADDR'] ?? '') === $_SERVER['HTTP_CF_CONNECTING_IP']): ?>
+                        <br>Behind Cloudflare: this is your real address, restored from Cloudflare's
+                        <code>CF-Connecting-IP</code> (only when the request really came from a Cloudflare edge).
+                        Leave <code>TRUSTED_PROXY</code> unset — it would trust <code>X-Forwarded-For</code>,
+                        which a visitor can write themselves.
+                    <?php elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && empty($_ENV['TRUSTED_PROXY'])): ?>
+                        <br><strong>Note:</strong> an X-Forwarded-For header arrived but <code>TRUSTED_PROXY</code>
+                        isn't set, so the direct connection IP is used. Set it only if EVERY request reaches this
+                        server through your own proxy and that proxy replaces the header — otherwise visitors can
+                        choose the address the site records for them.
                     <?php endif; ?>
                 </div>
             </div>

@@ -65,6 +65,15 @@
                     <span><?= e($r['name']) ?></span>
                     <?php if ($r['is_system']): ?><span class="badge badge-gray" style="font-size:10px">system</span><?php endif; ?>
                 </label>
+                <?php if (($r['slug'] ?? '') === 'super-admin'): ?>
+                <small class="form-help" style="margin:-.2rem 0 .2rem 1.6rem">
+                    Every permission an admin can have — but it does <strong>not</strong> make this person a
+                    superadmin (System Admin menu, superadmin-only pages):
+                    <?= auth()->isSuperadminModeOn()
+                        ? 'that is the “Grant Superadmin Access” switch below.'
+                        : 'only a superadmin, in superadmin mode, can grant that.' ?>
+                </small>
+                <?php endif; ?>
                 <?php endforeach; ?>
                 </div>
             </div>
@@ -103,6 +112,10 @@
                     <input type="checkbox" name="is_superadmin" value="1" <?= ($user_edit['is_superadmin'] ?? 0) ? 'checked' : '' ?>>
                     Grant Superadmin Access
                 </label>
+                <small class="form-help">
+                    This switch is what makes a superadmin. The “Super Admin” role above only gives permissions;
+                    giving the role does not tick this, and removing it does not untick it.
+                </small>
             </div>
             <?php endif; ?>
 
