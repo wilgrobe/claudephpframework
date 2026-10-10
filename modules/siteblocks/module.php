@@ -910,7 +910,8 @@ return new class extends ModuleProvider {
                         $h .= '<h2 style="text-align:center;font-size:1.5rem;font-weight:700;margin:0 0 1.5rem;color:var(--text-default)">'
                             . htmlspecialchars($heading, ENT_QUOTES | ENT_HTML5) . '</h2>';
                     }
-                    $h .= '<div style="display:grid;gap:.5rem;grid-template-columns:repeat(' . $cols . ',minmax(180px,1fr))">'
+                    // At most $cols columns, wrapping below 180px each (a fixed repeat could not shrink below ~564px — 2026-10-09).
+                    $h .= '<div style="display:grid;gap:.5rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(180px,calc((100% - ' . ($cols - 1) . ' * .5rem) / ' . $cols . '))),1fr))">'
                         . $tilesHtml . '</div></div>';
                     return $h;
                 }
@@ -1032,7 +1033,8 @@ return new class extends ModuleProvider {
                         $h .= '<h2 style="text-align:center;font-size:1.5rem;font-weight:700;margin:0 0 1.5rem;color:var(--text-default)">'
                             . htmlspecialchars($heading, ENT_QUOTES | ENT_HTML5) . '</h2>';
                     }
-                    $h .= '<div style="display:grid;gap:.5rem;grid-template-columns:repeat(' . $cols . ',minmax(140px,1fr))">'
+                    // At most $cols columns, wrapping below 140px each (five fixed 140px columns needed ~732px — 2026-10-09).
+                    $h .= '<div style="display:grid;gap:.5rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(140px,calc((100% - ' . ($cols - 1) . ' * .5rem) / ' . $cols . '))),1fr))">'
                         . $cellsHtml . '</div></div>';
                     return $h;
                 }
