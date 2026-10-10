@@ -781,7 +781,8 @@ return new class extends ModuleProvider {
                         $h .= '<h2 style="text-align:center;font-size:1.5rem;font-weight:700;margin:0 0 1.5rem;color:var(--text-default)">'
                             . htmlspecialchars($heading, ENT_QUOTES | ENT_HTML5) . '</h2>';
                     }
-                    $h .= '<div style="display:grid;gap:1rem;grid-template-columns:repeat(' . $colCount . ',minmax(220px,1fr))">'
+                    // At most $colCount columns, wrapping below 220px each (a fixed repeat could not shrink below ~700px — 2026-10-09).
+                    $h .= '<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(220px,calc((100% - ' . ($colCount - 1) . ' * 1rem) / ' . $colCount . '))),1fr))">'
                         . $cardsHtml . '</div></div>';
                     return $h;
                 }
@@ -854,7 +855,8 @@ return new class extends ModuleProvider {
                         $h .= '<div style="max-width:700px;margin:0 auto">' . $renderQuote($items[0], true) . '</div>';
                     } else {
                         $count = max(1, min(3, count($items)));
-                        $h .= '<div style="display:grid;gap:1rem;grid-template-columns:repeat(' . $count . ',minmax(220px,1fr))">';
+                        // At most $count columns, wrapping below 220px each (a fixed repeat could not shrink below ~700px — 2026-10-09).
+                        $h .= '<div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,max(220px,calc((100% - ' . ($count - 1) . ' * 1rem) / ' . $count . '))),1fr))">';
                         foreach ($items as $t) $h .= $renderQuote($t, false);
                         $h .= '</div>';
                     }

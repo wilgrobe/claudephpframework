@@ -157,7 +157,12 @@ body { padding-bottom: var(--site-footer-height); }
 @media (max-width: 640px) {
     .site-footer             { height: auto; min-height: var(--site-footer-height); padding: .35rem 1rem; flex-wrap: wrap; overflow: visible; }
     .site-footer__menu       { flex-wrap: wrap; }
-    body                     { padding-bottom: 5rem; }
+    /* Phones: a pinned bar of wrapped links grew to a quarter of the screen and covered content on every page
+       (2026-10-09). Below 640px it joins the normal flow at the end of the page instead, and the body
+       reservation goes with it. Desktop keeps the bar. */
+    .site-footer             { position: static; padding: .75rem 1rem 1rem; row-gap: .5rem; }
+    .site-footer__menu a     { padding: .3rem .5rem; }
+    body                     { padding-bottom: 0; }
 }
 
 /* The app's sidebar uses position: sticky + height: 100vh. With a fixed
@@ -169,7 +174,33 @@ body { padding-bottom: var(--site-footer-height); }
    the app's own sidebar — this partial is imported from guest-facing
    pages that don't have one. */
 .layout > .sidebar { height: calc(100vh - var(--site-footer-height)); }
+
+/* Fit or flow (2026-10-09). The pinned bar has a fixed height with overflow:hidden, so whatever did not fit on
+   one line was invisible — including legally required links such as "Do Not Sell or Share My Personal
+   Information". When the content does not fit, the script below puts the footer in normal flow at the end of
+   the page; when it fits, the pinned bar stays exactly as before. Without JS the old behaviour remains. */
+.site-footer.site-footer--flow { position: static; height: auto; overflow: visible; flex-wrap: wrap; padding: .75rem 1rem 1rem; row-gap: .5rem; }
+.site-footer.site-footer--flow .site-footer__menu { flex-wrap: wrap; }
+body.has-flow-footer { padding-bottom: 0; }
+body.has-flow-footer .layout > .sidebar { height: 100vh; }
 </style>
+<script>
+(function () {
+    var f = document.querySelector('.site-footer');
+    if (!f) return;
+    function fit() {
+        f.classList.remove('site-footer--flow');
+        document.body.classList.remove('has-flow-footer');
+        if (getComputedStyle(f).position !== 'fixed') return;
+        if (f.scrollWidth > f.clientWidth + 1 || f.scrollHeight > f.clientHeight + 1) {
+            f.classList.add('site-footer--flow');
+            document.body.classList.add('has-flow-footer');
+        }
+    }
+    fit();
+    var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 120); });
+})();
+</script>
 
 <?php
 // ── "Report an issue" widget ──────────────────────────────────────────────

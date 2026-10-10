@@ -27,9 +27,14 @@ final class SiteblocksGridShrinksTest extends TestCase
     {
         $features = array_fill(0, 3, ['icon' => '★', 'title' => 'T', 'description' => 'D']);
         $stats    = array_fill(0, 5, ['value' => '9', 'label' => 'L']);
+        $plans    = array_fill(0, 3, ['name' => 'P', 'price' => '9', 'features' => ['x']]);
+        $quotes   = array_fill(0, 3, ['quote' => 'Q', 'name' => 'N']);
         return [
             'feature_grid, 3 columns' => ['siteblocks.feature_grid', ['columns' => 3, 'features' => $features], 3, '180px'],
             'stats_showcase, 5 stats' => ['siteblocks.stats_showcase', ['stats' => $stats], 5, '140px'],
+            // Same defect, found on Hearth /about (2026-10-09): 220px minimums, ~700px for three.
+            'pricing_table, 3 plans'  => ['siteblocks.pricing_table', ['plans' => $plans], 3, '220px'],
+            'testimonials, 3 quotes'  => ['siteblocks.testimonials', ['layout' => 'grid', 'items' => $quotes], 3, '220px'],
         ];
     }
 
