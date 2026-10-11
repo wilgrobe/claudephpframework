@@ -33,7 +33,7 @@
         <input type="hidden" name="token" value="<?= e($token) ?>">
         <div class="form-row">
             <label for="password-input">New Password</label>
-            <input type="password" id="password-input" name="password" required minlength="12" autocomplete="new-password">
+            <input type="password" id="password-input" name="password" required minlength="<?= \Core\Auth\PasswordPolicy::minLength() ?>" autocomplete="new-password">
             <?php if (!empty($errors['password'])): ?><span class="error"><?= e($errors['password'][0]) ?></span><?php endif; ?>
             <?php include BASE_PATH . '/app/Views/layout/password_strength.php'; ?>
         </div>

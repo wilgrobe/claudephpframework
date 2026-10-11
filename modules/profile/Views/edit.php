@@ -88,7 +88,7 @@
                 <div class="form-group">
                     <label for="password-input">New Password</label>
                     <input type="password" id="password-input" name="password" class="form-control <?= !empty($errors['password'])?'is-invalid':'' ?>"
-                           minlength="12" autocomplete="new-password">
+                           minlength="<?= \Core\Auth\PasswordPolicy::minLength() ?>" autocomplete="new-password">
                     <?php if (!empty($errors['password'])): ?><span class="form-error"><?= e($errors['password'][0]) ?></span><?php endif; ?>
                     <?php include BASE_PATH . '/app/Views/layout/password_strength.php'; ?>
                 </div>

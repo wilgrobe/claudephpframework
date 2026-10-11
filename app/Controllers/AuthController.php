@@ -213,7 +213,10 @@ class AuthController
         return Response::view('auth.register', [
             'oauth_providers'   => $this->enabledOAuthProviders(),
             'csrf'              => csrf_token(),
-            'old'               => Session::flash('old'),
+            // ⚠ READ, NOT CONSUMED. The view refills each field with old(), which
+            // reads this same flash; taking it here left old() nothing, so every
+            // field came back blank after any error (StoriesDen, 2026-10-10).
+            'old'               => (array) ((Session::get('_flash', []) ?: [])['old'] ?? []),
             'errors'            => Session::flash('errors'),
             'invite_token'      => Session::get('invite_token'),
             'required_policies' => $requiredPolicies,
@@ -247,7 +250,7 @@ class AuthController
 
         if (!$captchaOk) {
             Session::flash('errors', ['email' => ['Please complete the security challenge and try again.']]);
-            Session::flash('old', $request->post());
+            Session::flash('old', self::withoutPasswords((array) $request->post()));
             return Response::redirect('/register');
         }
 
@@ -256,7 +259,7 @@ class AuthController
             'first_name'        => 'required|min:1|max:100',
             'last_name'         => 'required|min:1|max:100',
             'email'             => 'required|email|max:255',
-            'password'          => 'required|min:12|max:255|password_strength',
+            'password'          => 'required|' . \Core\Auth\PasswordPolicy::rule() . '|max:255|password_strength',
             'password_confirm'  => 'required|same:password',
         ]);
 
@@ -282,21 +285,21 @@ class AuthController
                     Session::flash('errors', ['username' => [
                         'Could not auto-generate a username — please choose one.'
                     ]]);
-                    Session::flash('old', $v->all());
+                    Session::flash('old', self::withoutPasswords($v->all()));
                     return Response::redirect('/register');
                 }
             } else {
                 $err = $usernameSvc->validate($userTypedName);
                 if ($err !== null) {
                     Session::flash('errors', ['username' => [$err]]);
-                    Session::flash('old', $v->all());
+                    Session::flash('old', self::withoutPasswords($v->all()));
                     return Response::redirect('/register');
                 }
                 if (!$usernameSvc->isAvailable($userTypedName)) {
                     Session::flash('errors', ['username' => [
                         'That username is already taken — pick a different one.'
                     ]]);
-                    Session::flash('old', $v->all());
+                    Session::flash('old', self::withoutPasswords($v->all()));
                     return Response::redirect('/register');
                 }
                 $finalUsername = strtolower($userTypedName);
@@ -309,7 +312,7 @@ class AuthController
             if ($existing) {
                 $v->validate([]); // force errors via manual add
                 Session::flash('errors', ['email' => ['That email address is already registered.']]);
-                Session::flash('old', $v->all());
+                Session::flash('old', self::withoutPasswords($v->all()));
                 return Response::redirect('/register');
             }
         }
@@ -377,7 +380,7 @@ class AuthController
 
         if ($v->fails()) {
             Session::flash('errors', $v->errors());
-            Session::flash('old', $v->all());
+            Session::flash('old', self::withoutPasswords($v->all()));
             return Response::redirect('/register');
         }
 
@@ -411,7 +414,7 @@ class AuthController
                 Session::flash('errors', ['accept_policy' => [
                     'Please confirm acceptance of: ' . implode(', ', $missing) . '.'
                 ]]);
-                Session::flash('old', $v->all());
+                Session::flash('old', self::withoutPasswords($v->all()));
                 return Response::redirect('/register');
             }
         }
@@ -822,7 +825,7 @@ class AuthController
         $v = new Validator($request->post());
         $v->validate([
             'token'            => 'required',
-            'password'         => 'required|min:12|password_strength',
+            'password'         => 'required|' . \Core\Auth\PasswordPolicy::rule() . '|password_strength',
             'password_confirm' => 'required|same:password',
         ]);
         if ($v->fails()) {
@@ -1189,5 +1192,17 @@ class AuthController
             'token'          => $accessToken,
             'email_verified' => $emailVerified,
         ];
+    }
+
+    /**
+     * A failed form's input, for refilling it — without any password. A
+     * password is never written back into a form, so it has no business
+     * sitting in the session waiting to be.
+     */
+    private static function withoutPasswords(array $input): array
+    {
+        unset($input['password'], $input['password_confirm'], $input['current_password'], $input['_token']);
+
+        return $input;
     }
 }

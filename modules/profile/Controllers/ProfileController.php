@@ -162,7 +162,7 @@ class ProfileController
 
             $v2 = new Validator($request->post());
             $v2->validate([
-                'password'         => 'min:12|password_strength',
+                'password'         => \Core\Auth\PasswordPolicy::rule() . '|password_strength',
                 'password_confirm' => 'same:password',
             ]);
             if ($v2->fails()) {

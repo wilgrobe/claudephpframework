@@ -108,7 +108,7 @@ class UserController
             'first_name' => 'required|min:1|max:100',
             'last_name'  => 'required|min:1|max:100',
             'email'      => 'required|email|max:255',
-            'password'   => 'required|min:12|password_strength',
+            'password'   => 'required|' . \Core\Auth\PasswordPolicy::rule() . '|password_strength',
         ]);
 
         if (!$v->fails()) {

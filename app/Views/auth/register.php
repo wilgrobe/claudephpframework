@@ -124,8 +124,8 @@
         </div>
 
         <div class="form-row">
-            <label for="password-input">Password <span class="text-muted" style="font-weight:400">(min 12 characters)</span></label>
-            <input type="password" id="password-input" name="password" required autocomplete="new-password" minlength="12">
+            <label for="password-input">Password <span class="text-muted" style="font-weight:400">(min <?= \Core\Auth\PasswordPolicy::minLength() ?> characters)</span></label>
+            <input type="password" id="password-input" name="password" required autocomplete="new-password" minlength="<?= \Core\Auth\PasswordPolicy::minLength() ?>">
             <?php if (!empty($errs['password'])): ?><span class="error"><?= e($errs['password'][0]) ?></span><?php endif; ?>
             <?php include BASE_PATH . '/app/Views/layout/password_strength.php'; ?>
         </div>
@@ -163,7 +163,7 @@
                 $verId     = (int) $rp['version_id'];
             ?>
             <label>
-                <input type="checkbox" name="accept_policy[<?= $verId ?>]" value="1" required>
+                <input type="checkbox" name="accept_policy[<?= $verId ?>]" value="1" required<?= !empty(((array) (($old ?? [])['accept_policy'] ?? []))[$verId] ?? null) ? ' checked' : '' ?>>
                 <span>I agree to the
                     <a href="/policies/<?= $kindSlug ?>" target="_blank" rel="noopener"><?= $kindLabel ?></a>
                     (v<?= htmlspecialchars((string) $rp['version_label'], ENT_QUOTES) ?>).

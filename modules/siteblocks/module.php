@@ -554,7 +554,7 @@ return new class extends ModuleProvider {
                          . '</div>'
                          . '<div class="form-group" style="margin-bottom:.75rem">'
                          .   '<label for="password" style="display:block;font-weight:500;font-size:13px;margin-bottom:.25rem">Password</label>'
-                         .   '<input type="password" name="password" class="form-control" required autocomplete="new-password" minlength="12" id="password">'
+                         .   '<input type="password" name="password" class="form-control" required autocomplete="new-password" minlength="' . \Core\Auth\PasswordPolicy::minLength() . '" id="password">'
                          . '</div>'
                          . '<div class="form-group" style="margin-bottom:1rem">'
                          .   '<label for="password_confirm" style="display:block;font-weight:500;font-size:13px;margin-bottom:.25rem">Confirm password</label>'

@@ -45,7 +45,7 @@
             <div class="form-group">
                 <label for="password">Password <?= $user_edit ? '(leave blank to keep current)' : '*' ?></label>
                 <input type="password" name="password" class="form-control <?= !empty($errors['password'])?'is-invalid':''?>"
-                       <?= !$user_edit ? 'required' : '' ?> minlength="8" autocomplete="new-password" id="password">
+                       <?= !$user_edit ? 'required' : '' ?> minlength="<?= \Core\Auth\PasswordPolicy::minLength() ?>" autocomplete="new-password" id="password">
                 <?php if (!empty($errors['password'])): ?><span class="form-error"><?= e($errors['password'][0]) ?></span><?php endif; ?>
             </div>
 

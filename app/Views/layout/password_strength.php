@@ -15,7 +15,7 @@
     </div>
     <div class="password-strength-label" id="pw-label">Enter a password</div>
     <ul class="password-requirements" id="pw-reqs">
-        <li id="req-len">At least 12 characters</li>
+        <li id="req-len">At least <?= \Core\Auth\PasswordPolicy::minLength() ?> characters</li>
         <li id="req-upper">Uppercase letter</li>
         <li id="req-lower">Lowercase letter</li>
         <li id="req-digit">Number</li>
@@ -32,7 +32,7 @@
     const fill  = document.getElementById('pw-fill');
     const label = document.getElementById('pw-label');
     const checks = {
-        len    : { el: document.getElementById('req-len'),     fn: v => v.length >= 12 },
+        len    : { el: document.getElementById('req-len'),     fn: v => v.length >= <?= \Core\Auth\PasswordPolicy::minLength() ?> },
         upper  : { el: document.getElementById('req-upper'),   fn: v => /[A-Z]/.test(v) },
         lower  : { el: document.getElementById('req-lower'),   fn: v => /[a-z]/.test(v) },
         digit  : { el: document.getElementById('req-digit'),   fn: v => /[0-9]/.test(v) },
