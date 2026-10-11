@@ -27,7 +27,9 @@ final class RequestMethodCallsResolveTest extends TestCase
     public function test_every_request_method_call_resolves(): void
     {
         $base = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 3);
-        require_once $base . '/core/Http/Request.php';
+        // Only when not already loaded: in a parity layout the class comes from another path, and a
+        // second declaration is a fatal that stops the whole suite (2026-10-10, build 239).
+        if (!class_exists(\Core\Http\Request::class)) { require_once $base . '/core/Http/Request.php'; }
         $known = array_map('strtolower', get_class_methods(\Core\Http\Request::class));
 
         $missing = [];
@@ -56,7 +58,9 @@ final class RequestMethodCallsResolveTest extends TestCase
     public function test_server_reads_what_was_captured(): void
     {
         $base = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 3);
-        require_once $base . '/core/Http/Request.php';
+        // Only when not already loaded: in a parity layout the class comes from another path, and a
+        // second declaration is a fatal that stops the whole suite (2026-10-10, build 239).
+        if (!class_exists(\Core\Http\Request::class)) { require_once $base . '/core/Http/Request.php'; }
         $saved = $_SERVER;
         try {
             $_SERVER['HTTP_REFERER'] = 'https://example.test/back';

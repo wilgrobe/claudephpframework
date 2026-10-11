@@ -26,7 +26,7 @@ final class SignupFormTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        require_once self::base() . '/core/Auth/PasswordPolicy.php';
+        if (!class_exists(PasswordPolicy::class)) { require_once self::base() . '/core/Auth/PasswordPolicy.php'; }
     }
 
     protected function tearDown(): void
