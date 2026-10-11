@@ -194,6 +194,25 @@ class Request
     }
 
     /**
+     * A raw $_SERVER value as captured with this request, or $default.
+     *
+     * Called by the cookie-consent save and withdraw (HTTP_REFERER), the
+     * policy-acceptance middleware (QUERY_STRING), the developer portal and the
+     * webhooks gateway (REQUEST_URI / HTTP_REFERER) — and missing, so each of
+     * those was a fatal the moment it ran (found 2026-10-10: "Save my choices"
+     * on the cookie banner answered 500 on StoriesDen). For a request HEADER
+     * prefer header(), which also knows the two unprefixed entity headers.
+     */
+    public function server(?string $key = null, mixed $default = null): mixed
+    {
+        if ($key === null) {
+            return $this->server;
+        }
+
+        return $this->server[$key] ?? $default;
+    }
+
+    /**
      * A request header by name, or null when it was not sent.
      *
      * Nearly every header arrives as HTTP_<NAME>. The exceptions are the two
