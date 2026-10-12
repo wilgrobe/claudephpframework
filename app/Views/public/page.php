@@ -145,6 +145,7 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
         })((string) ($page['seo_title'] ?: $page['title']), (string) setting('site_name', 'App')),
         'description' => $page['seo_description'] ?? '',
         'keywords'    => $page['seo_keywords'] ?? '',
+        'image'       => \Core\SEO\SeoManager::pageImage($page),
         'canonical'   => config('app.url') . $__canonical_path,
     ]) ?>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

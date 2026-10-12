@@ -122,6 +122,41 @@ class SeoManager
     }
 
     /**
+     * The social-share image for a page, as an absolute URL, or null.
+     *
+     * The page's own `og_image_url` wins; otherwise the guest home page's, so a
+     * site that set one card gets it on every page instead of a blank preview.
+     * `pages.og_image_url` was written (Builder step 7 "OG card", the seeders)
+     * long before anything read it, so every share showed no picture.
+     */
+    public static function pageImage(?array $page = null): ?string
+    {
+        $url = trim((string) ($page['og_image_url'] ?? ''));
+        if ($url === '') {
+            try {
+                $home = function_exists('setting') ? (string) setting('guest_home_page_slug', '') : '';
+                if ($home !== '') {
+                    $url = trim((string) Database::getInstance()->fetchColumn(
+                        "SELECT og_image_url FROM pages WHERE slug = ? AND status = 'published' LIMIT 1",
+                        [$home]
+                    ));
+                }
+            } catch (\Throwable $e) {
+                return null; // a missing column or table must never break a page render
+            }
+        }
+        if ($url === '') {
+            return null;
+        }
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+        // Crawlers ignore relative og:image values.
+        $base = function_exists('config') ? rtrim((string) config('app.url', ''), '/') : '';
+        return $base === '' ? null : $base . '/' . ltrim($url, '/');
+    }
+
+    /**
      * Generate a URL-safe slug from a title.
      */
     public static function slugify(string $title): string

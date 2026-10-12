@@ -19,7 +19,7 @@
         'title'       => ($seoTitle ?? $pageTitle ?? 'Dashboard') . ' — ' . setting('site_name', 'App'),
         'description' => $seoDescription ?? setting('site_tagline', ''),
         'keywords'    => $seoKeywords ?? null,
-        'image'       => $seoOgImage ?? null,
+        'image'       => $seoOgImage ?? \Core\SEO\SeoManager::pageImage(),
         'canonical'   => $canonical ?? null,
     ]) ?>
     <link rel="stylesheet" href="<?= e(asset('/assets/css/app.css')) ?>">
