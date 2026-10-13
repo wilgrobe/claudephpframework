@@ -289,6 +289,15 @@
             background: rgba(0,0,0,.35); z-index: 40; }
     }
 
+        /* The topbar's right side (bell, theme switch, avatar + FULL NAME) was 452px
+           wide on a 359px screen, so every page scrolled sideways on a phone
+           (Christy, 2026-10-12). Below 600px the name goes; the avatar opens the
+           same menu. */
+    @media (max-width: 600px) {
+        .user-menu-name { display: none; }
+        .topbar-left, .topbar-right { min-width: 0; }
+    }
+
     /* ── Topbar layout variant ─────────────────────────────────────────
        Chosen via /admin/settings/appearance. When active, the sidebar is
        hidden and the main navigation runs horizontally across the top.
@@ -884,7 +893,7 @@ $__renderBrand = static function (): string {
                         <?php else: ?>
                             <span class="avatar"><?= e(strtoupper(substr($u['first_name'] ?? 'U', 0, 1))) ?></span>
                         <?php endif; ?>
-                        <span><?= e(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?></span>
+                        <span class="user-menu-name"><?= e(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?></span>
                         ▾
                     </button>
                     <div class="dropdown-menu">
