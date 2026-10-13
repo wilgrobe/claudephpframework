@@ -115,7 +115,7 @@ class Response
             $reg = \Core\Container\Container::global()->get(\Core\Module\ModuleRegistry::class);
             $extra = '';
             foreach ($reg->all() as $prov) {
-                if (!$prov instanceof \Core\Module\ModuleProvider) continue;
+                if (!$prov instanceof \Core\Module\ModuleProvider || !method_exists($prov, 'policySections')) continue;
                 $secs = $prov->policySections();
                 if (!is_array($secs) || empty($secs[$kind]['body_html'])) continue;
                 $h = (string) ($secs[$kind]['heading'] ?? '');

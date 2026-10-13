@@ -284,6 +284,17 @@ abstract class ModuleProvider
     public function settingsPanels(): array { return []; }
 
     /**
+     * Clauses this module contributes to the site's policy pages, keyed by policy
+     * kind ('privacy', 'tos'), shown only where the module is installed — e.g. the
+     * analytics module's "what we collect" clause. ['heading' => …, 'body_html' => …].
+     * Without this default the first module that did not define it threw, and the
+     * callers' catch dropped EVERY module's clauses on every framework-core site.
+     *
+     * @return array<string, array{heading:string, body_html:string}>
+     */
+    public function policySections(): array { return []; }
+
+    /**
      * Sitemap entries contributed by this module. Each entry is an
      * associative array consumed by App\Controllers\SitemapController:
      *
