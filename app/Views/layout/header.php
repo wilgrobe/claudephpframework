@@ -283,6 +283,7 @@
         .sidebar { display: none; }
         .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
         .sidebar-toggle { display: inline-flex; }
+        .layout--topbar .topbar-nav { display: none; }
         .layout.nav-open > .sidebar { display: block; position: fixed; top: var(--wsheader-h, 0px); left: 0; bottom: 0;
             height: auto; width: min(82vw, 300px); z-index: 45; overflow-y: auto; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
         .layout.nav-open::after { content: ''; position: fixed; left: 0; right: 0; bottom: 0; top: var(--wsheader-h, 0px);
@@ -719,7 +720,9 @@ $__renderBrand = static function (): string {
     <div class="main">
         <header class="topbar">
             <div class="topbar-left">
-                <?php if ($__layout_orient !== 'topbar'): ?>
+                <?php /* ☰ in BOTH layouts — CSS shows it only on phones. In topbar layout the
+                         inline nav was squeezed into a scrolling box on a phone and pushed the
+                         page 70px wider than the screen (Christy, 2026-10-12). */ if (true): ?>
                 <button type="button" class="sidebar-toggle" aria-label="Menu" aria-expanded="false"
                         onclick="var l=this.closest('.layout');var o=l.classList.toggle('nav-open');this.setAttribute('aria-expanded',o?'true':'false');">&#9776;</button>
                 <script>
