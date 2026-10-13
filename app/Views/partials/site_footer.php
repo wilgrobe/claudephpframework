@@ -173,7 +173,7 @@ body { padding-bottom: var(--site-footer-height); }
    footer's top, eliminating that gap. Scoped selector so we only touch
    the app's own sidebar — this partial is imported from guest-facing
    pages that don't have one. */
-.layout > .sidebar { height: calc(100vh - var(--site-footer-height)); }
+.layout > .sidebar { height: calc(100vh - var(--wsheader-h, 0px) - var(--site-footer-height)); } /* minus the fixed workspace header too: without it the sticky sidebar sat up to 60px high, under the header, hiding the first rail item ("PLAN") on short pages — Christy, 2026-10-12 */
 
 /* Fit or flow (2026-10-09). The pinned bar has a fixed height with overflow:hidden, so whatever did not fit on
    one line was invisible — including legally required links such as "Do Not Sell or Share My Personal
@@ -182,7 +182,7 @@ body { padding-bottom: var(--site-footer-height); }
 .site-footer.site-footer--flow { position: static; height: auto; overflow: visible; flex-wrap: wrap; padding: .75rem 1rem 1rem; row-gap: .5rem; }
 .site-footer.site-footer--flow .site-footer__menu { flex-wrap: wrap; }
 body.has-flow-footer { padding-bottom: 0; }
-body.has-flow-footer .layout > .sidebar { height: 100vh; }
+body.has-flow-footer .layout > .sidebar { height: calc(100vh - var(--wsheader-h, 0px)); }
 </style>
 <script>
 (function () {

@@ -166,16 +166,19 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 /* Content-area links (article bodies, rendered markdown, composer blocks)
    get a richer treatment: visible underline + teal "visited" so readers can
    tell what they've already opened. Chrome/nav links above stay clean. */
-.page-body a, .prose a, .builder-block a, .markdown-body a {
+/* :not(.btn) — a button-styled link inside a block kept the underline and, once visited,
+   turned var(--color-secondary) (sky blue) on the orange button: "Continue writing" on the
+   StoriesDen dashboard was hard to read (Christy, 2026-10-12). Buttons keep their own colours. */
+.page-body a:not(.btn), .prose a:not(.btn), .builder-block a:not(.btn), .markdown-body a:not(.btn) {
     text-decoration: underline;
     text-decoration-color: color-mix(in srgb, var(--color-primary) 38%, transparent);
     text-underline-offset: 2px;
     transition: color .12s, text-decoration-color .12s;
 }
-.page-body a:hover, .prose a:hover, .builder-block a:hover, .markdown-body a:hover {
+.page-body a:not(.btn):hover, .prose a:not(.btn):hover, .builder-block a:not(.btn):hover, .markdown-body a:not(.btn):hover {
     color: var(--color-primary-dark); text-decoration-color: currentColor;
 }
-.page-body a:visited, .prose a:visited, .builder-block a:visited, .markdown-body a:visited {
+.page-body a:not(.btn):visited, .prose a:not(.btn):visited, .builder-block a:not(.btn):visited, .markdown-body a:not(.btn):visited {
     color: var(--color-secondary);
 }
 img { max-width: 100%; height: auto; }

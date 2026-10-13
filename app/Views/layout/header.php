@@ -271,9 +271,22 @@
     .pagination .current { background: var(--color-primary); color: var(--accent-contrast); border-color: var(--color-primary); }
 
     /* Responsive */
+    /* ☰ opens the sidebar on phones. Below 768px the sidebar is hidden, and in the
+       SIDEBAR layout the topbar carries no nav, so a phone had NO way to reach the
+       main menu or a workspace's stage rail (Christy, 2026-10-12: no way to get to
+       Character Forge). The button toggles .nav-open on .layout; the sidebar then
+       slides over the page under the fixed header. */
+    .sidebar-toggle { display: none; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem;
+        border: 1px solid var(--border-default); border-radius: 8px; background: transparent; color: inherit;
+        font-size: 1.25rem; line-height: 1; cursor: pointer; flex: 0 0 auto; }
     @media (max-width: 768px) {
         .sidebar { display: none; }
         .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        .sidebar-toggle { display: inline-flex; }
+        .layout.nav-open > .sidebar { display: block; position: fixed; top: var(--wsheader-h, 0px); left: 0; bottom: 0;
+            height: auto; width: min(82vw, 300px); z-index: 45; overflow-y: auto; box-shadow: 0 12px 32px rgba(0,0,0,.28); }
+        .layout.nav-open::after { content: ''; position: fixed; left: 0; right: 0; bottom: 0; top: var(--wsheader-h, 0px);
+            background: rgba(0,0,0,.35); z-index: 40; }
     }
 
     /* ── Topbar layout variant ─────────────────────────────────────────
@@ -694,6 +707,22 @@ $__renderBrand = static function (): string {
     <div class="main">
         <header class="topbar">
             <div class="topbar-left">
+                <?php if ($__layout_orient !== 'topbar'): ?>
+                <button type="button" class="sidebar-toggle" aria-label="Menu" aria-expanded="false"
+                        onclick="var l=this.closest('.layout');var o=l.classList.toggle('nav-open');this.setAttribute('aria-expanded',o?'true':'false');">&#9776;</button>
+                <script>
+                // Close the phone menu on a tap outside it, or on a link inside it.
+                document.addEventListener('click', function (e) {
+                    var l = document.querySelector('.layout.nav-open');
+                    if (!l || e.target.closest('.sidebar-toggle')) return;
+                    var s = l.querySelector(':scope > .sidebar');
+                    if (s && s.contains(e.target) && !e.target.closest('a')) return;
+                    l.classList.remove('nav-open');
+                    var b = l.querySelector('.sidebar-toggle');
+                    if (b) b.setAttribute('aria-expanded', 'false');
+                });
+                </script>
+                <?php endif; ?>
                 <?php if ($__layout_orient === 'topbar'): ?>
                     <?php if ($__hdrShowLogo): ?>
                     <a href="/dashboard" class="topbar-logo"><?= $__renderBrand() ?></a>
