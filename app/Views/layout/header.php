@@ -14,6 +14,13 @@
     // Resolves the BrandingProvider extension point — framework default reads
     // neutral branding.* settings; a host can bind a richer provider.
     echo branding_head();
+    // Web app manifest, when the site ships one at public/manifest.webmanifest.
+    // Without it a phone's "Add to Home screen" starts the app on WHATEVER URL
+    // was open — StoriesDen once reopened on a JSON endpoint (2026-10-12). The
+    // manifest's start_url fixes where it opens.
+    if (is_file(BASE_PATH . '/public/manifest.webmanifest')) {
+        echo '<link rel="manifest" href="/manifest.webmanifest">';
+    }
     ?>
     <?= \Core\SEO\SeoManager::metaTags([
         'title'       => ($seoTitle ?? $pageTitle ?? 'Dashboard') . ' — ' . setting('site_name', 'App'),

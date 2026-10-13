@@ -160,6 +160,10 @@ $__forcePublicShell = isset($_GET['_theme_preview']) && $_GET['_theme_preview'] 
     // BrandingProvider extension point. Placed after renderOverrideStyle so
     // custom CSS wins on cascade; framework default reads neutral branding.*.
     echo branding_head();
+    // Web app manifest, when the site ships one (see layout/header.php).
+    if (is_file(BASE_PATH . '/public/manifest.webmanifest')) {
+        echo '<link rel="manifest" href="/manifest.webmanifest">';
+    }
     // Phase 43.32 — per-page font overrides win over the site-wide
     // branding-provider output via cascade order (this <style> comes
     // after it). Each slot has an optional URL (loaded via <link>)
