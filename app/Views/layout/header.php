@@ -296,6 +296,9 @@
     @media (max-width: 600px) {
         .user-menu-name { display: none; }
         .topbar-left, .topbar-right { min-width: 0; }
+        /* the per-site header padding (72px a side on StoriesDen) alone ate 144px of a
+           phone's width; it is emitted after this sheet, hence !important */
+        .topbar { padding-left: .75rem !important; padding-right: .75rem !important; }
     }
 
     /* ── Topbar layout variant ─────────────────────────────────────────
