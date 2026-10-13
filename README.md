@@ -164,6 +164,11 @@ php artisan cleanup              # purge stale sessions / tokens / nonces
 - [`SECURITY.md`](SECURITY.md) — Security policy and vulnerability reporting
 - [`CHANGELOG.md`](CHANGELOG.md) — Release history
 
+## Built with ClaudePHPFramework
+
+- [StoriesDen](https://storiesden.com) — writing, formatting and publishing for indie authors.
+- [MarketOtter](https://marketotter.com) — marketing planning and automation.
+
 ## Contributing
 
 PRs welcome for bugs and core-tier features. New modules with a generic
