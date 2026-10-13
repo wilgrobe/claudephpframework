@@ -477,6 +477,13 @@ class AuthController
             }
         }
 
+        // Tell modules an account now exists (e.g. analytics writes down where the
+        // visit that led to it began). Listeners run inline and are error-isolated by
+        // the bus, so none of them can break a registration.
+        if (class_exists(\Core\Events\EventBus::class)) {
+            \Core\Events\EventBus::emit('auth.user.registered', ['user_id' => (int) $userId]);
+        }
+
         // Assign viewer role by default
         $viewerRole = $this->db->fetchOne("SELECT id FROM roles WHERE slug = 'viewer'");
         if ($viewerRole) {

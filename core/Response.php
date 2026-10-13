@@ -80,6 +80,15 @@ class Response
         if ($pos === false) return $body;
         if (!function_exists('module_active') || !module_active('analytics')) return $body;
         if (function_exists('setting') && setting('analytics_tracking_enabled', true) === false) return $body;
+        // Cookie banner: the tracker keeps an anonymous id in the browser, so it only
+        // loads once the visitor has allowed "Analytics" — or when the site runs no
+        // banner at all. (Sign-up attribution is server-side and does not need it.)
+        if (class_exists(\Modules\Cookieconsent\Services\CookieConsentService::class) && module_active('cookieconsent')) {
+            try {
+                $cc = new \Modules\Cookieconsent\Services\CookieConsentService();
+                if ($cc->isEnabled() && !$cc->isAllowed('analytics')) return $body;
+            } catch (\Throwable) { return $body; }
+        }
         return substr($body, 0, $pos)
              . '<script src="/analytics/sdk.js" defer></script>'
              . substr($body, $pos);
