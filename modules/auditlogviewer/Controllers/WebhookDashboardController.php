@@ -172,9 +172,13 @@ final class WebhookDashboardController
             if (empty($payload)) {
                 throw new \RuntimeException('Stored payload is empty or unparseable.');
             }
-            // applyWebhookEvent expects the full Stripe event object.
+            // applyWebhookEvent expects the full Stripe event object. The second
+            // argument (force) makes it run again although the event is already
+            // recorded — the service skips Stripe's own redeliveries, and a
+            // replay is exactly a redelivery the admin asked for. Positional,
+            // so an older subscriptions module simply ignores it.
             if (class_exists(\Modules\Subscriptions\Services\SubscriptionService::class)) {
-                (new \Modules\Subscriptions\Services\SubscriptionService())->applyWebhookEvent($payload);
+                (new \Modules\Subscriptions\Services\SubscriptionService())->applyWebhookEvent($payload, true);
             } else {
                 throw new \RuntimeException('SubscriptionService not loaded — replay requires the subscriptions module to be in the runtime allowlist.');
             }
