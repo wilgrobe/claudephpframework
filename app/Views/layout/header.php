@@ -300,6 +300,8 @@
         /* the per-site header padding (72px a side on StoriesDen) alone ate 144px of a
            phone's width; it is emitted after this sheet, hence !important */
         .topbar { padding-left: .75rem !important; padding-right: .75rem !important; }
+        .topbar-right { gap: .45rem; }
+        .user-menu-toggle { padding-left: .2rem; padding-right: .2rem; }
     }
 
     /* ── Topbar layout variant ─────────────────────────────────────────
