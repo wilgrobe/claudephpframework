@@ -88,6 +88,21 @@ $statusBadge = [
                         </span>
                     </label>
                 </div>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;">
+                    <label style="display:block;flex:1;min-width:220px;">
+                        <span style="display:block;font-weight:600;margin-bottom:.25rem;">Example for “What were you trying to do?”</span>
+                        <input type="text" name="intent_example" class="form-control" style="font-size:13px;width:100%;" maxlength="160"
+                               value="<?= $e($w['intentExample'] ?? '') ?>" placeholder="<?= $e(\Modules\Feedback\Services\IssueWidget::DEFAULT_INTENT_EXAMPLE) ?>">
+                    </label>
+                    <label style="display:block;flex:1;min-width:220px;">
+                        <span style="display:block;font-weight:600;margin-bottom:.25rem;">Example for “What happened instead?”</span>
+                        <input type="text" name="outcome_example" class="form-control" style="font-size:13px;width:100%;" maxlength="160"
+                               value="<?= $e($w['outcomeExample'] ?? '') ?>" placeholder="<?= $e(\Modules\Feedback\Services\IssueWidget::DEFAULT_OUTCOME_EXAMPLE) ?>">
+                        <span style="display:block;font-size:12px;color:#667085;margin-top:.25rem;">
+                            Shown faintly inside the empty fields. Use a task from this site; blank uses the generic example.
+                        </span>
+                    </label>
+                </div>
 
                 <button class="btn btn-primary btn-sm" type="submit">Save settings</button>
             </form>

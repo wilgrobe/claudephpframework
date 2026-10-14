@@ -91,6 +91,10 @@ class FeedbackAdminController
                 // address, and the field must show what is STORED so "unset"
                 // is distinguishable from "set to the same thing".
                 'notifyAbuse' => (string) setting('builder.feedback.notify_abuse_email', ''),
+                // Raw too: blank means "use the generic default", which the
+                // field shows as its own placeholder.
+                'intentExample'  => (string) setting('builder.feedback.widget.intent_example', ''),
+                'outcomeExample' => (string) setting('builder.feedback.widget.outcome_example', ''),
             ],
         ]);
     }
@@ -141,6 +145,8 @@ class FeedbackAdminController
             $svc->set('builder.feedback.notify_email',    $notify, 'site');
             $svc->set('builder.feedback.notify_abuse_email', $notifyAbuse, 'site');
             $svc->set('builder.feedback.notify_sms',      $notifySms, 'site');
+            $svc->set('builder.feedback.widget.intent_example',  mb_substr(trim((string) ($request->post('intent_example') ?? '')), 0, 160), 'site');
+            $svc->set('builder.feedback.widget.outcome_example', mb_substr(trim((string) ($request->post('outcome_example') ?? '')), 0, 160), 'site');
             Session::flash('success', 'Issue-reporting settings saved.');
         } catch (\Throwable $e) {
             Session::flash('error', 'Could not save: ' . $e->getMessage());

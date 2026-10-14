@@ -24,9 +24,34 @@ use Core\Auth\Auth;
  *   builder.feedback.widget.launcher  'both' | 'bubble' | 'footer'      (default 'both')
  *   builder.feedback.notify_email     where new reports are emailed     (default: site email)
  *   builder.feedback.notify_sms      mobile texted on a new report     (default: off)
+ *   builder.feedback.widget.intent_example   placeholder under "What were you trying to do?"
+ *   builder.feedback.widget.outcome_example  placeholder under "What happened instead?"
+ *                                     (defaults: neutral examples that fit any site)
  */
 final class IssueWidget
 {
+    /**
+     * The example text in the two form fields. They used to be hard-coded with
+     * MarketOtter's own tasks ("Mark this week's LinkedIn post as posted"), so
+     * every other site — StoriesDen first, 2026-10-14 — asked its users about
+     * LinkedIn posts. A good example is specific to the site, so it is a
+     * setting; the default is deliberately generic.
+     */
+    public const DEFAULT_INTENT_EXAMPLE  = 'e.g. Save my changes to this page';
+    public const DEFAULT_OUTCOME_EXAMPLE = 'e.g. Nothing happened when I clicked Save';
+
+    public static function intentExample(): string
+    {
+        $v = function_exists('setting') ? trim((string) setting('builder.feedback.widget.intent_example', '')) : '';
+        return $v !== '' ? $v : self::DEFAULT_INTENT_EXAMPLE;
+    }
+
+    public static function outcomeExample(): string
+    {
+        $v = function_exists('setting') ? trim((string) setting('builder.feedback.widget.outcome_example', '')) : '';
+        return $v !== '' ? $v : self::DEFAULT_OUTCOME_EXAMPLE;
+    }
+
     /** Is the issue-report widget switched on for this site? */
     public static function enabled(): bool
     {

@@ -67,12 +67,12 @@ $__cfwE      = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_H
 
         <label class="cfw-label" for="cfw-intent">What were you trying to do?</label>
         <textarea id="cfw-intent" name="intent" rows="2" maxlength="5000"
-                  placeholder="e.g. Mark this week’s LinkedIn post as posted"></textarea>
+                  placeholder="<?= htmlspecialchars(\Modules\Feedback\Services\IssueWidget::intentExample(), ENT_QUOTES, 'UTF-8') ?>"></textarea>
         <p class="cfw-err" data-err="intent" hidden></p>
 
         <label class="cfw-label" for="cfw-message">What happened instead?</label>
         <textarea id="cfw-message" name="message" rows="3" maxlength="5000"
-                  placeholder="e.g. The page reloaded and the task still shows as pending"></textarea>
+                  placeholder="<?= htmlspecialchars(\Modules\Feedback\Services\IssueWidget::outcomeExample(), ENT_QUOTES, 'UTF-8') ?>"></textarea>
         <p class="cfw-err" data-err="message" hidden></p>
 
         <label class="cfw-check">
