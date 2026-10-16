@@ -733,7 +733,12 @@ $__renderBrand = static function (): string {
                          inline nav was squeezed into a scrolling box on a phone and pushed the
                          page 70px wider than the screen (Christy, 2026-10-12). */ if (true): ?>
                 <button type="button" class="sidebar-toggle" aria-label="Menu" aria-expanded="false"
-                        onclick="var l=this.closest('.layout');var o=l.classList.toggle('nav-open');this.setAttribute('aria-expanded',o?'true':'false');">&#9776;</button>
+                        onclick="var l=this.closest('.layout');var h=this.closest('.topbar');if(h)l.style.setProperty('--wsheader-h',Math.max(0,Math.round(h.getBoundingClientRect().bottom))+'px');var o=l.classList.toggle('nav-open');this.setAttribute('aria-expanded',o?'true':'false');">&#9776;</button>
+                <?php /* The drawer starts where the header ENDS, measured at the tap. In topbar layout
+                         --wsheader-h was never set, so the drawer opened at top:0 under the sticky
+                         header (z-index 50 beats the drawer's 45) and its first items could not be
+                         reached — Jessica, StoriesDen, 2026-10-15. Measuring also covers an
+                         announcement bar above the header and a page already scrolled. */ ?>
                 <script>
                 // Close the phone menu on a tap outside it, or on a link inside it.
                 document.addEventListener('click', function (e) {
