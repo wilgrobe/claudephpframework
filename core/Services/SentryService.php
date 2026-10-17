@@ -48,6 +48,8 @@ class SentryService
     {
         if (self::$initAttempted) return;
         self::$initAttempted = true;
+        // Errors are always recorded on the site's own server (ErrorRecorder) — with or without a DSN.
+        if (class_exists(ErrorRecorder::class)) ErrorRecorder::register();
 
         $dsn = trim((string) ($_ENV['SENTRY_DSN'] ?? ''));
         if ($dsn === '') return;   // disabled
@@ -82,6 +84,8 @@ class SentryService
     public static function captureException(\Throwable $e): void
     {
         self::init();
+        // Recorded locally first, whether or not Sentry is configured: the pulse reports it to Ops.
+        if (class_exists(ErrorRecorder::class)) ErrorRecorder::record($e);
 
         if (self::$usingSdk) {
             try { \Sentry\captureException($e); } catch (\Throwable $_) {}
