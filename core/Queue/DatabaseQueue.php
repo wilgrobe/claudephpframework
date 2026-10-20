@@ -86,20 +86,37 @@ class DatabaseQueue
         // One UPDATE claims the whole batch. ORDER BY id ASC preserves FIFO
         // across the queue even when multiple workers are active (combined
         // with the idx_ready index, this is a range scan of ~$limit rows).
-        $this->db->query(
-            "UPDATE jobs
-                SET status      = 'running',
-                    reserved_by = ?,
-                    reserved_at = ?,
-                    attempts    = attempts + 1
-              WHERE status      = 'pending'
-                AND queue       = ?
-                AND available_at <= NOW()
-                AND reserved_by IS NULL
-              ORDER BY id ASC
-              LIMIT ?",
-            [$tag, $nowStr, $queue, $limit]
-        );
+        //
+        // Two workers (or a worker and a dispatcher inserting jobs) can lock
+        // the same index range in opposite order; InnoDB then kills one
+        // statement with a deadlock (1213) or a lock-wait timeout (1205).
+        // Nothing was claimed, so trying again is safe — MarketOtter's queue
+        // hit this 5 times in 4 days (Oct 2026) and each one failed the whole
+        // worker run.
+        for ($try = 1; ; $try++) {
+            try {
+                $this->db->query(
+                    "UPDATE jobs
+                        SET status      = 'running',
+                            reserved_by = ?,
+                            reserved_at = ?,
+                            attempts    = attempts + 1
+                      WHERE status      = 'pending'
+                        AND queue       = ?
+                        AND available_at <= NOW()
+                        AND reserved_by IS NULL
+                      ORDER BY id ASC
+                      LIMIT ?",
+                    [$tag, $nowStr, $queue, $limit]
+                );
+                break;
+            } catch (\PDOException $e) {
+                // Inside a caller's transaction a deadlock rolled back the WHOLE transaction, not just this
+                // statement — retrying here would carry on as if the earlier work still stood.
+                if ($try >= self::RESERVE_TRIES || !self::isLockConflict($e) || $this->db->inTransaction()) throw $e;
+                usleep(random_int(20_000, 120_000) * $try);   // jittered, so the two workers don't collide again
+            }
+        }
 
         // Fetch just what we won. Concurrent workers hold different tags,
         // so there's no cross-talk here.
@@ -107,6 +124,21 @@ class DatabaseQueue
             "SELECT * FROM jobs WHERE reserved_by = ? ORDER BY id ASC",
             [$tag]
         );
+    }
+
+    /** How many times reserve() runs its claim when the database reports a lock conflict. */
+    public const RESERVE_TRIES = 3;
+
+    /**
+     * A deadlock (MySQL 1213, SQLSTATE 40001) or lock-wait timeout (1205): the statement was rolled back
+     * and can simply be run again. Anything else is a real error and is not retried.
+     */
+    public static function isLockConflict(\PDOException $e): bool
+    {
+        $driverCode = (int) ($e->errorInfo[1] ?? 0);
+        return in_array($driverCode, [1213, 1205], true)
+            || (string) $e->getCode() === '40001'
+            || (bool) preg_match('/\b(1213|1205)\b|deadlock found|lock wait timeout/i', $e->getMessage());
     }
 
     /** Monotonic counter so a single long-running worker can't produce
