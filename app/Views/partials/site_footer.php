@@ -183,8 +183,38 @@ body { padding-bottom: var(--site-footer-height); }
 .site-footer.site-footer--flow .site-footer__menu { flex-wrap: wrap; }
 body.has-flow-footer { padding-bottom: 0; }
 body.has-flow-footer .layout > .sidebar { height: calc(100vh - var(--wsheader-h, 0px)); }
+
+/* SCROLL BETWEEN THE BARS (2026-10-20): with a pinned header and footer, content — and its scrollbar — used to run
+   under both. On desktop the app shell is now exactly the window minus the footer (and minus wherever the shell
+   starts), and its content area is the ONE scroller between the header and the footer: the sidebar and header stay
+   put, the scrollbar starts under the header. Not on phones (the footer joins the page flow there), not when the
+   footer had to flow (it is at the end of the page then), not in print, and not on a page that opts out with
+   <body class="shell-doc-scroll">. min-height: 0 matters — header.php gives .layout min-height:100vh.
+   Code that scrolls the page asks window.shellScroller() for the element; the script below measures:
+     --shell-top           how far down the page the shell starts (the shell's height subtracts it)
+     --shell-under-header  how much of the content a FIXED header still covers (the content moves down by it)
+     --shell-scroll-h      the content area's height, for panels that should fill it */
+@media screen and (min-width: 641px) {
+    body:not(.has-flow-footer):not(.shell-doc-scroll) .layout {
+        height: calc(100vh - var(--site-footer-height) - var(--shell-top, 0px)); min-height: 0; overflow: hidden;
+    }
+    body:not(.has-flow-footer):not(.shell-doc-scroll) .layout > .main {
+        display: flex; flex-direction: column; height: 100%; min-height: 0; box-sizing: border-box;
+    }
+    body:not(.has-flow-footer):not(.shell-doc-scroll) .layout > .main > .topbar { flex: none; }
+    body:not(.has-flow-footer):not(.shell-doc-scroll) .layout > .main > .content {
+        flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+        margin-top: var(--shell-under-header, 0px);
+    }
+}
 </style>
 <script>
+/* The element the page scrolls in: the app shell's content area when it is the scroller (above), else the document. */
+window.shellScroller = window.shellScroller || function () {
+    var c = document.querySelector('.layout > .main > .content');
+    if (c && getComputedStyle(c).overflowY !== 'visible' && c.clientHeight > 0) return c;
+    return document.scrollingElement || document.documentElement;
+};
 (function () {
     var f = document.querySelector('.site-footer');
     if (!f) return;
@@ -197,8 +227,29 @@ body.has-flow-footer .layout > .sidebar { height: calc(100vh - var(--wsheader-h,
             document.body.classList.add('has-flow-footer');
         }
     }
-    fit();
-    var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(fit, 120); });
+    // Where the shell really is, measured rather than assumed (see SCROLL BETWEEN THE BARS above). After fit(),
+    // because a footer that has to flow turns the scroll area off.
+    var root = document.documentElement;
+    function measure() {
+        var L = document.querySelector('.layout'), C = document.querySelector('.layout > .main > .content'), T = document.querySelector('.topbar');
+        root.style.setProperty('--shell-under-header', '0px');
+        root.style.setProperty('--shell-top', '0px');
+        var s = window.shellScroller(), doc = (s === document.scrollingElement || s === document.documentElement);
+        if (!doc && L && C) {
+            root.style.setProperty('--shell-top', Math.max(0, Math.round(L.getBoundingClientRect().top + (window.scrollY || 0))) + 'px');
+            if (T && getComputedStyle(T).position === 'fixed') {
+                root.style.setProperty('--shell-under-header', Math.max(0, Math.round(T.getBoundingClientRect().bottom - C.getBoundingClientRect().top)) + 'px');
+            }
+            window.scrollTo(0, 0);   // the document no longer scrolls; drop any offset left from before the shell took over
+        }
+        root.style.setProperty('--shell-scroll-h', (doc ? window.innerHeight : s.clientHeight) + 'px');
+    }
+    fit(); measure();
+    var t; function again() { clearTimeout(t); t = setTimeout(function () { fit(); measure(); }, 120); }
+    window.addEventListener('resize', again);
+    // A header that changes height (its menu wraps, a banner opens) moves everything below it.
+    var hdr = document.querySelector('.topbar');
+    if (hdr && window.ResizeObserver) new ResizeObserver(again).observe(hdr);
 })();
 </script>
 
