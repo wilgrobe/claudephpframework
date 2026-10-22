@@ -16,6 +16,16 @@ class Database
     private static ?Database $instance = null;
     private PDO $pdo;
 
+    /**
+     * Waits before each new connection attempt when MySQL refuses or drops the connect (Builder queue, 21 Oct
+     * 2026: "[2002] Connection refused" 5× while the database restarted, each one a failed job run). The CLI
+     * (queue, cron) can afford to wait ~7.5 s; a web request waits at most 1.25 s before the error page.
+     */
+    public const CONNECT_RETRY_MS_CLI = [500, 2000, 5000];
+    public const CONNECT_RETRY_MS_WEB = [250, 1000];
+    /** MySQL client errors that mean "not reachable right now": can't connect / refused, unknown host, gone away, lost, too many connections. */
+    private const TRANSIENT_CONNECT_CODES = [2002, 2003, 2006, 2013, 1040];
+
     private function __construct()
     {
         $cfg = require BASE_PATH . '/config/database.php';
@@ -32,13 +42,17 @@ class Database
             ? \Pdo\Mysql::ATTR_FOUND_ROWS
             : PDO::MYSQL_ATTR_FOUND_ROWS;
 
-        $this->pdo = new PDO($dsn, $cfg['username'], $cfg['password'], [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false, // force true prepared statements
-            PDO::ATTR_STRINGIFY_FETCHES  => false,
-            $foundRowsAttr               => true,
-        ]);
+        $this->pdo = self::connectWithRetry(
+            static fn (): PDO => new PDO($dsn, $cfg['username'], $cfg['password'], [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false, // force true prepared statements
+                PDO::ATTR_STRINGIFY_FETCHES  => false,
+                $foundRowsAttr               => true,
+            ]),
+            PHP_SAPI === 'cli' ? self::CONNECT_RETRY_MS_CLI : self::CONNECT_RETRY_MS_WEB,
+            static function (int $ms): void { usleep($ms * 1000); }
+        );
 
         // Strict SQL mode for safer inserts
         $this->pdo->exec("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO'");
@@ -51,6 +65,37 @@ class Database
         // queue effectively never drains. The '+00:00' offset form needs no
         // named-timezone tables, so it's safe on any MySQL.
         $this->pdo->exec("SET time_zone = '+00:00'");
+    }
+
+    /**
+     * Run $connect; when it fails with a transient connect error, wait the next delay and try again. After the
+     * last delay one final attempt runs and its error is thrown as is. Any other error (wrong password, unknown
+     * database) is thrown at once — waiting cannot fix it.
+     *
+     * @param callable():PDO $connect
+     * @param list<int> $delaysMs
+     * @param callable(int):void $sleep milliseconds
+     */
+    public static function connectWithRetry(callable $connect, array $delaysMs, callable $sleep): PDO
+    {
+        foreach ($delaysMs as $ms) {
+            try {
+                return $connect();
+            } catch (PDOException $e) {
+                if (!self::isTransientConnectError($e)) throw $e;
+                error_log("[database] connect failed, retrying in {$ms} ms: " . $e->getMessage());
+                $sleep($ms);
+            }
+        }
+        return $connect();
+    }
+
+    public static function isTransientConnectError(\Throwable $e): bool
+    {
+        $code = $e instanceof PDOException ? ($e->errorInfo[1] ?? null) : null;
+        if (!is_int($code)) $code = (int) $e->getCode();
+        if (in_array($code, self::TRANSIENT_CONNECT_CODES, true)) return true;
+        return (bool) preg_match('/\[(2002|2003|2006|2013|1040)\]/', $e->getMessage());
     }
 
     public static function getInstance(): self
