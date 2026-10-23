@@ -4,6 +4,7 @@ namespace Core\Services;
 
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use Aws\S3\S3Client;
 
@@ -79,7 +80,13 @@ class FileUploadService
         // Local disk (default)
         $root = $this->cfg['root_path'] ?? (BASE_PATH . '/storage/uploads');
         if (!is_dir($root)) mkdir($root, 0750, true);
-        return new Filesystem(new LocalFilesystemAdapter($root));
+        // Folders it creates (avatars/, group_images/, …) are group-accessible. Flysystem's default is 0700, so the
+        // first avatar upload on StoriesDen (23 Oct) made uploads/avatars owner-only: the deploy user, in the web
+        // group, could no longer read into storage and the next deploy failed half-way. Others still get nothing.
+        return new Filesystem(new LocalFilesystemAdapter($root, PortableVisibilityConverter::fromArray([
+            'file' => ['public' => 0644, 'private' => 0640],
+            'dir'  => ['public' => 0775, 'private' => 0770],
+        ])));
     }
 
     /**
