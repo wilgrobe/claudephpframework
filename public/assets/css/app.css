@@ -60,6 +60,43 @@
        use data-palette + the ordinal palettes now; nothing references them.) */
 }
 
+/* ── Neutral-palette FLOOR ──────────────────────────────────────────────────
+   ThemeService normally emits the gray ramp + surface/ink/border vars per-mode
+   into an inline <style> (aliased onto the active palette's neutral sources),
+   so the ramp follows the theme and dark-flips. But a page/site whose
+   ThemeService output is absent or STALE (e.g. an older standalone build that
+   shipped before the ramp-emission change) leaves these undefined — and then
+   every `border: 1px solid var(--border-strong, var(--color-gray-300))` (admin
+   .form-row inputs, .form-control, the global input rule below, …) is INVALID
+   AT COMPUTED-VALUE TIME and reverts to `0 none` → invisible inputs/panels.
+   This floor gives static light-mode literals so those always resolve. Wrapped
+   in :where() → ZERO specificity, so ThemeService's real `:root` (0,1,0) and the
+   body.theme-* toggles ALWAYS win, order-independent; this only fills the gap
+   where nothing emitted them. Literals (not `var()` aliases) → none of the
+   :root-freeze caveat above applies. */
+:where(:root) {
+    --color-gray-50:  #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+    --bg-page:        #f9fafb;
+    --bg-panel:       #ffffff;
+    --text-default:   #111827;
+    --text-muted:     #6b7280;
+    --text-subtle:    #9ca3af;
+    --border-subtle:  #f3f4f6;
+    --border-default: #e5e7eb;
+    --border-strong:  #d1d5db;
+    --accent-subtle:  #eef2ff;
+    --accent-contrast:#ffffff;
+}
+
 /* Theming v2 Phase 5 — re-resolve the semantic tints under the MANUAL theme
    toggles. The :root color-mix defs above already adapt for the OS-preference
    path (ThemeService flips :root's base vars via @media prefers-color-scheme),

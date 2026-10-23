@@ -4,9 +4,9 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reset Password — <?= e(setting('site_name','App')) ?></title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app.css">
-<link rel="stylesheet" href="/assets/css/admin.css">
-<link rel="stylesheet" href="/assets/css/auth.css">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/admin.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('/assets/css/auth.css')) ?>">
 </head>
 <body class="auth">
 <div class="auth-card">
