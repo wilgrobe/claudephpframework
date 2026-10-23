@@ -69,6 +69,17 @@ final class ConnectRetryTest extends TestCase
         }
     }
 
+    public function test_no_waits_under_tests_or_when_switched_off_and_the_right_waits_otherwise(): void
+    {
+        $this->assertSame([], Database::connectRetryDelays('', true, true), 'under PHPUnit');
+        $this->assertSame([], Database::connectRetryDelays('', null, true), 'this very run is under PHPUnit');
+        foreach (['0', 'false', 'OFF', ' no '] as $off) {
+            $this->assertSame([], Database::connectRetryDelays($off, false, true), "DB_CONNECT_RETRY=$off");
+        }
+        $this->assertSame(Database::CONNECT_RETRY_MS_CLI, Database::connectRetryDelays('', false, true), 'CLI');
+        $this->assertSame(Database::CONNECT_RETRY_MS_WEB, Database::connectRetryDelays('1', false, false), 'web');
+    }
+
     public function test_which_errors_count_as_transient(): void
     {
         foreach ([2002, 2003, 2006, 2013, 1040] as $code) {

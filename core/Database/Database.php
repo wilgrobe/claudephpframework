@@ -50,7 +50,7 @@ class Database
                 PDO::ATTR_STRINGIFY_FETCHES  => false,
                 $foundRowsAttr               => true,
             ]),
-            PHP_SAPI === 'cli' ? self::CONNECT_RETRY_MS_CLI : self::CONNECT_RETRY_MS_WEB,
+            self::connectRetryDelays(),
             static function (int $ms): void { usleep($ms * 1000); }
         );
 
@@ -88,6 +88,22 @@ class Database
             }
         }
         return $connect();
+    }
+
+    /**
+     * The waits for this process. None under PHPUnit or with DB_CONNECT_RETRY=0: a test suite has no database that
+     * is about to come back, and each test that touches an unreachable one waited ~7.5 s for nothing (StoriesDen's
+     * PR checks, 22 Oct: 1,944 s instead of 315 s).
+     *
+     * @return list<int>
+     */
+    public static function connectRetryDelays(?string $setting = null, ?bool $underTests = null, ?bool $cli = null): array
+    {
+        $setting ??= (string) (getenv('DB_CONNECT_RETRY') !== false ? getenv('DB_CONNECT_RETRY') : ($_ENV['DB_CONNECT_RETRY'] ?? ''));
+        $underTests ??= defined('PHPUNIT_COMPOSER_INSTALL') || defined('__PHPUNIT_PHAR__');
+        $cli ??= PHP_SAPI === 'cli';
+        if ($underTests || in_array(strtolower(trim($setting)), ['0', 'false', 'off', 'no'], true)) return [];
+        return $cli ? self::CONNECT_RETRY_MS_CLI : self::CONNECT_RETRY_MS_WEB;
     }
 
     public static function isTransientConnectError(\Throwable $e): bool
