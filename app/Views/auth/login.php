@@ -168,6 +168,8 @@
          sign-in page. The app layout has always used asset(); these standalone
          auth documents did not. */ ?>
 <script src="<?= e(asset("/assets/js/app.js")) ?>"></script>
+<?php /* Show/hide eye on the password field (auto-wires every <input type="password">). */ ?>
+<?php include BASE_PATH . '/app/Views/partials/_password_toggle.php'; ?>
 <?php include BASE_PATH . '/app/Views/partials/_cookie_banner.php'; ?>
 </body>
 </html>

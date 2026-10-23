@@ -86,7 +86,8 @@
 .form-row > input[type="month"],
 .form-row > input[type="week"],
 .form-row > select,
-.form-row > textarea {
+.form-row > textarea,
+.form-row > .pw-toggle-wrap > input { /* a password field wrapped by _password_toggle.php — any type, it flips to text */
     width: 100%;
     padding: .55rem .75rem;
     border: 1px solid var(--border-strong, var(--color-gray-300));
@@ -98,6 +99,7 @@
     transition: border-color .15s, box-shadow .15s;
 }
 .form-row > input:focus,
+.form-row > .pw-toggle-wrap > input:focus,
 .form-row > select:focus,
 .form-row > textarea:focus {
     outline: none;
