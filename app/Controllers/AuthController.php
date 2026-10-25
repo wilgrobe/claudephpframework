@@ -117,6 +117,11 @@ class AuthController
         // Don't increment the rate limiter — the password was correct;
         // failing the verify gate isn't a brute-force signal.
         if ($result === 'verify_required') {
+            // The password was right, so this is the account's owner: show them the page that says what to do
+            // and can send the link again, instead of a one-line error they can do nothing about.
+            if ($this->rememberVerifyPending((string) $v->get('email'))) {
+                return Response::redirect('/verify-email/sent');
+            }
             Session::flash('errors', ['email' => [
                 'Please verify your email before signing in. Check your inbox for the verification link.'
             ]]);
@@ -506,9 +511,12 @@ class AuthController
         );
 
         if ($loginResult === 'verify_required') {
-            // Don't auto-login a user who's about to be blocked anyway —
-            // bounce them to /login with a clear "verify first" message.
+            // Don't auto-login a user who's about to be blocked anyway. Send them to the page that tells them to
+            // check their email (and can resend the link) rather than to a sign-in form they cannot use yet.
             // The verification email has already been sent above.
+            if ($this->rememberVerifyPending(strtolower((string) $v->get('email')))) {
+                return Response::redirect('/verify-email/sent');
+            }
             return Response::redirect('/login')->withFlash(
                 'success',
                 'Account created. Please check your email and click the verification link before signing in.'
@@ -1015,22 +1023,9 @@ class AuthController
                 ->withFlash('info', 'Your email is already verified.');
         }
 
-        // 60-second rate limit: refuse if a verification row was updated
-        // very recently. The email_verifications row's created_at tracks
-        // the initial insert, but ON DUPLICATE KEY UPDATE keeps that
-        // timestamp — so we use a short TTL check against the token's
-        // expires_at instead (24h − time since last issue ≈ 24h − Δ).
-        $existing = $this->db->fetchOne(
-            "SELECT expires_at,
-                    TIMESTAMPDIFF(SECOND,
-                        DATE_SUB(expires_at, INTERVAL 24 HOUR),
-                        NOW()) AS seconds_since_last
-               FROM email_verifications
-              WHERE user_id = ?",
-            [$user['id']]
-        );
-        if ($existing && (int)$existing['seconds_since_last'] < 60) {
-            $wait = 60 - (int)$existing['seconds_since_last'];
+        // 60-second rate limit (see verificationResendWait).
+        $wait = $this->verificationResendWait((int) $user['id']);
+        if ($wait > 0) {
             return Response::redirect('/dashboard')
                 ->withFlash('error', "Please wait {$wait}s before requesting another verification email.");
         }
@@ -1042,7 +1037,87 @@ class AuthController
             ->withFlash('success', 'Verification email sent — check your inbox.');
     }
 
+    /**
+     * "Check your email" — where a new account that must verify first lands, and where a sign-in by an
+     * unverified account is sent. Only reachable with an account remembered in this session (by register() or
+     * login(), both after the password was checked), so it never tells a stranger which addresses exist.
+     */
+    public function verifySent(Request $request): Response
+    {
+        $pending = $this->verifyPending();
+        if ($pending === null) {
+            return Response::redirect('/login');
+        }
+        $verified = $this->db->fetchOne("SELECT email_verified_at FROM users WHERE id = ?", [$pending['id']]);
+        if (!empty($verified['email_verified_at'])) {
+            // Verified in another tab or on another device: there is nothing left to check.
+            Session::forget('verify_pending');
+            return Response::redirect('/login')->withFlash('success', 'Your email is verified — sign in below.');
+        }
+        return Response::view('auth.check_email', ['email' => $pending['email']]);
+    }
+
+    /**
+     * Send the link again from the "Check your email" page. Same 60-second limit as the signed-in resend.
+     */
+    public function resendPendingVerification(Request $request): Response
+    {
+        $pending = $this->verifyPending();
+        if ($pending === null) {
+            return Response::redirect('/login');
+        }
+        $user = $this->db->fetchOne("SELECT id, email, email_verified_at FROM users WHERE id = ? AND is_active = 1", [$pending['id']]);
+        if (!$user) {
+            Session::forget('verify_pending');
+            return Response::redirect('/login');
+        }
+        if (!empty($user['email_verified_at'])) {
+            Session::forget('verify_pending');
+            return Response::redirect('/login')->withFlash('success', 'Your email is already verified — sign in below.');
+        }
+        $wait = $this->verificationResendWait((int) $user['id']);
+        if ($wait > 0) {
+            return Response::redirect('/verify-email/sent')
+                ->withFlash('error', "Please wait {$wait}s before asking for another email.");
+        }
+        (new \Core\Services\EmailVerificationService())->send((int) $user['id'], (string) $user['email']);
+        $this->auth->auditLog('auth.verification_resent', 'users', (int) $user['id']);
+        return Response::redirect('/verify-email/sent')->withFlash('success', 'Sent again — check your inbox.');
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Remember the account waiting on verification, for the "Check your email" page. False if it is not found. */
+    private function rememberVerifyPending(string $email): bool
+    {
+        $u = $this->db->fetchOne("SELECT id, email FROM users WHERE email = ? AND is_active = 1", [strtolower(trim($email))]);
+        if (!$u) return false;
+        Session::set('verify_pending', ['id' => (int) $u['id'], 'email' => (string) $u['email']]);
+        return true;
+    }
+
+    /** @return array{id:int, email:string}|null */
+    private function verifyPending(): ?array
+    {
+        $p = Session::get('verify_pending');
+        return is_array($p) && !empty($p['id']) && !empty($p['email'])
+            ? ['id' => (int) $p['id'], 'email' => (string) $p['email']] : null;
+    }
+
+    /**
+     * Seconds to wait before another verification email, 0 if one can go now. The row's created_at survives
+     * ON DUPLICATE KEY UPDATE, so the last send is read from expires_at (always 24h after it was issued).
+     */
+    private function verificationResendWait(int $userId): int
+    {
+        $row = $this->db->fetchOne(
+            "SELECT TIMESTAMPDIFF(SECOND, DATE_SUB(expires_at, INTERVAL 24 HOUR), NOW()) AS seconds_since_last
+               FROM email_verifications WHERE user_id = ?",
+            [$userId]
+        );
+        return $row && (int) $row['seconds_since_last'] < 60 ? 60 - (int) $row['seconds_since_last'] : 0;
+    }
+
     //
     // The verification-email helper that used to live here was extracted to
     // Core\Services\EmailVerificationService so the user-admin page can

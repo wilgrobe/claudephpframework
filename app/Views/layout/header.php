@@ -245,7 +245,8 @@
     /* User dropdown */
     .user-menu { position: relative; }
     .user-menu-toggle { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: .5rem; padding: .3rem .5rem; border-radius: 6px; color: inherit; font-family: inherit; font-size: inherit; }
-    .user-menu-toggle:hover { background: var(--border-subtle); }
+    /* A tint of its own text colour: the old light-grey hover put light text on light grey on a dark header (24 Oct). */
+    .user-menu-toggle:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
     .dropdown-menu {
         position: absolute; right: 0; top: 100%; margin-top: .35rem;
         background: var(--bg-panel); border: 1px solid var(--border-default); border-radius: var(--radius);

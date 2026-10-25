@@ -214,6 +214,10 @@ $router->post('/password/reset',            'AuthController@resetPassword',    [
 // 256-bit single-use token in the URL is the proof of identity.
 $router->get('/verify-email',               'AuthController@verifyEmail');
 $router->post('/auth/resend-verification',  'AuthController@resendVerification',[CsrfMiddleware::class, AuthMiddleware::class]);
+// "Check your email" after registering (or signing in) before verifying. No AuthMiddleware for the same reason as
+// /verify-email; both only act on the account the session remembered after its password was checked.
+$router->get('/verify-email/sent',          'AuthController@verifySent');
+$router->post('/verify-email/resend',       'AuthController@resendPendingVerification', [CsrfMiddleware::class]);
 
 // OAuth
 $router->get('/auth/oauth/{provider}',              'AuthController@oauthRedirect');
