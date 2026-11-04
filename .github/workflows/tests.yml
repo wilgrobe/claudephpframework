@@ -1,5 +1,5 @@
 # .github/workflows/tests.yml — the framework's test profile in CI (#466, 4 Nov 2026).
-# Every push and pull request: lint, the full preflight (suite + migrations parse), a dependency audit on each
+# Every push and pull request: lint, the full test suite, a dependency audit on each
 # supported PHP, and a FRESH INSTALL on MySQL 8 — every migration run twice (idempotent) and the site answering.
 name: tests
 
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   checks:
-    name: lint + preflight + audit (PHP ${{ matrix.php }})
+    name: lint + tests + audit (PHP ${{ matrix.php }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -36,8 +36,10 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist
       - name: Lint every PHP file
         run: find . -name '*.php' -not -path './vendor/*' -not -path './storage/*' -print0 | xargs -0 -n 50 -P 4 php -l > /dev/null
-      - name: Preflight (suite, migrations parse, changed-file lint)
-        run: php artisan deploy:preflight
+      # The suite directly, not `artisan deploy:preflight`: artisan opens the database when it boots and this job
+      # has none. Migrations are exercised for real by the fresh-install job below.
+      - name: Test suite
+        run: vendor/bin/phpunit
       - name: Dependency audit
         run: composer audit --no-interaction
 

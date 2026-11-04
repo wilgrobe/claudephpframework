@@ -38,7 +38,7 @@ cache, mail, SMS, file storage, search, payments-gateway interface, sessions
 
 | Dependency       | Minimum                      |
 |------------------|------------------------------|
-| PHP              | 8.1+                         |
+| PHP              | 8.2+                         |
 | MySQL / MariaDB  | 8.0+ / 10.6+                 |
 | Composer         | 2.x                          |
 | Web server       | Apache or Nginx              |

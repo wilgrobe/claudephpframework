@@ -5,7 +5,7 @@
     "homepage": "https://github.com/wilgrobe/claudephpframework",
     "type": "project",
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "ext-dom": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
@@ -39,7 +39,12 @@
         "sort-packages": true,
         "audit": {
             "abandoned": "ignore",
-            "ignore": ["[PKSA-z3gr-8qht-p93v]"]
+            "ignore": [
+                "[PKSA-z3gr-8qht-p93v]"
+            ]
+        },
+        "platform": {
+            "php": "8.2.0"
         }
     }
 }
