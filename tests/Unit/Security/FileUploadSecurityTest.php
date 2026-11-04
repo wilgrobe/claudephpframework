@@ -83,12 +83,15 @@ final class FileUploadSecurityTest extends TestCase
     public function test_anything_that_is_not_an_allowed_image_is_refused_whatever_its_name(string $bytes, string $name): void
     {
         $f = $this->file($bytes, $name);
+        // A flag, not try { …; $this->fail() } catch (\RuntimeException): PHPUnit's own failure IS a
+        // RuntimeException, so that shape swallowed it and an accepted upload still passed (#466).
+        $threw = false;
         try {
             $this->svc()->uploadImage($f, 'avatars');
-            $this->fail("accepted $name");
         } catch (\RuntimeException $e) {
-            $this->assertNotSame('', $e->getMessage());
+            $threw = $e->getMessage() !== '';
         }
+        $this->assertTrue($threw, "accepted $name");
         $this->assertSame([], glob($this->root . '/avatars/*') ?: [], 'nothing may be written for a refused upload');
     }
 
@@ -125,7 +128,9 @@ final class FileUploadSecurityTest extends TestCase
         foreach ([fn () => $this->svc()->uploadImage($this->file($png, 'a.png'), 'avatars', 10),
                   fn () => $this->svc()->uploadImage(['error' => UPLOAD_ERR_PARTIAL] + $this->file($png, 'a.png'), 'avatars'),
                   fn () => $this->svc()->uploadImage(['error' => UPLOAD_ERR_NO_FILE, 'tmp_name' => '', 'size' => 0], 'avatars')] as $i => $call) {
-            try { $call(); $this->fail("case $i accepted"); } catch (\RuntimeException) { $this->addToAssertionCount(1); }
+            $threw = false;
+            try { $call(); } catch (\RuntimeException) { $threw = true; }
+            $this->assertTrue($threw, "case $i accepted");
         }
     }
 }

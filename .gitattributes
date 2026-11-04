@@ -1,0 +1,2 @@
+# Shell hooks must keep LF: with core.autocrlf=true a CRLF "#!/bin/sh" hook fails on every push.
+.githooks/* text eol=lf
