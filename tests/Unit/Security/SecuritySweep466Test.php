@@ -78,6 +78,8 @@ final class SecuritySweep466Test extends TestCase
 
     private function secretCheck(array $server): bool
     {
+        // The email module is not in every install — generated kits leave it out — and this file ships in every kit.
+        if (!class_exists(WebhookController::class)) $this->markTestSkipped('the email module is not installed here');
         $_SERVER = $server + ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/webhooks/email/sendgrid'];
         $m = new \ReflectionMethod(WebhookController::class, 'verifySharedSecret');
         return $m->invoke((new \ReflectionClass(WebhookController::class))->newInstanceWithoutConstructor(), Request::capture());
