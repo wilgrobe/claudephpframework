@@ -288,13 +288,19 @@ class CacheService
 
     private function filePath(string $key): string
     {
-        return $this->fileDir . '/' . sha1($key) . '.cache';
+        return $this->fileDir . '/' . sha1($this->prefix($key)) . '.cache';
     }
 
+    /**
+     * Every key, on every driver, is namespaced by app AND database (#466, 4 Nov 2026). A multi-tenant host runs
+     * one database per tenant behind one code base, one storage/cache folder and one Redis — and the key used to
+     * carry only APP_NAME (file driver: nothing at all), so a value cached for one tenant was served to all of them.
+     * DB_DATABASE is the tenant's own database by the time anything caches (tenant resolution runs first).
+     */
     private function prefix(string $key): string
     {
-        // Isolate this app's keys when a shared Redis is used.
         $app = (string) ($_ENV['APP_NAME'] ?? 'cphpfw');
-        return 'cache:' . preg_replace('/\s+/', '_', $app) . ':' . $key;
+        $db  = (string) ($_ENV['DB_DATABASE'] ?? '');
+        return 'cache:' . preg_replace('/\s+/', '_', $app) . ':' . $db . ':' . $key;
     }
 }
