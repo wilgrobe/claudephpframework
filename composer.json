@@ -14,9 +14,9 @@
         "ext-pdo_mysql": "*",
         "ext-sodium": "*",
         "dragonmantank/cron-expression": "^3.3",
-        "league/flysystem": "3.0",
-        "league/flysystem-aws-s3-v3": "3.0",
-        "phpmailer/phpmailer": "6.9",
+        "league/flysystem": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "phpmailer/phpmailer": "^6.9",
         "sentry/sentry": "^4.27"
     },
     "require-dev": {
