@@ -39,8 +39,10 @@ class AdminController
         $where = '';
         $args  = [];
         if ($q !== '') {
+            // Phase 43.202c M1 — escape LIKE wildcards.
+            $needle = str_replace(['\\','%','_'], ['\\\\','\\%','\\_'], $q);
             $where = ' WHERE email LIKE ?';
-            $args[] = '%' . $q . '%';
+            $args[] = '%' . $needle . '%';
         }
 
         $rows = $this->db->fetchAll("

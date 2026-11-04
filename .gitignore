@@ -1,4 +1,7 @@
 .env
+# #466: every .env variant (.env.production, .env.local, .env.backup …) — only the example is tracked.
+.env.*
+!.env.example
 /samplenewsletters/
 /vendor/
 /bin/phproot/

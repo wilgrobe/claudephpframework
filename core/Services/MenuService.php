@@ -271,11 +271,14 @@ class MenuService
 
     public function createItem(array $data): int
     {
+        // #466: a menu URL renders as href on every page, for every visitor — no javascript:/data: schemes.
+        if (array_key_exists('url', $data)) $data['url'] = safe_href($data['url']);
         return $this->db->insert('menu_items', $data);
     }
 
     public function updateItem(int $id, array $data): int
     {
+        if (array_key_exists('url', $data)) $data['url'] = safe_href($data['url']);
         return $this->db->update('menu_items', $data, 'id = ?', [$id]);
     }
 
@@ -392,7 +395,7 @@ class MenuService
                     'menu_id'         => $menuId,
                     'parent_id'       => $parentId,
                     'label'           => substr($label, 0, 255),
-                    'url'             => $url === '' ? null : substr($url, 0, 1000),
+                    'url'             => $url === '' ? null : safe_href(substr($url, 0, 1000)),
                     'kind'            => $kind,
                     'icon'            => isset($item['icon']) ? substr((string) $item['icon'], 0, 100) : null,
                     'target'          => $target,

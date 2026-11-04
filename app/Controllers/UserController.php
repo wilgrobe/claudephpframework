@@ -187,7 +187,7 @@ class UserController
             'email_verified_at' => $emailVerified ? date('Y-m-d H:i:s') : null,
         ]);
 
-        $roleIds = array_filter((array) $request->post('roles', []));
+        $roleIds = self::allowedRoleIds((array) $request->post('roles', []), [], $this->superRoleId(), $this->auth->isSuperadminModeOn());
         if ($roleIds) $this->userModel->syncRoles($userId, $roleIds);
 
         $this->auth->auditLog('user.create', 'users', $userId);
@@ -198,6 +198,7 @@ class UserController
     {
         if ($this->auth->cannot('users.edit')) return $this->denied();
         $id        = (int) $request->param(0);
+        if ($refused = $this->refuseProtected($id, 'edit')) return $refused;
         $user_edit = $this->userModel->findById($id);
         if (!$user_edit) return new Response('User not found', 404);
 
@@ -213,6 +214,7 @@ class UserController
     {
         if ($this->auth->cannot('users.edit')) return $this->denied();
         $id = (int) $request->param(0);
+        if ($refused = $this->refuseProtected($id, 'update')) return $refused;
 
         $v = new Validator($request->post());
         $v->validate([
@@ -284,8 +286,12 @@ class UserController
 
         $old = $this->userModel->findById($id);
         $this->userModel->update($id, $updateData);
+        // #466: an admin-set password ends that user's sessions (keeping the admin's own if they edited themselves).
+        if (isset($updateData['password'])) {
+            $this->auth->endSessionsFor($id, $id === (int) $this->auth->id() ? (session_id() ?: null) : null);
+        }
 
-        $roleIds = array_filter((array) $request->post('roles', []));
+        $roleIds = self::allowedRoleIds((array) $request->post('roles', []), $this->currentRoleIds($id), $this->superRoleId(), $this->auth->isSuperadminModeOn());
         $this->userModel->syncRoles($id, $roleIds);
 
         // SA promotion side-effect: if is_superadmin flipped 0→1
@@ -311,6 +317,7 @@ class UserController
         if ($id === $this->auth->id()) {
             return Response::redirect('/admin/users')->withFlash('error', 'Cannot delete your own account.');
         }
+        if ($refused = $this->refuseProtected($id, 'delete')) return $refused;
         $this->userModel->delete($id);
         $this->auth->auditLog('user.delete', 'users', $id);
         return Response::redirect('/admin/users')->withFlash('success', 'User deleted.');
@@ -410,5 +417,66 @@ class UserController
     private function denied(): Response
     {
         return Response::redirect('/dashboard')->withFlash('error', 'Access denied.');
+    }
+
+    // ── Protected accounts (#466, security sweep 4 Nov 2026) ────────────────
+    // The `admin` role holds users.edit, and update() wrote whatever it was
+    // posted: an admin could set a System Admin's email + password and sign
+    // in as them, or post the super-admin role id in roles[] for themselves
+    // (super-admin carries users.delete / roles.delete / audit.view, which
+    // admin deliberately lacks). Now an account that IS a System Admin
+    // (the is_superadmin column or the super-admin role) can be edited or
+    // deleted only with System Admin mode on, and only then can the
+    // super-admin role be granted or removed.
+
+    public const PROTECTED_ROLE = 'super-admin';
+
+    /** Is this account a System Admin, by the column or by the role? */
+    public function isProtectedTarget(int $id): bool
+    {
+        return (bool) $this->db->fetchColumn(
+            "SELECT 1 FROM users u WHERE u.id = ? AND (u.is_superadmin = 1 OR EXISTS (
+                 SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id AND r.slug = ?))",
+            [$id, self::PROTECTED_ROLE]
+        );
+    }
+
+    /** A redirect refusing the change, or null when the actor may touch this account. */
+    private function refuseProtected(int $id, string $action): ?Response
+    {
+        if ($this->auth->isSuperadminModeOn() || !$this->isProtectedTarget($id)) return null;
+        $this->auth->auditLog('user.protected_refused', 'users', $id, null, ['action' => $action]);
+        return Response::redirect('/admin/users')->withFlash('error',
+            'That account is a System Admin. Only a System Admin with System Admin mode on can change or delete it.');
+    }
+
+    /**
+     * The role ids this actor may set. Without System Admin mode the super-admin role can be neither granted nor
+     * taken away: it is dropped from what was posted, and kept if the account already had it. Pure apart from the
+     * super-admin role id, which is passed in.
+     *
+     * @param list<int|string> $posted
+     * @param list<int>        $current
+     * @return list<int>
+     */
+    public static function allowedRoleIds(array $posted, array $current, ?int $superRoleId, bool $saMode): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $posted), fn ($i) => $i > 0)));
+        if ($saMode || $superRoleId === null) return $ids;
+        $ids = array_values(array_filter($ids, fn ($i) => $i !== $superRoleId));
+        if (in_array($superRoleId, array_map('intval', $current), true)) $ids[] = $superRoleId;
+        return $ids;
+    }
+
+    private function superRoleId(): ?int
+    {
+        $id = $this->db->fetchColumn('SELECT id FROM roles WHERE slug = ?', [self::PROTECTED_ROLE]);
+        return $id ? (int) $id : null;
+    }
+
+    /** @return list<int> */
+    private function currentRoleIds(int $userId): array
+    {
+        return array_map('intval', array_column($this->userModel->getRoles($userId), 'id'));
     }
 }

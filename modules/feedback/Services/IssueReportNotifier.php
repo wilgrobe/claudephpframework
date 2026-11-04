@@ -217,8 +217,10 @@ final class IssueReportNotifier
      */
     private function baseUrl(): string
     {
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
-        if ($host !== '' && preg_match('/^[A-Za-z0-9.\-:]+$/', $host)) {
+        // #466: trusted hosts only — a guest could send the report with Host: evil.example and the admin's alert email
+        // linked "Open report" to the attacker's copy of the admin login.
+        $host = (string) trusted_host();
+        if ($host !== '') {
             $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                   || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
             return ($https ? 'https://' : 'http://') . $host;

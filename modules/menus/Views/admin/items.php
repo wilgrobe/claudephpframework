@@ -147,7 +147,7 @@ $pageTitle = 'Menu Items - ' . $menu['name'];
     /* Server-rendered state. linkSources is grouped by source name,
        each carrying a label + items array. items are the existing menu
        rows (flat, with parent_id/sort_order). We rebuild the tree client-side. */
-    const LINK_SOURCES = <?= json_encode($linkSources, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+    const LINK_SOURCES = <?= json_encode($linkSources, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const INITIAL_ITEMS = <?= json_encode(array_map(function($i) {
         return [
             'id'              => (int) $i['id'],
@@ -162,7 +162,7 @@ $pageTitle = 'Menu Items - ' . $menu['name'];
             'show_on_pages'   => $i['show_on_pages'] ? json_decode($i['show_on_pages'], true) : [],
             'sort_order'      => (int) ($i['sort_order'] ?? 0),
         ];
-    }, $items), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+    }, $items), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     /* Client-side state: each item has a stable client_id (used to track
        reorders + parent references during the session). */

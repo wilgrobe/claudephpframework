@@ -243,6 +243,11 @@ class Auth
         if (!preg_match('#^/[^/]#', $url) && $url !== '/') {
             return $default;
         }
+        // #466: browsers read "/\evil.com" as "//evil.com" (another site), and a control character can split a
+        // header. Neither is ever part of a real path here.
+        if (str_contains($url, '\\') || preg_match('/[\x00-\x1f\x7f]/', $url)) {
+            return $default;
+        }
         // Strip null bytes and whitespace
         $url = trim(str_replace("\0", '', $url));
         // Reject anything that still looks like an absolute URL after trimming
@@ -371,10 +376,39 @@ class Auth
      * which the controller also checks, and the button only renders in
      * non-production.
      */
+    /**
+     * End every server-side session of $userId except $keepSessionId (#466). Called after a password change (keep the
+     * current one) and a password reset (keep none): before this, a stolen session outlived the victim's new password.
+     * Returns the number ended; 0 when the sessions table is not in use (file sessions — nothing server-side to end).
+     */
+    public function endSessionsFor(int $userId, ?string $keepSessionId = null): int
+    {
+        try {
+            return $keepSessionId !== null && $keepSessionId !== ''
+                ? (int) $this->db->delete('sessions', 'user_id = ? AND id <> ?', [$userId, $keepSessionId])
+                : (int) $this->db->delete('sessions', 'user_id = ?', [$userId]);
+        } catch (\Throwable $e) {
+            error_log('[Auth] endSessionsFor: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * The ONE rule for the passwordless dev login (#466): an ALLOW-list of development environments AND an explicit
+     * APP_DEV_LOGIN=1. It used to be "anything but exactly `production`" with the flag defaulting ON, so a server whose
+     * APP_ENV said `staging`, `prod` or `live` — or was never changed from .env.example's `local` — let a guest sign in
+     * as any user, the System Admin included.
+     */
+    public static function devLoginAllowed(): bool
+    {
+        $env = strtolower(trim((string) ($_ENV['APP_ENV'] ?? 'production')));
+        return in_array($env, ['local', 'development', 'dev', 'testing'], true)
+            && trim((string) ($_ENV['APP_DEV_LOGIN'] ?? '0')) === '1';
+    }
+
     public function devLoginAs(int $userId): bool
     {
-        if (($_ENV['APP_ENV'] ?? 'production') === 'production') return false;
-        if (($_ENV['APP_DEV_LOGIN'] ?? '1') !== '1')             return false;
+        if (!self::devLoginAllowed()) return false;
 
         $user = $this->db->fetchOne(
             "SELECT id, email, is_active FROM users WHERE id = ?",
@@ -873,7 +907,14 @@ class Auth
 
     private function deriveKey(): string
     {
-        $appKey = config('app.key', '');
+        $appKey = (string) config('app.key', '');
+        // #466: in production, refuse to encrypt with no key, a short one, or a known placeholder (config/app.php's
+        // fallback and .env.example's) — OAuth tokens sealed under a public key are readable by anyone with the DB.
+        if (strtolower((string) ($_ENV['APP_ENV'] ?? 'production')) === 'production'
+            && (in_array($appKey, ['change-me-32-characters-minimum!!', 'change-something-random-characters!'], true)
+                || strlen(str_starts_with($appKey, 'base64:') ? (string) base64_decode(substr($appKey, 7)) : $appKey) < 32)) {
+            throw new \RuntimeException('APP_KEY is missing, too short or a placeholder — set a random 32+ character APP_KEY in .env.');
+        }
         if (str_starts_with($appKey, 'base64:')) {
             $appKey = base64_decode(substr($appKey, 7));
         }

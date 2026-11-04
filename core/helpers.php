@@ -33,9 +33,10 @@ if (!function_exists('site_base_url')) {
      */
     function site_base_url(): string
     {
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
-        // Reject anything that isn't a clean host[:port] (defense vs Host-header tricks).
-        if ($host !== '' && preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', $host)) {
+        // #466: only a TRUSTED host (trusted_host()) — the raw Host header is whatever the client sent, and a site
+        // answering on its bare IP or as the default vhost would otherwise publish links to the attacker's domain.
+        $host = (string) trusted_host();
+        if ($host !== '') {
             $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                 || ((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
                 || ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
@@ -69,6 +70,63 @@ if (!function_exists('e')) {
     function e(mixed $value): string
     {
         return htmlspecialchars((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+}
+
+if (!function_exists('trusted_host')) {
+    /**
+     * The request's Host (host[:port], lower-case) when it is one this site really serves — else null (#466). Trusted:
+     *   - APP_URL's host;
+     *   - APP_TRUSTED_HOSTS, comma-separated, "*.example.com" for any subdomain;
+     *   - config('app.trusted_host'), a callable(string $bareHost): bool the host app supplies — the Builder's says
+     *     "the tenant resolver matched this host to a tenant", which covers attached custom domains.
+     * Anything else (a spoofed Host on a default vhost or the bare IP) is null, and callers fall back to APP_URL.
+     */
+    function trusted_host(?string $host = null): ?string
+    {
+        $host = strtolower(trim((string) ($host ?? ($_SERVER['HTTP_HOST'] ?? ''))));
+        if ($host === '' || !preg_match('/^[a-z0-9.\-]+(:\d{1,5})?$/', $host)) return null;
+        $bare = (string) preg_replace('/:\d+$/', '', $host);
+        $appHost = strtolower((string) parse_url((string) ($_ENV['APP_URL'] ?? config('app.url', '')), PHP_URL_HOST));
+        if ($appHost !== '' && $bare === $appHost) return $host;
+        foreach (array_filter(array_map('trim', explode(',', strtolower((string) ($_ENV['APP_TRUSTED_HOSTS'] ?? ''))))) as $p) {
+            if ($p === $bare || (str_starts_with($p, '*.') && str_ends_with($bare, substr($p, 1)))) return $host;
+        }
+        $hook = function_exists('config') ? config('app.trusted_host') : null;
+        if (is_callable($hook)) {
+            try { if ($hook($bare)) return $host; } catch (\Throwable) {}
+        }
+        return null;
+    }
+}
+
+if (!function_exists('safe_href')) {
+    /**
+     * A URL that is safe to put in href="" — or null (#466). Allowed: http(s), mailto, tel, and anything without a
+     * scheme (/path, #anchor, ?query, relative). Refused: every other scheme — javascript:, data:, vbscript: … —
+     * checked AFTER removing the whitespace and control characters browsers ignore inside a scheme ("java\tscript:").
+     * Escaping alone does not help here: e('javascript:alert(1)') is still a working javascript: link. Pure.
+     */
+    function safe_href(?string $url): ?string
+    {
+        $u = trim((string) $url);
+        if ($u === '') return null;
+        $probe = strtolower((string) preg_replace('/[\x00-\x20\x7f]+/', '', $u));
+        if (preg_match('/^[a-z][a-z0-9+.\-]*:/', $probe) && !preg_match('/^(https?|mailto|tel):/', $probe)) return null;
+        return $u;
+    }
+}
+
+if (!function_exists('mask_email')) {
+    /**
+     * "wilgrobe@gmail.com" → "w•••@gmail.com": enough to tell two people apart, not enough to mail them (#466).
+     * A value without an @ comes back as "•••". Pure.
+     */
+    function mask_email(string $email): string
+    {
+        $at = strrpos($email, '@');
+        if ($at === false || $at === 0) return '•••';
+        return mb_substr($email, 0, 1) . '•••' . substr($email, $at);
     }
 }
 

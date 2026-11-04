@@ -173,6 +173,8 @@ class ProfileController
         }
 
         $this->db->update('users', $data, 'id = ?', [$this->auth->id()]);
+        // #466: a new password ends every OTHER session of this account (a stolen one included); this browser stays in.
+        if (isset($data['password'])) $this->auth->endSessionsFor((int) $this->auth->id(), session_id() ?: null);
         $this->auth->refreshUser();
         $this->auth->auditLog('profile.update', 'users', $this->auth->id());
 

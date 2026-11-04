@@ -196,7 +196,9 @@ $statusBadge = [
                         <?php if (!empty($r['page_url'])): ?>
                             <div style="margin-top:.6rem;font-size:12.5px;">
                                 <span style="color:var(--text-subtle);">On:</span>
-                                <a href="<?= $e($r['page_url']) ?>" target="_blank" rel="noopener" style="word-break:break-all;"><?= $e($r['page_url']) ?></a>
+                                <?php if (preg_match('#^https?://#i', (string) $r['page_url'])): /* #466: rows stored before the write-side check */ ?>
+                                <a href="<?= $e($r['page_url']) ?>" target="_blank" rel="noopener noreferrer" style="word-break:break-all;"><?= $e($r['page_url']) ?></a>
+                                <?php else: ?><span style="word-break:break-all;"><?= $e($r['page_url']) ?></span><?php endif; ?>
                             </div>
                         <?php endif; ?>
 

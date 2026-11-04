@@ -52,7 +52,7 @@
                             <?= e($agoLabel) ?>
                         </td>
                         <td>
-                            <form method="post" action="/admin/sessions/<?= e((string) $s['id']) ?>/terminate" style="display:inline" data-mo-confirm="Terminate this session?">
+                            <form method="post" action="/admin/sessions/<?= e((string) $s['handle']) ?>/terminate" style="display:inline" data-mo-confirm="Terminate this session?">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-sm btn-danger">Terminate</button>
                             </form>

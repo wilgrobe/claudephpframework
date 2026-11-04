@@ -47,23 +47,25 @@ $router->get('/api/users/search', function (\Core\Request $req) {
     if (\Core\Auth\Auth::getInstance()->guest()) {
         return \Core\Response::json(['error' => 'Unauthenticated'], 401);
     }
-    $q  = trim($req->query('q', ''));
-    if (strlen($q) < 2) return \Core\Response::json([]);
+    $raw = trim((string) $req->query('q', ''));
+    if (strlen($raw) < 2) return \Core\Response::json([]);
     // SQL-L1 — escape LIKE wildcards (value is bound; wildcard hygiene).
-    $q  = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q);
+    $q  = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $raw);
     $db = \Core\Database\Database::getInstance();
+    // #466: any signed-in user could page through everyone's email address ("aa", "ab", …, 10 a time). Names and
+    // usernames still match partially; an email matches only when typed IN FULL (you can find someone whose address
+    // you already know, not discover addresses). The result carries a masked email, enough to tell two Sams apart.
     $rows = $db->fetchAll(
         "SELECT id, username, email, first_name, last_name FROM users
          WHERE is_active = 1
-           AND (username LIKE ? OR email LIKE ? OR first_name LIKE ? OR last_name LIKE ?)
+           AND (username LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR email = ?)
          LIMIT 10",
-        ["%$q%", "%$q%", "%$q%", "%$q%"]
+        ["%$q%", "%$q%", "%$q%", strtolower($raw)]
     );
-    // Never expose password hashes or sensitive fields in search results
     return \Core\Response::json(array_map(fn($u) => [
-        'id'    => $u['id'],
-        'name'  => trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')),
-        'email' => $u['email'],
+        'id'    => (int) $u['id'],
+        'name'  => trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?: (string) ($u['username'] ?? ''),
+        'email' => mask_email((string) $u['email']),
     ], $rows));
 }, [\App\Middleware\AuthMiddleware::class]);
 

@@ -35,8 +35,7 @@ class AuthController
         // one-click sign-in options. Saves the round-trip through email/
         // password or real OAuth every time you test a login-adjacent flow.
         $devUsers = [];
-        if (($_ENV['APP_ENV'] ?? 'production') !== 'production'
-            && ($_ENV['APP_DEV_LOGIN'] ?? '1') === '1') {
+        if (\Core\Auth\Auth::devLoginAllowed()) {
             $devUsers = $this->db->fetchAll(
                 "SELECT id, email, first_name, last_name, is_superadmin
                    FROM users
@@ -552,7 +551,7 @@ class AuthController
 
     public function devLoginAs(Request $request): Response
     {
-        if (($_ENV['APP_ENV'] ?? 'production') === 'production') {
+        if (!\Core\Auth\Auth::devLoginAllowed()) {
             return new Response('Not found', 404);
         }
 
@@ -895,6 +894,8 @@ class AuthController
         $user = $this->db->fetchOne("SELECT id FROM users WHERE email = ?", [strtolower($record['email'])]);
         if ($user) {
             $userModel->update($user['id'], ['password' => $v->get('password')]);
+            // #466: a reset ends EVERY session of the account — the usual reason to reset is that someone else got in.
+            $this->auth->endSessionsFor((int) $user['id']);
             $this->db->delete('password_resets', 'email = ?', [strtolower($record['email'])]);
         }
 

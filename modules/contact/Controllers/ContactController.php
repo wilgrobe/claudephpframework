@@ -135,6 +135,8 @@ final class ContactController
         if ($candidate === '' || $candidate[0] !== '/') return '/contact';
         if (str_starts_with($candidate, '//'))         return '/contact';
         if (preg_match('/[\r\n]/', $candidate))        return '/contact';
+        // #466: "/\evil.com" is "//evil.com" to a browser; control characters are never part of a real path.
+        if (str_contains($candidate, '\\') || preg_match('/[\x00-\x1f\x7f]/', $candidate)) return '/contact';
         return $candidate;
     }
 }

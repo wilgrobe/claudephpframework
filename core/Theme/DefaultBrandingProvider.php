@@ -38,9 +38,12 @@ final class DefaultBrandingProvider implements BrandingProvider
 
         $customCss = trim((string) setting('branding.custom_css', ''));
         if ($customCss !== '') {
-            // Author-supplied site CSS. Strip a closing </style> defensively so
-            // it can't break out of the wrapper.
-            $customCss = str_ireplace('</style>', '', $customCss);
+            // Author-supplied site CSS. It must not be able to close the wrapper.
+            // #466: str_ireplace('</style>') was one pass over one spelling —
+            // "</style >", "</style/>" and "</sty</style>le>" all got through.
+            // Any "</style" (any case, any spacing) becomes "<\/style", which
+            // the HTML parser does not read as an end tag.
+            $customCss = (string) preg_replace('#<\s*/\s*(style)#i', '<\\\\/$1', $customCss);
             $out .= '<style>' . $customCss . '</style>';
         }
 

@@ -61,14 +61,17 @@ class AccountSessionsController
             [$userId]
         );
 
+        // #466: the page carries an opaque handle (SHA-256 of the id), never the session id itself — it IS the
+        // session cookie, and the admin page's copy of this mistake let any admin sign in as anyone.
         foreach ($rows as &$r) {
             $r['is_current'] = ((string) $r['id'] === (string) $currentId);
+            $r['handle'] = hash('sha256', (string) $r['id']);
+            unset($r['id']);
         }
         unset($r);
 
         return Response::view('account.sessions', [
             'sessions'  => $rows,
-            'currentId' => $currentId,
             'me'        => $this->auth->user(),
         ]);
     }
@@ -77,13 +80,15 @@ class AccountSessionsController
     {
         if ($g = $this->gateOrHide()) return $g;
 
-        $targetId = (string) $request->param(0);
-        $userId   = (int) $this->auth->id();
+        $handle = strtolower((string) $request->param(0));
+        $userId = (int) $this->auth->id();
 
-        // Scope the delete — users can only kick their OWN sessions. An
-        // attacker guessing another user's session id would match zero
-        // rows here because user_id = (current auth) filters it out.
-        $deleted = $this->db->delete(
+        // Scope the lookup — users can only kick their OWN sessions: a handle
+        // belonging to someone else matches nothing once user_id filters it.
+        $targetId = preg_match('/^[0-9a-f]{64}$/', $handle)
+            ? (string) $this->db->fetchColumn('SELECT id FROM sessions WHERE SHA2(id, 256) = ? AND user_id = ?', [$handle, $userId])
+            : '';
+        $deleted = $targetId === '' ? 0 : $this->db->delete(
             'sessions',
             'id = ? AND user_id = ?',
             [$targetId, $userId]
@@ -99,7 +104,7 @@ class AccountSessionsController
             'sessions',
             null,
             null,
-            ['target_session_id' => substr($targetId, 0, 16) . '…']
+            ['target_session' => substr($handle, 0, 12)]
         );
 
         // Killed the current browser? Send straight to login rather

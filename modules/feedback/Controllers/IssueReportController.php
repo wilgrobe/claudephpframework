@@ -351,6 +351,10 @@ class IssueReportController
     private function scrubUrl(string $url): string
     {
         $url = $this->str($url, 500);
+        // #466: the page a report came from is always an absolute http(s) URL (the widget sends location.href, the
+        // fallback is the Referer). Anything else — "javascript:fetch(…)" posted by a guest — became a link in the
+        // admin inbox that ran in the admin's session when clicked. Not stored at all now.
+        if ($url !== '' && !preg_match('#^https?://#i', $url)) return '';
         if ($url === '' || !str_contains($url, '?')) return $url;
 
         [$base, $qs] = explode('?', $url, 2);

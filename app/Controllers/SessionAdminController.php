@@ -43,8 +43,12 @@ class SessionAdminController
             $bind[] = $userFilter;
         }
 
+        // #466: never s.* — sessions.id IS the session cookie (PHPSESSID) and payload is the session itself. The
+        // page showed every live id in its Terminate forms, so any admin could copy a System Admin's id into their
+        // own cookie and BE them. The view gets an opaque handle (SHA-256 of the id) and nothing else of the row.
         $rows = $this->db->fetchAll(
-            "SELECT s.*, u.username, u.email, u.first_name, u.last_name
+            "SELECT SHA2(s.id, 256) AS handle, s.user_id, s.ip_address, s.user_agent, s.last_activity,
+                    u.username, u.email, u.first_name, u.last_name
                FROM sessions s
           LEFT JOIN users u ON u.id = s.user_id
               $where
@@ -73,21 +77,25 @@ class SessionAdminController
 
     public function terminate(Request $request): Response
     {
-        $id = (string) $request->param(0);
-        $row = $this->db->fetchOne("SELECT user_id FROM sessions WHERE id = ?", [$id]);
+        // The URL carries the handle (SHA-256 of the id), never the id itself — see index().
+        $handle = strtolower((string) $request->param(0));
+        if (!preg_match('/^[0-9a-f]{64}$/', $handle)) {
+            return Response::redirect('/admin/sessions')->withFlash('error', 'Session not found.');
+        }
+        $row = $this->db->fetchOne("SELECT id, user_id FROM sessions WHERE SHA2(id, 256) = ?", [$handle]);
         if (!$row) {
             return Response::redirect('/admin/sessions')->withFlash('error', 'Session not found.');
         }
 
-        $this->db->delete('sessions', 'id = ?', [$id]);
+        $this->db->delete('sessions', 'id = ?', [(string) $row['id']]);
         $this->auth->auditLog(
             'session.terminate',
             'sessions',
             null,
             null,
             [
-                'target_session_id' => substr($id, 0, 16) . '…',
-                'target_user_id'    => $row['user_id'],
+                'target_session' => substr($handle, 0, 12),
+                'target_user_id' => $row['user_id'],
             ]
         );
 
