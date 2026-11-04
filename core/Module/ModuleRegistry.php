@@ -46,6 +46,25 @@ use Core\View;
  */
 class ModuleRegistry
 {
+    /**
+     * #466 perf: whether module_status exists, asked of information_schema at most once per database per process — it
+     * was asked twice on every request. Only a YES is remembered: a fresh install creates the table partway through
+     * its first migrate run, and a remembered NO would hide it for the rest of that process.
+     */
+    private static array $moduleStatusSeen = [];
+
+    private static function moduleStatusExists(\Core\Database\Database $db): bool
+    {
+        $k = (string) ($_ENV['DB_DATABASE'] ?? '');
+        if (isset(self::$moduleStatusSeen[$k])) return true;
+        $yes = (bool) $db->fetchColumn(
+            "SELECT 1 FROM information_schema.tables
+              WHERE table_schema = DATABASE() AND table_name = 'module_status' LIMIT 1"
+        );
+        if ($yes) self::$moduleStatusSeen[$k] = true;
+        return $yes;
+    }
+
     /** @var ModuleProvider[] all discovered providers, keyed by name */
     private array $providers = [];
 
@@ -530,10 +549,7 @@ class ModuleRegistry
             return [];
         }
         try {
-            $exists = (bool) $db->fetchColumn(
-                "SELECT 1 FROM information_schema.tables
-                  WHERE table_schema = DATABASE() AND table_name = 'module_status' LIMIT 1"
-            );
+            $exists = self::moduleStatusExists($db);
         } catch (\Throwable) {
             return [];
         }
@@ -732,10 +748,7 @@ class ModuleRegistry
         // Skip silently when the table doesn't exist yet (fresh install
         // before migrations have been run, or running the migrator itself).
         try {
-            $exists = (bool) $db->fetchColumn(
-                "SELECT 1 FROM information_schema.tables
-                  WHERE table_schema = DATABASE() AND table_name = 'module_status' LIMIT 1"
-            );
+            $exists = self::moduleStatusExists($db);
         } catch (\Throwable) {
             return;
         }

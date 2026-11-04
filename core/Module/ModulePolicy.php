@@ -53,7 +53,7 @@ abstract class ModulePolicy
 
     public function __construct(?SettingsService $settings = null, ?Database $db = null)
     {
-        $this->settings = $settings ?? new SettingsService();
+        $this->settings = $settings ?? SettingsService::shared();
         $this->db       = $db; // lazy — only constructed if a groups check actually fires
     }
 
@@ -105,7 +105,7 @@ abstract class ModulePolicy
     /** Read `{prefix}_public_visibility` directly (no instance needed). */
     public static function publicVisibilityFor(string $prefix): string
     {
-        $v = (string) (new SettingsService())->get($prefix . '_public_visibility', self::VISIBILITY_PUBLIC, 'site');
+        $v = (string) SettingsService::shared()->get($prefix . '_public_visibility', self::VISIBILITY_PUBLIC, 'site');
         return in_array($v, [self::VISIBILITY_PUBLIC, self::VISIBILITY_AUTH, self::VISIBILITY_DISABLED], true)
             ? $v
             : self::VISIBILITY_PUBLIC;

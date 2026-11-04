@@ -36,7 +36,7 @@ class CookieConsentService
     public function __construct(?Database $db = null, ?SettingsService $settings = null)
     {
         $this->db       = $db       ?? Database::getInstance();
-        $this->settings = $settings ?? new SettingsService();
+        $this->settings = $settings ?? SettingsService::shared();
     }
 
     /**

@@ -24,6 +24,22 @@ class SettingsService
     }
 
     /**
+     * The request's shared instance — the container singleton (core/bootstrap.php), so one bulk load serves the
+     * whole request. #466 perf: services that defaulted to `new SettingsService()` (ModulePolicy, ThemeService,
+     * CookieConsentService, …) each warmed their own copy — the site bucket was loaded 3-4 times per page.
+     * `new SettingsService()` keeps its old meaning (a fresh instance) for code that wants a fresh read; this is
+     * only for defaults. Falls back to a fresh instance when the container is not booted (tests, early bootstrap).
+     */
+    public static function shared(): self
+    {
+        try {
+            $s = \Core\Container\Container::global()->get(self::class);
+            if ($s instanceof self) return $s;
+        } catch (\Throwable) {}
+        return new self();
+    }
+
+    /**
      * Phase 43.197c M2 — invalidate the warm-cache for a specific bucket
      * (and optionally a specific key). Long-running CLI loops (cron sweeps
      * like `marketing:dispatch-scheduled`, GDPR purger, ZipBuilder 90s+

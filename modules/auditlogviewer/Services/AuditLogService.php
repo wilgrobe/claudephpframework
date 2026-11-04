@@ -76,18 +76,27 @@ class AuditLogService
 
         $whereSql = 'WHERE ' . implode(' AND ', $where);
 
-        $items = $this->db->fetchAll(
+        // #466 perf — deferred join: pick the page's ids from the (created_at, id) index first, then fetch those
+        // rows. With a deep OFFSET the one-query form made MySQL drop the index for a full scan + filesort
+        // (page 200 of 200k rows: 314 ms -> a few ms).
+        $ids = array_map('intval', array_column($this->db->fetchAll(
+            "SELECT a.id FROM audit_log a $whereSql ORDER BY a.created_at DESC, a.id DESC LIMIT ? OFFSET ?",
+            [...$bind, $perPage, $offset]
+        ), 'id'));
+        $items = $ids === [] ? [] : $this->db->fetchAll(
             "SELECT a.*, u.username AS actor_username, e.username AS emulated_username
                FROM audit_log a
           LEFT JOIN users u ON u.id = a.actor_user_id
           LEFT JOIN users e ON e.id = a.emulated_user_id
-              $whereSql
-           ORDER BY a.created_at DESC, a.id DESC
-              LIMIT ? OFFSET ?",
-            [...$bind, $perPage, $offset]
+              WHERE a.id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")
+           ORDER BY a.created_at DESC, a.id DESC",
+            $ids
         );
-        $total = (int) $this->db->fetchColumn(
-            "SELECT COUNT(*) FROM audit_log a $whereSql", $bind
+        // The pager's total, cached 60 s per filter set: COUNT(*) walked the whole table on every view (124 ms at
+        // 200k rows, seconds at a few million). The log is append-only, so a total a minute old is harmless.
+        $total = (int) \Core\Services\CacheService::instance()->remember(
+            'auditlog.total.' . md5($whereSql . "\0" . json_encode($bind)), 60,
+            fn () => (int) $this->db->fetchColumn("SELECT COUNT(*) FROM audit_log a $whereSql", $bind)
         );
         return ['items' => $items, 'total' => $total, 'page' => $page, 'per_page' => $perPage];
     }
@@ -113,12 +122,14 @@ class AuditLogService
      */
     public function topActions(int $limit = 200): array
     {
-        return $this->db->fetchAll(
-            "SELECT action, COUNT(*) AS cnt FROM audit_log
-          GROUP BY action
-          ORDER BY cnt DESC LIMIT ?",
-            [$limit]
-        );
+        // #466 perf: a GROUP BY over the whole log on every page view (65 ms at 200k rows) — cached 10 minutes.
+        return (array) \Core\Services\CacheService::instance()->remember('auditlog.top_actions.' . $limit, 600,
+            fn () => $this->db->fetchAll(
+                "SELECT action, COUNT(*) AS cnt FROM audit_log
+              GROUP BY action
+              ORDER BY cnt DESC LIMIT ?",
+                [$limit]
+            ));
     }
 
     /**

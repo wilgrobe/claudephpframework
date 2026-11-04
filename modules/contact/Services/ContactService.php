@@ -381,7 +381,7 @@ final class ContactService
             try { return setting($key, $default); } catch (\Throwable) {}
         }
         try {
-            return (new SettingsService())->get($key, $default, 'site');
+            return SettingsService::shared()->get($key, $default, 'site');
         } catch (\Throwable) {
             return $default;
         }

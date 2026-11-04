@@ -277,7 +277,7 @@ class ThemeService
 
     public function __construct(?SettingsService $settings = null)
     {
-        $this->settings = $settings ?? new SettingsService();
+        $this->settings = $settings ?? SettingsService::shared();
     }
 
     public function definitionsByGroup(string $group): array

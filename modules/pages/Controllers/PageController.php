@@ -73,7 +73,7 @@ class PageController
         $this->db       = Database::getInstance();
         $this->auth     = Auth::getInstance();
         $this->seo      = new SeoManager();
-        $this->settings = new SettingsService();
+        $this->settings = SettingsService::shared();
     }
 
     public function index(Request $request): Response

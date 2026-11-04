@@ -46,7 +46,7 @@ class CookieConsentController
     public function __construct()
     {
         $this->auth     = Auth::getInstance();
-        $this->settings = new SettingsService();
+        $this->settings = SettingsService::shared();
         $this->consent  = new CookieConsentService(null, $this->settings);
     }
 
