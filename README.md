@@ -130,6 +130,18 @@ vendor/bin/phpunit --filter CorePremium         # the tier-integrity gate
 A working sandbox PHP wrapper lives at `bin/php` for environments without a
 system PHP install. See `bin/setup-php.sh` for one-shot bootstrap.
 
+**Before pushing:** turn on the repo's hooks once per clone —
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`.githooks/pre-push` runs `php artisan deploy:preflight` (the whole suite, every
+migration parses, changed files lint) and refuses the push if anything fails.
+The same checks run in CI on every push and pull request
+(`.github/workflows/tests.yml`), so a pull request is tested whether or not the
+hook is on.
+
 ## Built-in artisan commands
 
 ```bash

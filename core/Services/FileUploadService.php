@@ -438,7 +438,6 @@ class FileUploadService
         $w = imagesx($image);
         $h = imagesy($image);
         if ($w > 8000 || $h > 8000) {
-            imagedestroy($image);
             throw new \RuntimeException("Image dimensions ({$w}×{$h}) exceed the maximum allowed (8000×8000).");
         }
 
@@ -450,7 +449,6 @@ class FileUploadService
             default      => false,
         };
 
-        imagedestroy($image);
 
         if (!$saved) {
             throw new \RuntimeException('Failed to save re-encoded image.');

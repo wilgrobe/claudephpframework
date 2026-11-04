@@ -1,0 +1,95 @@
+# .github/workflows/tests.yml — the framework's test profile in CI (#466, 4 Nov 2026).
+# Every push and pull request: lint, the full preflight (suite + migrations parse), a dependency audit on each
+# supported PHP, and a FRESH INSTALL on MySQL 8 — every migration run twice (idempotent) and the site answering.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: lint + preflight + audit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, json, mbstring, openssl, pdo, pdo_mysql, sodium, gd, fileinfo, zip
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Lint every PHP file
+        run: find . -name '*.php' -not -path './vendor/*' -not -path './storage/*' -print0 | xargs -0 -n 50 -P 4 php -l > /dev/null
+      - name: Preflight (suite, migrations parse, changed-file lint)
+        run: php artisan deploy:preflight
+      - name: Dependency audit
+        run: composer audit --no-interaction
+
+  fresh-install:
+    name: fresh install on MySQL 8
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+          MYSQL_DATABASE: framework_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, json, mbstring, openssl, pdo, pdo_mysql, sodium, gd, fileinfo, zip
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Write .env for the CI database
+        run: |
+          cp .env.example .env
+          sed -i -E \
+            -e 's#^APP_ENV=.*#APP_ENV=testing#' \
+            -e "s#^APP_KEY=.*#APP_KEY=$(php -r 'echo bin2hex(random_bytes(32));')#" \
+            -e 's#^APP_URL=.*#APP_URL=http://127.0.0.1:8080#' \
+            -e 's#^DB_HOST=.*#DB_HOST=127.0.0.1#' \
+            -e 's#^DB_DATABASE=.*#DB_DATABASE=framework_ci#' \
+            -e 's#^DB_USERNAME=.*#DB_USERNAME=root#' \
+            -e 's#^DB_PASSWORD=.*#DB_PASSWORD=ci-root#' \
+            -e 's#^STORAGE_DRIVER=.*#STORAGE_DRIVER=local#' \
+            -e 's#^MAIL_DRIVER=.*#MAIL_DRIVER=log#' \
+            .env
+      - name: Migrate a fresh database
+        run: php artisan migrate
+      - name: Migrate again (nothing left to run, nothing breaks)
+        run: php artisan migrate
+      - name: The site answers
+        run: |
+          php -S 127.0.0.1:8080 -t public public/index.php > /tmp/server.log 2>&1 &
+          for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:8080/login && break; sleep 0.5; done
+          fail() { echo "$1"; cat /tmp/server.log; cat storage/logs/*.log 2>/dev/null | tail -40; exit 1; }
+          # A fresh install has no public home page yet, so / sends a visitor to /login.
+          home=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' http://127.0.0.1:8080/)
+          echo "/ -> $home"
+          case "$home" in "200 "*|"302 http://127.0.0.1:8080/login") ;; *) fail "/ should answer 200 or redirect to /login";; esac
+          login=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/login)
+          echo "/login -> $login"
+          [ "$login" = "200" ] || fail "/login should answer 200"

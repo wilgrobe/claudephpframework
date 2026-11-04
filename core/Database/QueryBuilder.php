@@ -364,7 +364,7 @@ class QueryBuilder
     private function assertIdent(string $name, bool $allowStar = false): void
     {
         if ($allowStar && $name === '*') return;
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/D', $name)) {
             throw new \InvalidArgumentException("Unsafe SQL identifier: [$name]");
         }
     }

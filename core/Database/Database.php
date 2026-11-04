@@ -460,7 +460,7 @@ class Database
      */
     private function assertSafeIdentifier(string $name): void
     {
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/D', $name)) {
             throw new \InvalidArgumentException(
                 "Unsafe SQL identifier detected: [$name]"
             );

@@ -1,0 +1,36 @@
+#!/bin/sh
+# Refuse to push work that would not pass preflight.
+#
+# Installed 2026-09-12. The Builder's suite had been failing since 13 June and
+# nobody knew, because nothing ran it. A suite only run deliberately is a suite
+# never run.
+#
+# deploy:preflight rather than bare phpunit: it runs the suite, checks every
+# migration parses with no basename collisions, and — in a repo that TRACKS
+# dist/ — that no zip is older than the source it was built from. That last one
+# is the check that matters here: on 2026-09-12 the subscriptions zip was seven
+# days stale and still carried a gate that had already taken a production ledger
+# offline. Pushing stale artifacts to origin ships that to whoever builds next.
+#
+# Checks that do not apply to this repo skip themselves. Bypass with --no-verify.
+cd "$(git rev-parse --show-toplevel)" || exit 1
+[ -f artisan ] || { echo "pre-push: no artisan — skipping"; exit 0; }
+
+# ONE-RUN GUARD (2026-10-04, #393 phase F). `origin` pushes to TWO URLs — the git server and GitHub,
+# kept as a mirror — and git runs this hook once PER URL. The marker is keyed on the exact commit
+# and trusted for two minutes, so it only skips a re-run of the same content.
+HEAD_SHA=$(git rev-parse HEAD)
+MARK="${TMPDIR:-/tmp}/$(basename "$PWD")-preflight-$HEAD_SHA"
+if [ -f "$MARK" ] && [ -z "$(find "$MARK" -mmin +2 2>/dev/null)" ]; then
+  echo "pre-push: already passed for ${HEAD_SHA%"${HEAD_SHA#???????}"} — not re-running for the second push URL."
+  exit 0
+fi
+rm -f "$MARK"
+
+echo "pre-push: running deploy:preflight..."
+if ! php artisan deploy:preflight; then
+  echo ""
+  echo "pre-push: REFUSED — preflight failed. Fix it, or push with --no-verify."
+  exit 1
+fi
+: > "$MARK"

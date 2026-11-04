@@ -127,6 +127,12 @@ final class PanelsMatchTheirModulesTest extends TestCase
         if (is_file(BASE_PATH . '/app/Tenancy/Tenant.php') && !is_file(BASE_PATH . '/app/Database/CentralDatabase.php')) {
             $this->markTestSkipped('generated site: module names are checked in the framework and Builder repos');
         }
+        // A framework checkout ON ITS OWN (CI on GitHub, a fresh clone) has no premium sibling, and the settings nav
+        // gates panels on premium modules (commerce -> store). Those names can only be resolved where premium sits
+        // beside the framework — locally and in the Builder — so the check runs there (#466 CI, 4 Nov 2026).
+        if (!is_dir(BASE_PATH . '/../claudephpframeworkpremium/modules')) {
+            $this->markTestSkipped('no premium checkout beside this one: premium module names cannot be resolved here');
+        }
         $known = [];
         foreach (glob(BASE_PATH . '/modules/*', GLOB_ONLYDIR) as $d) { $known[basename($d)] = true; }
         // The premium and framework trees are the other places a module can come from.
