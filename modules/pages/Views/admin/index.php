@@ -44,6 +44,13 @@
             <?php endforeach; ?>
             </tbody>
         </table>
+<?php if (($pageCount ?? 1) > 1): /* #466: paged, 100 at a time */ ?>
+<nav aria-label="Page list pages" style="display:flex;gap:.75rem;align-items:center;justify-content:center;margin:1rem 0">
+    <?php if ($pageNo > 1): ?><a class="btn btn-sm btn-secondary" href="/admin/pages?page=<?= (int) ($pageNo - 1) ?>" rel="prev">← Previous</a><?php endif; ?>
+    <span style="font-size:13px;color:var(--text-muted)">Page <?= (int) $pageNo ?> of <?= (int) $pageCount ?> · <?= (int) $total ?> pages</span>
+    <?php if ($pageNo < $pageCount): ?><a class="btn btn-sm btn-secondary" href="/admin/pages?page=<?= (int) ($pageNo + 1) ?>" rel="next">Next →</a><?php endif; ?>
+</nav>
+<?php endif; ?>
     </div>
 </div>
 

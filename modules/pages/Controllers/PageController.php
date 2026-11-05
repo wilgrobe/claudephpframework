@@ -79,8 +79,16 @@ class PageController
     public function index(Request $request): Response
     {
         if ($this->auth->cannot('pages.manage')) return $this->denied();
-        $pages = $this->db->fetchAll("SELECT * FROM pages ORDER BY sort_order, title");
-        return Response::view('pages::admin.index', ['pages' => $pages, 'user' => $this->auth->user()]);
+        // #466: the list shows title, slug, status and visibility — it loaded every page's body and rendered HTML, all
+        // of them at once (1.4 MB on the Builder's apex). Those columns only, 100 a page.
+        $perPage = 100;
+        $total = (int) $this->db->fetchColumn('SELECT COUNT(*) FROM pages');
+        $pageCount = max(1, (int) ceil($total / $perPage));
+        $pageNo = min($pageCount, max(1, (int) $request->query('page', 1)));
+        $pages = $this->db->fetchAll('SELECT id, title, slug, status, is_public, sort_order FROM pages ORDER BY sort_order, title LIMIT '
+            . $perPage . ' OFFSET ' . (($pageNo - 1) * $perPage));
+        return Response::view('pages::admin.index', ['pages' => $pages, 'user' => $this->auth->user(),
+            'pageNo' => $pageNo, 'pageCount' => $pageCount, 'total' => $total]);
     }
 
     public function create(Request $request): Response
