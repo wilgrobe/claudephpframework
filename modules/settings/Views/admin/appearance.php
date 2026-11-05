@@ -509,7 +509,7 @@
             'default_dark' => (string) ($d['default_dark'] ?? ($d['default'] ?? '')),
         ],
         $tokenDefinitions
-    ), JSON_UNESCAPED_SLASHES) ?>;
+    ), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
 
     /* Current preview mode (which input feeds: light or dark). */
     let mode = 'light';

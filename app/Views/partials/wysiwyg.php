@@ -117,14 +117,14 @@ include BASE_PATH . '/app/Views/partials/_inline_dialogs.php';
    HTML on every keystroke so the submitted value always matches what
    the user sees. */
 (function () {
-    const editor   = document.getElementById(<?= json_encode($__wy_edit, JSON_UNESCAPED_SLASHES) ?>);
-    const textarea = document.getElementById(<?= json_encode($__wy_ta,   JSON_UNESCAPED_SLASHES) ?>);
-    const wrap     = document.getElementById(<?= json_encode($__wy_wrap, JSON_UNESCAPED_SLASHES) ?>);
-    const toggle   = document.getElementById(<?= json_encode($__wy_toggle, JSON_UNESCAPED_SLASHES) ?>);
-    const toolbar  = document.getElementById(<?= json_encode($__wy_bar,  JSON_UNESCAPED_SLASHES) ?>);
+    const editor   = document.getElementById(<?= json_encode($__wy_edit, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>);
+    const textarea = document.getElementById(<?= json_encode($__wy_ta,   JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>);
+    const wrap     = document.getElementById(<?= json_encode($__wy_wrap, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>);
+    const toggle   = document.getElementById(<?= json_encode($__wy_toggle, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>);
+    const toolbar  = document.getElementById(<?= json_encode($__wy_bar,  JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>);
     if (!editor || !textarea) return;
 
-    editor.dataset.placeholder = <?= json_encode($wy_placeholder, JSON_UNESCAPED_SLASHES) ?>;
+    editor.dataset.placeholder = <?= json_encode($wy_placeholder, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     editor.innerHTML = textarea.value;
 
     const syncToTextarea = () => { textarea.value = editor.innerHTML; };

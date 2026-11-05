@@ -537,17 +537,17 @@ document.querySelectorAll('.body-grow').forEach(t => growTextarea(t));
    Composer state + JS
    ──────────────────────────────────────────────────────────────────── */
 const __blocks     = <?= json_encode($__blockCatalog,
-                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+                            JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
 const __placements = <?= json_encode($__placements,
-                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+                            JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
 
 /* Per-row + per-cell style state. Server-rendered into JSON so reload
    round-trips without an extra fetch. Mutated by the row/cell style
    modals; rebuildHiddenInputs serialises them back to form fields. */
 const __rowStyles  = <?= json_encode((object) $__rowStyles,
-                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+                            JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
 const __cellStyles = <?= json_encode((object) $__cellStyles,
-                            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+                            JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
 
 /* Modal state — one modal element, three modes:
      'placement' — block settings + visibility + style

@@ -34,7 +34,7 @@ if ($__bcastAuth->check()) {
         $__bcastCfg['user_id'] = (int) $__bcastAuth->id();
         ?>
         <script>
-        window.BROADCAST_CONFIG = <?= json_encode($__bcastCfg, JSON_UNESCAPED_SLASHES) ?>;
+        window.BROADCAST_CONFIG = <?= json_encode($__bcastCfg, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
         </script>
         <?php if ($__bcastCfg['provider'] === 'pusher' || $__bcastCfg['provider'] === 'soketi'): ?>
         <script src="https://js.pusher.com/8.0/pusher.min.js" defer></script>
