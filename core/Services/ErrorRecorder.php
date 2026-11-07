@@ -61,6 +61,7 @@ final class ErrorRecorder
     private static function recordRaw(string $level, string $class, string $message, string $file, int $line, string $trace): void
     {
         if (self::$busy) return;
+        if (!self::fromAppEntry(PHP_SAPI, (string) ($_SERVER['SCRIPT_FILENAME'] ?? ''), (string) (get_included_files()[0] ?? ''), defined('BASE_PATH') ? (string) BASE_PATH : null)) return;
         self::$busy = true;
         try {
             $ev = self::event($level, $class, $message, $file, $line, $trace, self::context(), gmdate('Y-m-d H:i:s'));
@@ -70,6 +71,32 @@ final class ErrorRecorder
         } finally {
             self::$busy = false;
         }
+    }
+
+    /**
+     * Is this process the app itself — a web request, or a command whose entry script lives inside the app (artisan,
+     * the queue worker, cron, the test suite)? A throwaway script elsewhere (/tmp/x.php that requires the bootstrap) or
+     * inline `php -r` is not, and its errors are the operator's, printed to them — recording them made every admin
+     * one-off look like an app error in Ops (Will, 7 Nov 2026: 6 of 7 open errors were /tmp scripts).
+     * The entry script is get_included_files()[0] — PHP's absolute, symlink-resolved path of the file the process
+     * started with — NOT SCRIPT_FILENAME + the working directory: `php artisan` gives a relative SCRIPT_FILENAME, and a
+     * command that chdir()s before failing would have looked like it ran from somewhere else (caught by the test suite,
+     * which does exactly that). SCRIPT_FILENAME is used only to spot `php -r` / stdin, which has no script file.
+     * Symlinks are resolved on both sides (a managed server runs releases/<ts>/artisan through current/).
+     * When it cannot tell — no BASE_PATH, or no entry file — it records. Pure.
+     */
+    public static function fromAppEntry(string $sapi, string $scriptFilename, string $entryFile, ?string $base): bool
+    {
+        if ($sapi !== 'cli' && $sapi !== 'phpdbg') return true;
+        if ($base === null || $base === '') return true;
+        // php -r / stdin say so explicitly. An EMPTY name is "cannot tell" (something cleared $_SERVER) and records.
+        if ($scriptFilename === '-' || $scriptFilename === 'Standard input code') return false;
+        if ($entryFile === '') return true;
+        $norm = static fn (string $p): string => rtrim(str_replace('\\', '/', $p), '/');
+        $fold = static fn (string $p): string => PHP_OS_FAMILY === 'Windows' ? strtolower($p) : $p;   // Windows paths ignore case
+        $s = $fold($norm(realpath($entryFile) ?: $entryFile));
+        $b = $fold($norm(realpath($base) ?: $base));
+        return str_starts_with($s, $b . '/');
     }
 
     /**

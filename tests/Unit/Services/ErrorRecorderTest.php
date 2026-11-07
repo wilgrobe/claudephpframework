@@ -54,4 +54,49 @@ final class ErrorRecorderTest extends TestCase
         $this->assertSame('error', R::event('nonsense', 'E', 'm', 'f', 1, '', ['url' => null, 'method' => null, 'user_id' => null, 'runtime' => 'cli'], 'now')['level']);
         $this->assertSame(1000, mb_strlen(R::event('error', 'E', str_repeat('a ', 900), 'f', 1, '', ['url' => null, 'method' => null, 'user_id' => null, 'runtime' => 'cli'], 'now')['message']), 'capped');
     }
+    // ── Only the app's own errors (Will, 7 Nov 2026: "make sure real errors still come through") ──────────
+
+    private function tree(): array
+    {
+        $root = sys_get_temp_dir() . '/errrec-' . bin2hex(random_bytes(4));
+        mkdir("$root/app/public", 0777, true); mkdir("$root/app/vendor/bin", 0777, true); mkdir("$root/tmp", 0777, true);
+        foreach (['app/artisan', 'app/public/index.php', 'app/vendor/bin/phpunit', 'tmp/x.php'] as $p) touch("$root/$p");
+        return [$root, "$root/app"];
+    }
+
+    public function test_web_requests_and_the_apps_own_commands_are_recorded(): void
+    {
+        [$root, $app] = $this->tree();
+        $this->assertTrue(R::fromAppEntry('fpm-fcgi', '', '', $app), 'every web request');
+        $this->assertTrue(R::fromAppEntry('apache2handler', "$root/tmp/x.php", "$root/tmp/x.php", $app), 'web, whatever the script');
+        $this->assertTrue(R::fromAppEntry('cli', 'artisan', "$app/artisan", $app), 'php artisan … — the queue worker and cron run through it');
+        $this->assertTrue(R::fromAppEntry('cli', 'vendor/bin/phpunit', "$app/vendor/bin/phpunit", $app), 'the test suite');
+        $this->assertTrue(R::fromAppEntry('cli', "$root/tmp/x.php", "$root/tmp/x.php", null), 'cannot tell (no BASE_PATH) → record');
+        $this->assertTrue(R::fromAppEntry('cli', 'artisan', '', $app), 'no entry file known → record');
+        // The process running these tests is the app's own test suite. Other tests chdir() before this one runs — the
+        // first version resolved the path against the working directory and called the suite a stray script here.
+        $this->assertTrue(R::fromAppEntry(PHP_SAPI, (string) ($_SERVER['SCRIPT_FILENAME'] ?? ''), (string) (get_included_files()[0] ?? ''), BASE_PATH));
+        $here = getcwd(); chdir(sys_get_temp_dir());
+        try {
+            $this->assertTrue(R::fromAppEntry(PHP_SAPI, (string) ($_SERVER['SCRIPT_FILENAME'] ?? ''), (string) (get_included_files()[0] ?? ''), BASE_PATH), 'still the app after a chdir');
+        } finally { chdir($here); }
+    }
+
+    public function test_a_throwaway_script_outside_the_app_is_not(): void
+    {
+        [$root, $app] = $this->tree();
+        $this->assertFalse(R::fromAppEntry('cli', "$root/tmp/x.php", "$root/tmp/x.php", $app), '/tmp/x.php that requires the bootstrap');
+        $this->assertFalse(R::fromAppEntry('cli', 'Standard input code', "$app/public/index.php", $app), 'php -r, even after it required app files');
+        $this->assertTrue(R::fromAppEntry('cli', '', "$app/artisan", $app), 'no script name (something cleared $_SERVER) → cannot tell → record');
+        $this->assertFalse(R::fromAppEntry('cli', '-', "$app/artisan", $app), 'php reading the script from stdin');
+        mkdir("$root/app-old"); touch("$root/app-old/artisan");
+        $this->assertFalse(R::fromAppEntry('cli', "$root/app-old/artisan", "$root/app-old/artisan", $app), 'a sibling whose name starts the same is not inside');
+    }
+
+    public function test_a_release_run_through_a_symlink_is_the_app(): void
+    {
+        [$root, $app] = $this->tree();
+        if (!@symlink($app, "$root/current")) $this->markTestSkipped('this machine cannot make symlinks');
+        $this->assertTrue(R::fromAppEntry('cli', "$root/current/artisan", "$root/current/artisan", $app), 'managed servers: current/ → releases/<ts>/');
+    }
 }
