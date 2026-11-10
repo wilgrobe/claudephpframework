@@ -61,7 +61,7 @@
     </div>
 
     <?php if (!empty($invite_token)): ?>
-    <div class="invite-notice">🎉 You have a group invitation waiting! Create an account to accept it.</div>
+    <div class="invite-notice">🎉 You have an invitation waiting! Create an account to accept it.</div>
     <?php endif; ?>
 
     <?php $errs = $errors ?? []; ?>
