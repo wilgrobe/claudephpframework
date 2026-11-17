@@ -483,5 +483,28 @@ $__cfwE      = static fn($s) => htmlspecialchars((string) $s, ENT_QUOTES | ENT_H
             submit.textContent = 'Send report';
         });
     });
+
+    /* Keep the launcher clear of the site footer (17 Nov 2026 — it covered StoriesDen's footer badges). A footer too
+       wide for one line stops being pinned and flows at the end of the page (site-footer--flow), and a pinned one can
+       wrap taller than --site-footer-height; either way the launcher sat on the footer's badges and links. It is
+       lifted by however much of the footer is actually on screen, and goes back down when the footer scrolls away. */
+    (function () {
+        var bubble = document.querySelector('.cfw-bubble'), foot = document.querySelector('.site-footer');
+        if (!bubble || !foot) return;
+        var queued = false;
+        function place() {
+            queued = false;
+            bubble.style.bottom = '';
+            if (!foot.offsetHeight) return;                                   // footer hidden on this page
+            var base  = parseFloat(getComputedStyle(bubble).bottom) || 16;
+            var shown = Math.min(window.innerHeight - foot.getBoundingClientRect().top, window.innerHeight - 60); // footer px on screen (a footer taller than the screen must not push the launcher off the top)
+            if (shown + 10 > base) bubble.style.bottom = Math.round(shown + 10) + 'px';
+        }
+        function soon() { if (!queued) { queued = true; requestAnimationFrame(place); } }
+        window.addEventListener('scroll', soon, { passive: true, capture: true }); // capture: the app shell scrolls an inner element
+        window.addEventListener('resize', soon);
+        if (window.ResizeObserver) new ResizeObserver(soon).observe(foot);  // flow switch, wrapping, badges loading
+        place();
+    })();
 })();
 </script>
