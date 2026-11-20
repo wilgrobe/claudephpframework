@@ -1,0 +1,134 @@
+<?php
+/**
+ * /admin/settings/search — "Search & AI" (seo module).
+ *
+ * @var array<string,string>                 $values  every seo.* setting, defaults applied
+ * @var \Modules\Seo\Services\SiteProfile    $profile
+ * @var string                               $last    the last IndexNow run ("date status count http")
+ * @var array<string,string>                 $types   schema.org business types
+ */
+use Modules\Seo\Services\SearchSettings;
+
+$pageTitle = 'Search & AI';
+$activePanel = 'search';
+$f = static fn (string $key) => str_replace('.', '_', $key);
+$v = static fn (string $key) => (string) ($values[$key] ?? '');
+include BASE_PATH . '/app/Views/layout/header.php';
+include BASE_PATH . '/modules/settings/Views/admin/_nav.php';
+$hiddenWhy = [
+    'demo'    => 'This is a demo site. Demos are hidden from search unless the Builder operator turns search on for this demo.',
+    'preview' => 'This is a free preview (proofing) site. Previews are hidden from search; your site becomes findable when it is promoted to production.',
+    'owner'   => 'You chose to hide this whole site from search (below).',
+][$profile->hidden] ?? '';
+?>
+<style>
+.seo-box { padding:.85rem 1rem; background:var(--accent-subtle); border:1px solid var(--border-strong); border-radius:6px; margin-bottom:1rem; }
+.seo-row { display:flex; align-items:center; gap:.6rem; margin:.45rem 0; font-size:14px; }
+.seo-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.75rem; }
+.seo-grid label, .seo-field label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:.2rem; }
+.seo-grid input, .seo-grid select, .seo-field input, .seo-field textarea, .seo-field select { width:100%; box-sizing:border-box; }
+.seo-muted { color:var(--text-muted); font-size:12.5px; line-height:1.5; margin:.2rem 0 .6rem; }
+.seo-card h2 { font-size:1rem; margin:0 0 .35rem; }
+.seo-radio { display:inline-flex; gap:.35rem; align-items:center; margin-right:1rem; font-size:14px; }
+</style>
+
+<h1 style="margin:0 0 .35rem;font-size:1.4rem">Search &amp; AI</h1>
+<p class="seo-muted" style="font-size:13.5px">How search engines and AI assistants find and describe this site. Everything here is free and on by default; turn off anything you don't want.</p>
+
+<?php if ($m = \Core\Session::flash('success')): ?><div class="alert alert-success"><?= e($m) ?></div><?php endif; ?>
+<?php if ($m = \Core\Session::flash('error')): ?><div class="alert alert-danger"><?= e($m) ?></div><?php endif; ?>
+
+<div class="card" style="margin-bottom:1rem"><div class="card-body">
+    <div class="seo-row"><strong>Main address:</strong> <code><?= e($profile->base() ?: '—') ?></code></div>
+    <?php if ($hiddenWhy !== ''): ?>
+        <div class="seo-row" style="color:var(--color-warning-fg, #92400e)"><strong>Hidden from search.</strong> <?= e($hiddenWhy) ?></div>
+    <?php else: ?>
+        <div class="seo-row">Search engines may list this site.
+            <a href="/robots.txt" target="_blank" rel="noopener">robots.txt</a> ·
+            <a href="/sitemap.xml" target="_blank" rel="noopener">sitemap.xml</a> ·
+            <a href="/llms.txt" target="_blank" rel="noopener">llms.txt</a></div>
+    <?php endif; ?>
+    <?php if ($last !== ''): ?><div class="seo-row seo-muted">Last IndexNow run: <?= e($last) ?></div><?php endif; ?>
+</div></div>
+
+<form method="POST" action="/admin/settings/search">
+<?= csrf_field() ?>
+
+<div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
+    <h2>What's on</h2>
+    <div class="seo-box">
+        <label class="seo-row" style="font-weight:600;margin:0">
+            <?= toggle_switch($f(SearchSettings::ENABLED), $v(SearchSettings::ENABLED) !== '0') ?>
+            Get found (all of the below)
+        </label>
+        <div class="seo-muted" style="margin:.3rem 0 0">Off = this site adds nothing; robots.txt and sitemap.xml go back to the plain framework ones.</div>
+    </div>
+    <?php foreach (SearchSettings::SWITCHES as $key => $label): ?>
+        <label class="seo-row"><?= toggle_switch($f($key), $v($key) !== '0') ?> <?= e($label) ?></label>
+    <?php endforeach; ?>
+</div></div>
+
+<div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
+    <h2>AI policy</h2>
+    <p class="seo-muted">Written into robots.txt as a Content-Signal line. It states your terms; well-behaved AI crawlers follow it.</p>
+    <?php foreach (['seo.ai.search' => 'Show this site in search results', 'seo.ai.input' => 'Let AI assistants use it to answer questions (with a link)', 'seo.ai.train' => 'Let AI companies train models on it'] as $key => $label): ?>
+        <div class="seo-row" style="justify-content:space-between;max-width:620px">
+            <span><?= e($label) ?></span>
+            <span>
+                <label class="seo-radio"><input type="radio" name="<?= e($f($key)) ?>" value="yes" <?= $v($key) !== 'no' ? 'checked' : '' ?>> Yes</label>
+                <label class="seo-radio"><input type="radio" name="<?= e($f($key)) ?>" value="no" <?= $v($key) === 'no' ? 'checked' : '' ?>> No</label>
+            </span>
+        </div>
+    <?php endforeach; ?>
+</div></div>
+
+<div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
+    <h2>Main address</h2>
+    <div class="seo-field" style="max-width:420px">
+        <label for="seo_main_host">Main host name (leave empty to use the site's own domain)</label>
+        <input type="text" id="seo_main_host" name="seo_main_host" class="form-control" value="<?= e($v('seo.main_host')) ?>" placeholder="example.com">
+    </div>
+    <p class="seo-muted">Other addresses of this site (www., the builder subdomain) redirect here permanently, and every page names this address as its canonical one.</p>
+    <label class="seo-row"><?= toggle_switch('seo_hide_site', $v('seo.hide_site') === '1') ?> Hide this whole site from search engines</label>
+</div></div>
+
+<div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
+    <h2>Search engine verification</h2>
+    <p class="seo-muted">Paste the code (or the whole &lt;meta&gt; tag) each service gives you. It goes on the home page.</p>
+    <div class="seo-grid">
+        <?php foreach (SearchSettings::VERIFY as $key => [$meta, $label]): ?>
+            <div><label for="<?= e($f($key)) ?>"><?= e($label) ?></label>
+            <input type="text" id="<?= e($f($key)) ?>" name="<?= e($f($key)) ?>" class="form-control" value="<?= e($v($key)) ?>"></div>
+        <?php endforeach; ?>
+    </div>
+</div></div>
+
+<div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
+    <h2>About the business</h2>
+    <p class="seo-muted">Used for the structured data on the home page and for /llms.txt. Empty fields fall back to the site name and tagline. Only fill in what is true and shown on your site.</p>
+    <div class="seo-grid">
+        <div><label for="seo_business_type">Kind of business</label>
+            <select id="seo_business_type" name="seo_business_type" class="form-control">
+                <?php foreach ($types as $t => $label): ?>
+                    <option value="<?= e($t) ?>" <?= $v('seo.business.type') === $t ? 'selected' : '' ?>><?= e($label) ?></option>
+                <?php endforeach; ?>
+            </select></div>
+        <?php foreach (['name' => 'Name', 'email' => 'Email', 'phone' => 'Phone', 'street' => 'Street address', 'city' => 'City', 'region' => 'State / region', 'postal' => 'Postal code', 'country' => 'Country'] as $k => $label): ?>
+            <div><label for="seo_business_<?= $k ?>"><?= e($label) ?></label>
+            <input type="text" id="seo_business_<?= $k ?>" name="seo_business_<?= $k ?>" class="form-control" value="<?= e($v('seo.business.' . $k)) ?>"></div>
+        <?php endforeach; ?>
+    </div>
+    <div class="seo-field" style="margin-top:.75rem"><label for="seo_business_description">One-sentence description</label>
+        <input type="text" id="seo_business_description" name="seo_business_description" class="form-control" value="<?= e($v('seo.business.description')) ?>"></div>
+    <div class="seo-field" style="margin-top:.75rem"><label for="seo_business_same_as">Profiles elsewhere (https:// links, one per line)</label>
+        <textarea id="seo_business_same_as" name="seo_business_same_as" class="form-control" rows="3"><?= e($v('seo.business.same_as')) ?></textarea></div>
+    <div class="seo-field" style="margin-top:.75rem"><label for="seo_llms_intro">For AI assistants: a short paragraph about the site (llms.txt)</label>
+        <textarea id="seo_llms_intro" name="seo_llms_intro" class="form-control" rows="4"><?= e($v('seo.llms.intro')) ?></textarea></div>
+</div></div>
+
+<button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+</main></div>
+
+<?php include BASE_PATH . '/app/Views/layout/footer.php'; ?>
