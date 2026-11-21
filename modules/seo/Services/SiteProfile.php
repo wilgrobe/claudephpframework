@@ -171,11 +171,14 @@ final class SiteProfile
     public static function current(): self
     {
         if (self::$current !== null) { return self::$current; }
-        $builder = class_exists(\App\Tenancy\Tenant::class);
+        // On the Builder only. A generated kit ships a stand-in App\Tenancy\Tenant (one site, always "current") but
+        // no central database, so testing for the Tenant class alone made every kit look like a hosted tenant with
+        // no domains — the main host fell back to whatever host the visitor typed (www. stopped redirecting).
+        $builder = class_exists(\App\Tenancy\Tenant::class) && class_exists(\App\Database\CentralDatabase::class);
         $tenantRow = null; $domains = [];
         try {
             if ($builder && ($t = \App\Tenancy\Tenant::current()) !== null) {
-                [$tenantRow, $domains] = self::centralFacts($t->id, $t->row);
+                [$tenantRow, $domains] = self::centralFacts($t->id, (array) ($t->row ?? []));
             }
         } catch (\Throwable) {
             $tenantRow = $tenantRow ?? ['tier' => 'production'];

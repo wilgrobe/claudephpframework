@@ -48,6 +48,26 @@ final class GetFoundExtrasTest extends TestCase
         $this->assertStringContainsString("'SEARCH_HIDDEN' => '1'", $m[1], 'every managed staging server is written hidden');
     }
 
+    /**
+     * A generated kit ships a stand-in App\Tenancy\Tenant (one site, always current) but no central database. Seen
+     * as "the Builder", a kit had no domains, so its main host became whatever host the visitor typed and www. was
+     * never sent to the real address (found rebuilding MarketOtter, 21 Nov 2026).
+     */
+    public function test_a_generated_kit_is_not_mistaken_for_the_builder(): void
+    {
+        $src = (string) file_get_contents(BASE_PATH . '/modules/seo/Services/SiteProfile.php');
+        $this->assertSame(1, preg_match('/function current\(\): self\s*\{(.*?)\n    \}/s', $src, $m));
+        $this->assertMatchesRegularExpression('/\$builder = class_exists\(\\\\App\\\\Tenancy\\\\Tenant::class\) && class_exists\(\\\\App\\\\Database\\\\CentralDatabase::class\);/', $m[1],
+            'the Builder needs its central database too — the Tenant class alone is also in every kit');
+        $this->assertStringNotContainsString('$t->row)', $m[1], 'a stand-in tenant has no row');
+
+        // What a kit then gets: APP_URL's host is the main one, and www. redirects to it.
+        $kit = self::profile(['server' => ['HTTP_HOST' => 'www.example.com', 'HTTPS' => 'on']]);
+        $this->assertSame('example.com', $kit->mainHost);
+        $asBuilder = self::profile(['server' => ['HTTP_HOST' => 'www.example.com', 'HTTPS' => 'on'], 'builder' => true, 'tenant' => ['tier' => 'production']]);
+        $this->assertSame('www.example.com', $asBuilder->mainHost, 'the old mistake: no domains, so the typed host won');
+    }
+
     public function test_robots_turns_ai_crawlers_away_by_name_only_when_the_owner_says_no(): void
     {
         $this->assertSame('', SearchFiles::botGroups('search=yes, ai-input=yes, ai-train=yes'), 'all yes: nobody named');
