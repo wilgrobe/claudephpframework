@@ -38,7 +38,7 @@ final class SiteProfile
         public readonly array  $ownHosts,
         public readonly array  $redirectHosts,
         public readonly string $hidden,      // '' | 'staging' | 'demo' | 'preview' | 'owner'
-        public readonly bool   $apex,        // the Builder's own apex host: this module stays out of the way
+        public readonly bool   $apex,        // the Builder's own site: its main host is APP_URL's, its app pages stay out of search
         public readonly bool   $httpsKnown,  // the main host is known to serve https (safe to redirect http → https)
     ) {}
 
@@ -127,7 +127,8 @@ final class SiteProfile
             $main = $explicit;
         } elseif (!$apex && $builder && $tenant !== null && ($custom !== '' || $sub !== '')) {
             $main = $custom !== '' ? $custom : $sub;
-        } elseif (!$builder && $appHost !== '' && (self::isPublicHost($appHost) || $reqHost === '')) {
+        } elseif ((!$builder || $apex) && $appHost !== '' && (self::isPublicHost($appHost) || $reqHost === '')) {
+            // A kit, or the Builder's own site: APP_URL names the real address (www.claudephpbuilder.com).
             $main = $appHost;
         } else {
             $main = $reqHost !== '' ? $reqHost : $appHost;

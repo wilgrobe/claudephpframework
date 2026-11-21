@@ -45,9 +45,6 @@ return new class extends ModuleProvider {
 
     public function settingsPanels(): array
     {
-        if (class_exists(\App\Tenancy\Tenant::class) && \App\Tenancy\Tenant::current() === null) {
-            return []; // the Builder apex: its routes are not registered there
-        }
         return [
             ['key' => 'search', 'label' => 'Search & AI', 'icon' => '🔎',
              'desc' => 'Search engines, AI policy, structured data', 'url' => '/admin/settings/search'],

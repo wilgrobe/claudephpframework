@@ -4,11 +4,6 @@ use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
 use App\Middleware\RequireAdmin;
 
-// The Builder's own apex host keeps its own robots/sitemap (moving it onto this module is phase 5 of the plan).
-if (class_exists(\App\Tenancy\Tenant::class) && \App\Tenancy\Tenant::current() === null) {
-    return;
-}
-
 $S = 'Modules\Seo\Controllers\SearchController';
 // ⚠ Module routes load before routes/web.php, and the router takes the FIRST exact match, so these answer
 // /robots.txt and /sitemap.xml instead of App\Controllers\SitemapController (which they call for the body).

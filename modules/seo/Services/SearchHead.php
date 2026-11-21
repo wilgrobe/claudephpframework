@@ -22,6 +22,13 @@ final class SearchHead
     public const NOINDEX_PREFIXES = ['/login', '/register', '/password', '/logout', '/auth', '/verify-email', '/email/verify',
         '/two-factor', '/invite', '/session', '/cookie-consent', '/claim', '/account', '/profile', '/dashboard', '/admin'];
 
+    /**
+     * The Builder's own site only (phase 5, 21 Nov 2026): the signed-in app surfaces under it. Kept apart from the list
+     * above because a generated site may well have a public /projects or /studio page of its own.
+     */
+    public const APEX_NOINDEX_PREFIXES = ['/signup', '/projects', '/studio', '/notifications', '/groups', '/users', '/downloads',
+        '/deploy', '/ops', '/oidc', '/unsubscribe', '/feedback', '/search', '/policies'];
+
     /** Never redirected to another host: certificate challenges, machine callbacks, signed-in surfaces. */
     private const NO_CROSS_HOST = ['/.well-known', '/webhooks', '/api', '/admin', '/claim', '/oidc', '/auth', '/deploy',
         '/login', '/logout', '/register', '/password', '/session', '/cookie-consent'];
@@ -35,7 +42,6 @@ final class SearchHead
         try {
             if (!SearchSettings::enabled()) { return; }
             $p = SiteProfile::current();
-            if ($p->apex) { return; }
             $method = strtoupper((string) ($server['REQUEST_METHOD'] ?? 'GET'));
             $uri    = (string) ($server['REQUEST_URI'] ?? '/');
             $path   = (string) (parse_url($uri, PHP_URL_PATH) ?: '/');
@@ -87,7 +93,7 @@ final class SearchHead
         $out = [];
         if ($p->isHidden()) {
             $out[] = 'X-Robots-Tag: noindex, nofollow';
-        } elseif (SearchSettings::on('seo.noindex_account') && self::noindex($path)) {
+        } elseif (SearchSettings::on('seo.noindex_account') && self::noindex($path, $p->apex)) {
             $out[] = 'X-Robots-Tag: noindex, follow';
         }
         $m = strtoupper($method);
@@ -171,7 +177,7 @@ final class SearchHead
         if ($p->isHidden()) {
             // A hidden site wins over a page's own "index": the most restrictive robots tag is the one engines obey.
             $add .= '<meta name="robots" content="noindex, nofollow">' . "\n";
-        } elseif (!$hasRobots && SearchSettings::on('seo.noindex_account') && self::noindex($path)) {
+        } elseif (!$hasRobots && SearchSettings::on('seo.noindex_account') && self::noindex($path, $p->apex)) {
             $add .= '<meta name="robots" content="noindex, follow">' . "\n";
         }
 
@@ -213,9 +219,9 @@ final class SearchHead
         return rtrim($base, '/') . $path;
     }
 
-    public static function noindex(string $path): bool
+    public static function noindex(string $path, bool $apex = false): bool
     {
-        return self::under($path, self::NOINDEX_PREFIXES);
+        return self::under($path, self::NOINDEX_PREFIXES) || ($apex && self::under($path, self::APEX_NOINDEX_PREFIXES));
     }
 
     private static function under(string $path, array $prefixes): bool

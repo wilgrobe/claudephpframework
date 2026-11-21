@@ -99,10 +99,51 @@ final class GetFoundTest extends TestCase
         $this->assertSame('owner', self::kit('example.com', true, ['hide_site' => '1'])->hidden);
     }
 
-    public function test_the_builder_apex_is_left_alone(): void
+    /** Phase 5 (21 Nov 2026): the Builder's own site gets the same treatment, on APP_URL's address. */
+    public function test_the_builder_site_uses_its_app_url_address(): void
     {
-        $p = SiteProfile::build(['server' => ['HTTP_HOST' => 'www.claudephpbuilder.com'], 'builder' => true, 'tenant' => null]);
+        $apex = static fn (string $host) => SiteProfile::build([
+            'server' => ['HTTP_HOST' => $host, 'HTTP_CF_VISITOR' => '{"scheme":"https"}'],
+            'app_url' => 'https://www.claudephpbuilder.com', 'builder' => true, 'tenant' => null, 'production' => true,
+        ]);
+        $p = $apex('www.claudephpbuilder.com');
         $this->assertTrue($p->apex);
+        $this->assertSame('www.claudephpbuilder.com', $p->mainHost);
+        $this->assertSame('https://www.claudephpbuilder.com', $p->base());
+        $this->assertSame('', $p->hidden);
+        $this->assertSame('https://www.claudephpbuilder.com/pricing', SearchHead::redirectTarget($apex('claudephpbuilder.com'), 'GET', '/pricing', true, true),
+            'the bare domain sends to www');
+        $this->assertNull(SearchHead::redirectTarget($p, 'GET', '/pricing', true, true));
+    }
+
+    public function test_the_builder_sites_app_pages_stay_out_of_search_and_a_kits_do_not(): void
+    {
+        foreach (['/projects', '/projects/36/step7', '/studio/x', '/signup', '/notifications', '/downloads/9'] as $path) {
+            $this->assertTrue(SearchHead::noindex($path, true), "$path on the Builder's site");
+            $this->assertFalse(SearchHead::noindex($path), "$path on a generated site may be a public page");
+        }
+        foreach (['/', '/pricing', '/premium-modules', '/how-it-works', '/demos'] as $path) {
+            $this->assertFalse(SearchHead::noindex($path, true), "$path is a public page of the Builder's site");
+        }
+        $this->assertTrue(SearchHead::noindex('/admin/health', true), 'the shared list still applies');
+
+        // ...and what a Builder page actually sends: the header and the tag.
+        $apex = SiteProfile::build(['server' => ['HTTP_HOST' => 'www.claudephpbuilder.com', 'HTTPS' => 'on'],
+            'app_url' => 'https://www.claudephpbuilder.com', 'builder' => true, 'tenant' => null]);
+        $this->assertContains('X-Robots-Tag: noindex, follow', SearchHead::headersFor($apex, 'GET', '/projects/36/step7'));
+        $this->assertNotContains('X-Robots-Tag: noindex, follow', SearchHead::headersFor(self::kit(), 'GET', '/projects/36/step7'));
+        $this->assertContains('Link: ' . SearchHead::LINK, SearchHead::headersFor($apex, 'GET', '/'), 'the Builder home links its llms.txt');
+        $this->assertStringContainsString('<meta name="robots" content="noindex, follow">', SearchHead::apply(self::PAGE, $apex, '/projects/36'));
+        $this->assertStringNotContainsString('name="robots"', SearchHead::apply(self::PAGE, self::kit(), '/projects/36'));
+    }
+
+    /** The four places that used to skip the Builder's site are gone (a revert brings back the old, unfound site). */
+    public function test_nothing_skips_the_builder_site_any_more(): void
+    {
+        $d = BASE_PATH . '/modules/seo/';
+        $this->assertStringNotContainsString('Tenant::current() === null', (string) file_get_contents($d . 'routes.php'));
+        $this->assertStringNotContainsString('Tenant::current() === null', (string) file_get_contents($d . 'module.php'));
+        $this->assertStringNotContainsString('if ($p->apex) { return; }', (string) file_get_contents($d . 'Services/SearchHead.php'));
     }
 
     // ── Redirects ───────────────────────────────────────────────────────────
