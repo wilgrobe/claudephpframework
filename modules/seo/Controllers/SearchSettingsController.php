@@ -10,6 +10,7 @@ use Core\Services\SettingsService;
 use Core\Session;
 use Modules\Seo\Services\IndexNow;
 use Modules\Seo\Services\SearchHead;
+use Modules\Seo\Services\SearchHealth;
 use Modules\Seo\Services\SearchSettings;
 use Modules\Seo\Services\SiteProfile;
 use Modules\Seo\Services\StructuredData;
@@ -38,12 +39,32 @@ final class SearchSettingsController
         SearchSettings::flush();
         $values = [];
         foreach (array_keys(SearchSettings::defaults()) as $k) { $values[$k] = SearchSettings::get($k); }
+        $report = $_SESSION['seo_health'] ?? null;
+        unset($_SESSION['seo_health']);
         return Response::view('seo::admin.settings', [
             'values'   => $values,
             'profile'  => SiteProfile::current(),
             'last'     => (string) setting(IndexNow::LAST, ''),
             'types'    => StructuredData::TYPES,
+            'report'   => is_array($report) && time() - (int) ($report['at'] ?? 0) < 900 ? $report : null,
         ]);
+    }
+
+    /** POST /admin/settings/search/check — run the Search health report against the live site; shown once on the page. */
+    public function check(Request $request): Response
+    {
+        if (!$this->guard()) {
+            Session::flash('error', 'Search settings require admin access.');
+            return Response::redirect('/admin');
+        }
+        $p = SiteProfile::current();
+        if ($p->mainHost === '') {
+            Session::flash('error', 'The site has no address to check yet.');
+            return Response::redirect('/admin/settings/search');
+        }
+        $ai = SearchSettings::get('seo.ai.input') !== 'no';
+        $_SESSION['seo_health'] = (new SearchHealth())->run($p, $ai) + ['at' => time()];
+        return Response::redirect('/admin/settings/search#health');
     }
 
     public function save(Request $request): Response

@@ -37,7 +37,7 @@ final class SiteProfile
         public readonly bool   $https,
         public readonly array  $ownHosts,
         public readonly array  $redirectHosts,
-        public readonly string $hidden,      // '' | 'demo' | 'preview' | 'owner'
+        public readonly string $hidden,      // '' | 'staging' | 'demo' | 'preview' | 'owner'
         public readonly bool   $apex,        // the Builder's own apex host: this module stays out of the way
         public readonly bool   $httpsKnown,  // the main host is known to serve https (safe to redirect http → https)
     ) {}
@@ -90,6 +90,7 @@ final class SiteProfile
      *   builder: bool,              the hosted Builder (App\Tenancy\Tenant exists)
      *   tenant: ?array{tier?:string, demo_mode?:int|string, demo_search_enabled?:int|string},
      *   domains: list<array{hostname:string, kind:string, verified_at:?string}>,
+     *   env_hidden?: bool,          SEARCH_HIDDEN=1 in .env: a staging or preview copy (Get found, 21 Nov 2026)
      * }
      */
     public static function build(array $in): self
@@ -153,8 +154,8 @@ final class SiteProfile
         $redirect = array_values(array_unique(array_filter($redirect, static fn ($h) => $h !== $main && self::isPublicHost($h))));
 
         // ── Hidden ──
-        $hidden = '';
-        if ($builder && is_array($tenant)) {
+        $hidden = !empty($in['env_hidden']) ? 'staging' : '';
+        if ($hidden === '' && $builder && is_array($tenant)) {
             if ((int) ($tenant['demo_mode'] ?? 0) === 1) {
                 if ((int) ($tenant['demo_search_enabled'] ?? 0) !== 1) { $hidden = 'demo'; }
             } elseif ((string) ($tenant['tier'] ?? 'production') === 'proofing') {
@@ -189,6 +190,7 @@ final class SiteProfile
             'builder'    => $builder,
             'tenant'     => $tenantRow,
             'domains'    => $domains,
+            'env_hidden' => in_array(strtolower(trim((string) ($_ENV['SEARCH_HIDDEN'] ?? getenv('SEARCH_HIDDEN') ?: ''))), ['1', 'true', 'yes', 'on'], true),
         ]);
     }
 

@@ -16,6 +16,7 @@ $v = static fn (string $key) => (string) ($values[$key] ?? '');
 include BASE_PATH . '/app/Views/layout/header.php';
 include BASE_PATH . '/modules/settings/Views/admin/_nav.php';
 $hiddenWhy = [
+    'staging' => 'This is a staging or preview copy of the site (SEARCH_HIDDEN=1 in its .env), so it stays out of search. The live site is not affected.',
     'demo'    => 'This is a demo site. Demos are hidden from search unless the Builder operator turns search on for this demo.',
     'preview' => 'This is a free preview (proofing) site. Previews are hidden from search; your site becomes findable when it is promoted to production.',
     'owner'   => 'You chose to hide this whole site from search (below).',
@@ -94,7 +95,7 @@ $hiddenWhy = [
 
 <div class="card seo-card" style="margin-bottom:1rem"><div class="card-body">
     <h2>Search engine verification</h2>
-    <p class="seo-muted">Paste the code (or the whole &lt;meta&gt; tag) each service gives you. It goes on the home page.</p>
+    <p class="seo-muted">Paste the code (or the whole &lt;meta&gt; tag) each service gives you. It goes on the home page. Add the site to both Google Search Console and Bing Webmaster Tools: ChatGPT's search leans heavily on Bing, so Bing is how many AI answers find you.</p>
     <div class="seo-grid">
         <?php foreach (SearchSettings::VERIFY as $key => [$meta, $label]): ?>
             <div><label for="<?= e($f($key)) ?>"><?= e($label) ?></label>
@@ -128,6 +129,31 @@ $hiddenWhy = [
 
 <button type="submit" class="btn btn-primary">Save</button>
 </form>
+
+<?php $report ??= null; ?>
+<div class="card seo-card" id="health" style="margin-top:1rem"><div class="card-body">
+    <h2>Search health</h2>
+    <p class="seo-muted">Checks the live site the way a search engine and an AI crawler see it: https, one main address, robots.txt, the sitemap, the home page's tags, and whether AI assistants can read it.</p>
+    <?php if ($report && $report['checks']): ?>
+        <p class="seo-muted">Checked <strong><?= e($report['host']) ?></strong>:
+            <?= count(array_filter($report['checks'], fn ($c) => $c['ok'] === true)) ?> passed,
+            <?= count(array_filter($report['checks'], fn ($c) => $c['ok'] === false)) ?> to fix.</p>
+        <ul style="list-style:none;padding:0;margin:0 0 .75rem">
+            <?php foreach ($report['checks'] as $c): ?>
+                <li style="padding:.45rem 0;border-bottom:1px solid var(--border-default)">
+                    <span aria-hidden="true"><?= $c['ok'] === true ? '✅' : ($c['ok'] === false ? '❌' : '➖') ?></span>
+                    <strong style="font-weight:500"><?= e($c['label']) ?></strong>
+                    <span class="seo-muted"> — <?= e($c['detail']) ?></span>
+                    <?php if ($c['fix'] !== ''): ?><div style="font-size:12.5px;margin:.2rem 0 0 1.6rem">How to fix: <?= e($c['fix']) ?></div><?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <form method="POST" action="/admin/settings/search/check" style="margin:0">
+        <?= csrf_field() ?>
+        <button type="submit" class="btn btn-secondary" data-busy="Checking…"><?= $report ? 'Check again' : 'Check the site now' ?></button>
+    </form>
+</div></div>
 
 </main></div>
 

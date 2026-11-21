@@ -11,6 +11,28 @@ final class SearchFiles
     /** Background calls and proxy paths Google found in page scripts and reported as 404s (StoriesDen, 17 Nov). */
     public const EXTRA_DISALLOW = ['/session/', '/cookie-consent', '/cdn-cgi/'];
 
+    /**
+     * Crawlers that fetch a page to answer a question and cite it (ChatGPT search, Claude, Perplexity). Turned away
+     * by name only when the owner says no to AI answers (seo.ai.input). Kept here, in one place, to keep current.
+     */
+    public const ANSWER_BOTS = ['OAI-SearchBot', 'ChatGPT-User', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot', 'Perplexity-User'];
+
+    /** Crawlers (and control tokens) that gather pages to TRAIN models — turned away by name when ai-train=no. */
+    public const TRAINING_BOTS = ['GPTBot', 'ClaudeBot', 'anthropic-ai', 'Google-Extended', 'Applebot-Extended', 'CCBot', 'Bytespider', 'Meta-ExternalAgent', 'cohere-ai'];
+
+    /**
+     * Pure: the named groups for the AI crawlers the policy says no to. A crawler obeys only the group that names it,
+     * so a named "Disallow: /" turns it away whatever the "*" group allows. '' when nothing is turned away.
+     */
+    public static function botGroups(string $signal): string
+    {
+        $no = static fn (string $part) => (bool) preg_match('/\b' . preg_quote($part, '/') . '=no\b/', $signal);
+        $bots = array_merge($no('ai-input') ? self::ANSWER_BOTS : [], $no('ai-train') ? self::TRAINING_BOTS : []);
+        if (!$bots) { return ''; }
+        $why = $no('ai-input') ? 'AI assistants and AI training' : 'AI training';
+        return "# $why: not on this site.\n" . implode("\n", array_map(static fn ($b) => 'User-agent: ' . $b, $bots)) . "\nDisallow: /\n";
+    }
+
     // ── robots.txt ──────────────────────────────────────────────────────────
 
     /**
@@ -33,9 +55,16 @@ final class SearchFiles
         if (str_contains($robots, 'Content-Signal:')) { return $robots; }
         $out = preg_replace('/^(User-agent:\s*\*[ \t]*)$/mi', "$1\n" . $line, $robots, 1, $n);
         if ($n === 0 || !is_string($out)) {
-            return rtrim($robots) . "\n\nUser-agent: *\n" . $line . "\nAllow: /\n";
+            $out = rtrim($robots) . "\n\nUser-agent: *\n" . $line . "\nAllow: /\n";
         }
-        return $out;
+        // A hidden site already says no to everyone in the "*" group; naming crawlers adds nothing there.
+        $groups = $hidden ? '' : self::botGroups($signal);
+        if ($groups === '') { return $out; }
+        // Before the Sitemap line (it belongs to no group), else at the end.
+        if (preg_match('/^Sitemap:/mi', $out)) {
+            return (string) preg_replace('/^(Sitemap:)/mi', $groups . "\n$1", $out, 1);
+        }
+        return rtrim($out) . "\n\n" . $groups;
     }
 
     // ── sitemap.xml ─────────────────────────────────────────────────────────

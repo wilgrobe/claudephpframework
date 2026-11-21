@@ -16,8 +16,12 @@ Search-engine and AI-answer basics for every site. Free, on by default; each pie
 | IndexNow | `seo.indexnow` | `/indexnow-key.txt` + `php artisan seo:indexnow` (scheduled daily 07:15 UTC); what was sent is kept in `seo.indexnow.sent` |
 | Verification | `seo.verify.*` | Google, Bing, Yandex, Pinterest, Facebook meta tags on the homepage |
 | Hide the site | `seo.hide_site` | noindex everywhere, empty sitemap, no llms.txt, no IndexNow |
+| AI crawlers by name | (follows `seo.ai.input` / `seo.ai.train`) | robots.txt adds named `User-agent` groups with `Disallow: /` for the AI training crawlers (and the AI-answer crawlers when answers are off) — they obey named groups, not the Content-Signal line |
+| Search health | — | `POST /admin/settings/search/check`: the live site checked as a search engine and an AI crawler see it (https, main address, robots, sitemap, the home page's tags, AI crawler access), each failure with its fix |
 
 On the hosted ClaudePHPBuilder, demos and free preview (proofing) sites are hidden from search automatically; an
 operator can turn search on for a demo from the tenant's admin page.
+
+A staging or preview copy hides itself when its `.env` has `SEARCH_HIDDEN=1`; the hosted Builder writes that on every managed staging server.
 
 Nothing pings a search engine from a local or test host (`.test`, `.local`, `localhost`, an IP) or over plain http.
