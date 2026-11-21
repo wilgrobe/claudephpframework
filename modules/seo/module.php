@@ -39,7 +39,7 @@ return new class extends ModuleProvider {
     {
         return array_merge(
             array_keys(\Modules\Seo\Services\SearchSettings::defaults()),
-            [\Modules\Seo\Services\IndexNow::SETTING, \Modules\Seo\Services\IndexNow::LAST]
+            [\Modules\Seo\Services\IndexNow::SETTING, \Modules\Seo\Services\IndexNow::LAST, \Modules\Seo\Services\SearchSeed::SEEDED]
         );
     }
 

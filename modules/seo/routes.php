@@ -17,3 +17,4 @@ $router->get ('/admin/settings/search', "$A@show", [AuthMiddleware::class, Requi
 $router->post('/admin/settings/search', "$A@save", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
 // The Search health report (21 Nov 2026): the live site checked the way a search engine and an AI crawler see it.
 $router->post('/admin/settings/search/check', "$A@check", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
+$router->post('/admin/settings/search/pages', "$A@savePages", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);

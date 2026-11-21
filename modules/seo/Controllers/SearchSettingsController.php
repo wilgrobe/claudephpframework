@@ -4,6 +4,7 @@ namespace Modules\Seo\Controllers;
 
 use Core\Auth\Auth;
 use Core\Container\Container;
+use Core\Database\Database;
 use Core\Request;
 use Core\Response;
 use Core\Services\SettingsService;
@@ -11,6 +12,7 @@ use Core\Session;
 use Modules\Seo\Services\IndexNow;
 use Modules\Seo\Services\SearchHead;
 use Modules\Seo\Services\SearchHealth;
+use Modules\Seo\Services\SearchPages;
 use Modules\Seo\Services\SearchSettings;
 use Modules\Seo\Services\SiteProfile;
 use Modules\Seo\Services\StructuredData;
@@ -47,7 +49,64 @@ final class SearchSettingsController
             'last'     => (string) setting(IndexNow::LAST, ''),
             'types'    => StructuredData::TYPES,
             'report'   => is_array($report) && time() - (int) ($report['at'] ?? 0) < 900 ? $report : null,
+            'pages'    => self::pageRows(),
         ]);
+    }
+
+    /** The site's published pages with their search choices; null when the columns are not there yet. */
+    private static function pageRows(): ?array
+    {
+        SearchPages::reset();
+        if (!SearchPages::hasColumns()) { return null; }
+        try {
+            return Database::getInstance()->fetchAll(
+                "SELECT id, slug, title, search_hidden, canonical_url FROM pages WHERE status = 'published' ORDER BY sort_order, id"
+            );
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /** POST /admin/settings/search/pages — each listed page's "Hide from search" and canonical address. */
+    public function savePages(Request $request): Response
+    {
+        if (!$this->guard()) {
+            Session::flash('error', 'Search settings require admin access.');
+            return Response::redirect('/admin');
+        }
+        SearchPages::reset();
+        if (!SearchPages::hasColumns()) {
+            Session::flash('error', 'This site\'s database needs updating first (php artisan migrate).');
+            return Response::redirect('/admin/settings/search#pages');
+        }
+        $db = Database::getInstance();
+        $n = 0;
+        foreach (self::cleanPages((array) $request->post()) as $id => [$hidden, $canonical]) {
+            $db->query('UPDATE pages SET search_hidden = ?, canonical_url = ? WHERE id = ?', [$hidden, $canonical === '' ? null : $canonical, $id]);
+            $n++;
+        }
+        SearchPages::reset();
+        Session::flash('success', $n === 1 ? 'Saved 1 page.' : "Saved $n pages.");
+        return Response::redirect('/admin/settings/search#pages');
+    }
+
+    /**
+     * Pure: the posted page table → id => [hidden 0|1, canonical override]. Only pages listed in page_ids[] are
+     * written (an unticked box is "shown"); an address that is not a path here or a full http(s) address is dropped.
+     *
+     * @return array<int, array{0:int, 1:string}>
+     */
+    public static function cleanPages(array $post): array
+    {
+        $out = [];
+        $hidden = (array) ($post['hidden'] ?? []);
+        $canon = (array) ($post['canonical'] ?? []);
+        foreach ((array) ($post['page_ids'] ?? []) as $raw) {
+            $id = (int) $raw;
+            if ($id <= 0) { continue; }
+            $out[$id] = [($hidden[$id] ?? '') === '1' ? 1 : 0, SearchPages::cleanCanonical((string) ($canon[$id] ?? ''))];
+        }
+        return $out;
     }
 
     /** POST /admin/settings/search/check — run the Search health report against the live site; shown once on the page. */

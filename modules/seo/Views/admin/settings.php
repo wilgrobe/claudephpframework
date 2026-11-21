@@ -130,6 +130,35 @@ $hiddenWhy = [
 <button type="submit" class="btn btn-primary">Save</button>
 </form>
 
+<?php $pages ??= null; ?>
+<div class="card seo-card" id="pages" style="margin-top:1rem"><div class="card-body">
+    <h2>Pages</h2>
+    <?php if ($pages === null): ?>
+        <p class="seo-muted">Per-page choices need this site's database to be brought up to date (php artisan migrate).</p>
+    <?php elseif ($pages === []): ?>
+        <p class="seo-muted">No published pages yet.</p>
+    <?php else: ?>
+        <p class="seo-muted">Hide a page from search engines and AI assistants (it stays on your site for anyone with the link), or name its canonical address: another page here ("/original-post") or the original elsewhere ("https://…"). Leave the address empty to use the page's own.</p>
+        <form method="POST" action="/admin/settings/search/pages" style="margin:0">
+            <?= csrf_field() ?>
+            <table class="table" style="width:100%;font-size:14px">
+                <thead><tr><th style="text-align:left">Page</th><th style="text-align:left">Hide from search</th><th style="text-align:left">Canonical address</th></tr></thead>
+                <tbody>
+                <?php foreach ($pages as $pg): $id = (int) $pg['id']; ?>
+                    <tr>
+                        <td><?= e((string) $pg['title']) ?><div class="seo-muted" style="margin:0">/<?= e((string) $pg['slug']) ?></div></td>
+                        <td><input type="hidden" name="page_ids[]" value="<?= $id ?>">
+                            <label class="seo-row" style="margin:0"><input type="checkbox" name="hidden[<?= $id ?>]" value="1" <?= (int) $pg['search_hidden'] === 1 ? 'checked' : '' ?>> Hidden</label></td>
+                        <td><input type="text" name="canonical[<?= $id ?>]" class="form-control" maxlength="1000" value="<?= e((string) ($pg['canonical_url'] ?? '')) ?>" placeholder="(this page)"></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Save pages</button>
+        </form>
+    <?php endif; ?>
+</div></div>
+
 <?php $report ??= null; ?>
 <div class="card seo-card" id="health" style="margin-top:1rem"><div class="card-body">
     <h2>Search health</h2>

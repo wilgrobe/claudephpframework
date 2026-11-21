@@ -94,11 +94,13 @@ final class SearchFiles
      * Pure: the sitemap as search engines should see it — every address of THIS site on the main host (the
      * framework builds them from the request host, and in a CLI run from APP_URL, the Builder's apex), account pages
      * left out when they are noindexed (a noindexed page in a sitemap is a Search Console warning), no duplicates.
-     * Addresses on other sites are kept as they are. A hidden site gets an empty sitemap.
+     * Addresses on other sites are kept as they are. A hidden site gets an empty sitemap; pages the owner hid from
+     * search ($hiddenPaths) are left out.
      *
      * @param list<string> $ownHosts
+     * @param list<string> $hiddenPaths
      */
-    public static function sitemap(string $xml, string $base, array $ownHosts, bool $dropAccount, bool $hidden): string
+    public static function sitemap(string $xml, string $base, array $ownHosts, bool $dropAccount, bool $hidden, array $hiddenPaths = []): string
     {
         $entries = $hidden ? [] : self::parseSitemap($xml);
         $seen = [];
@@ -107,6 +109,7 @@ final class SearchFiles
             $loc = self::rebase($e['loc'], $base, $ownHosts);
             $path = (string) (parse_url($loc, PHP_URL_PATH) ?: '/');
             if ($dropAccount && SearchHead::noindex($path)) { continue; }
+            if (in_array(self::trimPath($path), $hiddenPaths, true)) { continue; }
             if (isset($seen[$loc])) { continue; }
             $seen[$loc] = true;
             $body .= "  <url>\n    <loc>" . htmlspecialchars($loc, ENT_XML1 | ENT_QUOTES, 'UTF-8') . "</loc>\n";
@@ -117,6 +120,13 @@ final class SearchFiles
         }
         return '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
              . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" . $body . '</urlset>';
+    }
+
+    /** Pure: '/x/' and '/x' are the same page; '/' stays '/'. */
+    public static function trimPath(string $path): string
+    {
+        $path = '/' . trim($path, '/');
+        return $path;
     }
 
     /** Pure: an address of this site moved onto the main base (path + query kept). Others unchanged. */

@@ -53,11 +53,12 @@ final class SearchHead
                 exit;
             }
 
-            foreach (self::headersFor($p, $method, $path) as $h) { header($h, false); }
+            $page = ($method === 'GET' || $method === 'HEAD') ? SearchPages::forPath($path) : null;
+            foreach (self::headersFor($p, $method, $path, $page) as $h) { header($h, false); }
 
             if ($method !== 'GET' && $method !== 'HEAD') { return; }
             if (preg_match('/\.[a-z0-9]{2,5}$/i', $path)) { return; }   // files, not pages
-            ob_start(self::handler($p, $path));
+            ob_start(self::handler($p, $path, $page));
         } catch (\Throwable) {
             // A page must never fail because of this.
         }
@@ -87,13 +88,18 @@ final class SearchHead
         return $scheme . '://' . $p->mainHost . $rest;
     }
 
-    /** Pure: the headers this request gets. */
-    public static function headersFor(SiteProfile $p, string $method, string $path): array
+    /**
+     * Pure: the headers this request gets.
+     *
+     * @param array{hidden:bool, canonical:string}|null $page this path's own page choices (SearchPages::forPath)
+     */
+    public static function headersFor(SiteProfile $p, string $method, string $path, ?array $page = null): array
     {
         $out = [];
         if ($p->isHidden()) {
             $out[] = 'X-Robots-Tag: noindex, nofollow';
-        } elseif (SearchSettings::on('seo.noindex_account') && self::noindex($path, $p->apex)) {
+        } elseif (!empty($page['hidden']) || (SearchSettings::on('seo.noindex_account') && self::noindex($path, $p->apex))) {
+            // A page its owner hid from search: always honoured, whatever the account-pages switch says.
             $out[] = 'X-Robots-Tag: noindex, follow';
         }
         $m = strtoupper($method);
@@ -103,19 +109,19 @@ final class SearchHead
         return $out;
     }
 
-    public static function handler(SiteProfile $p, string $path): \Closure
+    public static function handler(SiteProfile $p, string $path, ?array $page = null): \Closure
     {
         $acc = '';
-        return static function (string $chunk, int $phase) use (&$acc, $p, $path): string {
+        return static function (string $chunk, int $phase) use (&$acc, $p, $path, $page): string {
             if ($phase & PHP_OUTPUT_HANDLER_CLEAN) { $acc = ''; } else { $acc .= $chunk; }
             if (!($phase & PHP_OUTPUT_HANDLER_FINAL)) { return ''; }
             if ($phase & PHP_OUTPUT_HANDLER_CLEAN) { return ''; }
-            $page = $acc; $acc = '';
+            $html = $acc; $acc = '';
             try {
-                if ((int) http_response_code() !== 200 || !self::sentAsHtml(headers_list())) { return $page; }
-                return self::apply($page, $p, $path, self::extras($p, $path));
+                if ((int) http_response_code() !== 200 || !self::sentAsHtml(headers_list())) { return $html; }
+                return self::apply($html, $p, $path, self::extras($p, $path), $page);
             } catch (\Throwable) {
-                return $page;
+                return $html;
             }
         };
     }
@@ -153,8 +159,12 @@ final class SearchHead
     /**
      * Pure: the page with what is missing added before </head>.
      * $extra is raw HTML (already escaped) to add on this page, e.g. the homepage's verification tags + JSON-LD.
+     * $page is this path's own page choices: a hidden page gets "noindex, follow"; a canonical override replaces
+     * whatever canonical the page printed.
+     *
+     * @param array{hidden:bool, canonical:string}|null $page
      */
-    public static function apply(string $html, SiteProfile $p, string $path, string $extra = ''): string
+    public static function apply(string $html, SiteProfile $p, string $path, string $extra = '', ?array $page = null): string
     {
         $end = stripos($html, '</head>');
         $base = $p->base();
@@ -162,14 +172,17 @@ final class SearchHead
         $head = substr($html, 0, $end);
         $add = '';
 
+        $override = SearchPages::canonicalHref(SearchPages::cleanCanonical((string) ($page['canonical'] ?? '')), $base);
         if (SearchSettings::on('seo.canonical')) {
+            $tag = $override !== '' ? '<link rel="canonical" href="' . htmlspecialchars($override, ENT_QUOTES, 'UTF-8') . '">' : '';
             if (preg_match('/<link\b[^>]*\brel\s*=\s*["\']?canonical\b[^>]*>/i', $head, $m, PREG_OFFSET_CAPTURE)) {
-                $fixed = self::fixCanonicalTag($m[0][0], $p);
+                // The owner's override is the page's address, wherever it points; otherwise the printed one, fixed.
+                $fixed = $tag !== '' ? $tag : self::fixCanonicalTag($m[0][0], $p);
                 if ($fixed !== $m[0][0]) {
                     $head = substr($head, 0, $m[0][1]) . $fixed . substr($head, $m[0][1] + strlen($m[0][0]));
                 }
             } else {
-                $add .= '<link rel="canonical" href="' . htmlspecialchars(self::canonical($base, $path), ENT_QUOTES, 'UTF-8') . '">' . "\n";
+                $add .= ($tag !== '' ? $tag : '<link rel="canonical" href="' . htmlspecialchars(self::canonical($base, $path), ENT_QUOTES, 'UTF-8') . '">') . "\n";
             }
         }
 
@@ -177,6 +190,9 @@ final class SearchHead
         if ($p->isHidden()) {
             // A hidden site wins over a page's own "index": the most restrictive robots tag is the one engines obey.
             $add .= '<meta name="robots" content="noindex, nofollow">' . "\n";
+        } elseif (!empty($page['hidden'])) {
+            // The owner hid this page: added even beside a page's own robots tag — engines obey the most restrictive.
+            $add .= '<meta name="robots" content="noindex, follow">' . "\n";
         } elseif (!$hasRobots && SearchSettings::on('seo.noindex_account') && self::noindex($path, $p->apex)) {
             $add .= '<meta name="robots" content="noindex, follow">' . "\n";
         }

@@ -7,6 +7,7 @@ use Core\Request;
 use Core\Response;
 use Modules\Seo\Services\IndexNow;
 use Modules\Seo\Services\SearchFiles;
+use Modules\Seo\Services\SearchPages;
 use Modules\Seo\Services\SearchSettings;
 use Modules\Seo\Services\SiteProfile;
 
@@ -49,7 +50,7 @@ class SearchController
     public static function sitemapXml(string $frameworkXml): string
     {
         $p = SiteProfile::current();
-        return SearchFiles::sitemap($frameworkXml, $p->base(), $p->ownHosts, SearchSettings::on('seo.noindex_account'), $p->isHidden());
+        return SearchFiles::sitemap($frameworkXml, $p->base(), $p->ownHosts, SearchSettings::on('seo.noindex_account'), $p->isHidden(), SearchPages::hiddenPaths());
     }
 
     public function llms(Request $request): Response
@@ -79,8 +80,10 @@ class SearchController
                 "SELECT slug, title, seo_title, seo_description FROM pages WHERE status = 'published' AND is_public = 1 ORDER BY sort_order, id"
             );
             $out = [];
+            $hidden = SearchPages::hiddenPaths();
             foreach ($rows as $r) {
                 if ($home !== '' && $r['slug'] === $home) { continue; } // that page is the homepage
+                if (in_array('/' . $r['slug'], $hidden, true)) { continue; }   // hidden from search by its owner
                 $out[] = [
                     'title'       => (string) (($r['seo_title'] ?? '') ?: $r['title']),
                     'path'        => '/' . $r['slug'],
