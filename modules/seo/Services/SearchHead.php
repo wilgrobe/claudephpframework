@@ -11,6 +11,8 @@ namespace Modules\Seo\Services;
  *   3. an output buffer that finishes every 200 HTML page: a canonical link where the page has none (or names the
  *      site under a wrong host — page.php used to print APP_URL, the Builder's apex, on hosted tenants), noindex on
  *      account pages, noindex everywhere on a hidden site, verification tags and structured data on the homepage.
+ *   4. Markdown for AI assistants: a public page asked for with Accept: text/markdown is answered as Markdown
+ *      (MarkdownPage), converted from the finished page in that same buffer.
  *
  * Borrowed from StoriesDen's publish-hub (SeoHead / AgentReadiness, Nov 2026). It only ADDS what a page lacks; a
  * page that prints its own canonical or robots tag keeps it. A page must never fail because of this: every step is
@@ -58,7 +60,8 @@ final class SearchHead
 
             if ($method !== 'GET' && $method !== 'HEAD') { return; }
             if (preg_match('/\.[a-z0-9]{2,5}$/i', $path)) { return; }   // files, not pages
-            ob_start(self::handler($p, $path, $page));
+            $md = self::markdownWanted($p, $method, (string) ($server['HTTP_ACCEPT'] ?? ''), $path, $page);
+            ob_start(self::handler($p, $path, $page, $md ? ($method === 'HEAD' ? 'head' : 'body') : ''));
         } catch (\Throwable) {
             // A page must never fail because of this.
         }
@@ -106,20 +109,45 @@ final class SearchHead
         if ($path === '/' && ($m === 'GET' || $m === 'HEAD') && !$p->isHidden() && SearchSettings::on('seo.llms')) {
             $out[] = 'Link: ' . self::LINK;
         }
+        if (self::markdownWanted($p, $method, 'text/markdown', $path, $page)) {
+            // The same address answers HTML or Markdown by the Accept header: caches must keep the two apart.
+            $out[] = 'Vary: Accept';
+        }
         return $out;
     }
 
-    public static function handler(SiteProfile $p, string $path, ?array $page = null): \Closure
+    /**
+     * Pure: does this request get the page as Markdown? Only when the switch is on, the site and the page are not
+     * hidden from search, and the request prefers Markdown to HTML on a public page (MarkdownPage::wantsMarkdown).
+     *
+     * @param array{hidden:bool, canonical:string}|null $page
+     */
+    public static function markdownWanted(SiteProfile $p, string $method, string $accept, string $path, ?array $page = null): bool
+    {
+        if ($p->isHidden() || !empty($page['hidden']) || !SearchSettings::on('seo.markdown')) { return false; }
+        return MarkdownPage::wantsMarkdown($method, $accept, $path);
+    }
+
+    /** $markdown: '' = HTML as usual; 'body' = answer with the page as Markdown; 'head' = Markdown headers only (HEAD). */
+    public static function handler(SiteProfile $p, string $path, ?array $page = null, string $markdown = ''): \Closure
     {
         $acc = '';
-        return static function (string $chunk, int $phase) use (&$acc, $p, $path, $page): string {
+        return static function (string $chunk, int $phase) use (&$acc, $p, $path, $page, $markdown): string {
             if ($phase & PHP_OUTPUT_HANDLER_CLEAN) { $acc = ''; } else { $acc .= $chunk; }
             if (!($phase & PHP_OUTPUT_HANDLER_FINAL)) { return ''; }
             if ($phase & PHP_OUTPUT_HANDLER_CLEAN) { return ''; }
             $html = $acc; $acc = '';
             try {
                 if ((int) http_response_code() !== 200 || !self::sentAsHtml(headers_list())) { return $html; }
-                return self::apply($html, $p, $path, self::extras($p, $path), $page);
+                $html = self::apply($html, $p, $path, self::extras($p, $path), $page);
+                if ($markdown === '' || headers_sent()) { return $html; }
+                // Converted after apply(), so the front matter carries the page's canonical address.
+                $md = $markdown === 'head' ? '' : MarkdownPage::toMarkdown($html, $p->base());
+                if ($markdown === 'body' && trim($md) === '') { return $html; }
+                header('Content-Type: text/markdown; charset=UTF-8');
+                if ($markdown === 'body') { header('X-Markdown-Tokens: ' . MarkdownPage::tokens($md)); }
+                header_remove('Content-Length');
+                return $md;
             } catch (\Throwable) {
                 return $html;
             }

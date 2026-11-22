@@ -222,7 +222,7 @@ final class GetFoundTest extends TestCase
         $this->assertStringNotContainsString('name="robots"', SearchHead::apply(self::PAGE, self::kit(), '/login'));
         $this->assertSame([], array_filter(SearchHead::headersFor(self::kit(), 'GET', '/login'), fn ($h) => str_starts_with($h, 'X-Robots')));
         SearchSettings::using(['seo.llms' => '0']);
-        $this->assertSame([], SearchHead::headersFor(self::kit(), 'GET', '/'));
+        $this->assertSame([], array_values(array_filter(SearchHead::headersFor(self::kit(), 'GET', '/'), fn ($h) => str_starts_with($h, 'Link:'))));
         SearchSettings::using(['seo.enabled' => '0']);
         $this->assertSame(self::PAGE, SearchHead::apply(self::PAGE, self::kit(), '/login'), 'the master switch turns everything off');
         $this->assertFalse(SearchSettings::on('seo.indexnow'));
@@ -231,7 +231,8 @@ final class GetFoundTest extends TestCase
     public function test_the_homepage_link_header_points_at_llms_txt(): void
     {
         $this->assertContains('Link: </llms.txt>; rel="describedby"; type="text/plain"', SearchHead::headersFor(self::kit(), 'GET', '/'));
-        $this->assertSame([], SearchHead::headersFor(self::kit(), 'GET', '/about'));
+        $this->assertSame([], array_values(array_filter(SearchHead::headersFor(self::kit(), 'GET', '/about'), fn ($h) => str_starts_with($h, 'Link:'))),
+            'only the homepage (Vary: Accept is the Markdown switch: GetFoundMarkdownTest)');
     }
 
     public function test_verification_codes_are_kept_from_a_pasted_tag_and_junk_is_dropped(): void

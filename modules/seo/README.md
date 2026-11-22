@@ -13,6 +13,7 @@ Search-engine and AI-answer basics for every site. Free, on by default; each pie
 | robots.txt | `seo.robots_extras`, `seo.ai.search/input/train` | `Content-Signal: search=yes, ai-input=yes, ai-train=no` (default) + background paths disallowed |
 | Structured data | `seo.jsonld`, `seo.business.*` | schema.org JSON-LD on the homepage, by business type |
 | llms.txt | `seo.llms`, `seo.llms.intro` | `/llms.txt` + the homepage's `Link: </llms.txt>; rel="describedby"` |
+| Markdown for AI | `seo.markdown` | A public page requested with `Accept: text/markdown` (preferred over HTML) is answered as Markdown with its title, description and canonical address on top (`MarkdownPage`); such pages send `Vary: Accept`. Never on a hidden site or page, or on sign-in/account pages |
 | IndexNow | `seo.indexnow` | `/indexnow-key.txt` + `php artisan seo:indexnow` (scheduled daily 07:15 UTC); what was sent is kept in `seo.indexnow.sent` |
 | Verification | `seo.verify.*` | Google, Bing, Yandex, Pinterest, Facebook meta tags on the homepage |
 | Hide the site | `seo.hide_site` | noindex everywhere, empty sitemap, no llms.txt, no IndexNow |
@@ -28,3 +29,11 @@ A staging or preview copy hides itself when its `.env` has `SEARCH_HIDDEN=1`; th
 Nothing pings a search engine from a local or test host (`.test`, `.local`, `localhost`, an IP) or over plain http.
 
 On the hosted ClaudePHPBuilder the wizard's step 8 "Get found" card sets the AI policy, business type and description, main address, Google/Bing verification and hide-the-site at build time. A republish only overwrites the ones the owner has not changed on the site (`SearchSeed`, remembered in `seo.wizard_seeded`); downloads take them on their first deploy only.
+
+## Adding to llms.txt from a module
+
+A module provider may declare `public function llmsSections(string $base): array` (optional — it is looked up with
+`method_exists`, so the framework's `ModuleProvider` doesn't need it). Return `heading => list of items`, each item
+`['title' => …, 'url' => '/path or a full URL on this site', 'about' => 'one line, optional']`. Addresses on other
+sites, and sign-in/account pages, are dropped; a section left empty is not printed. StoriesDen's publish-hub uses it
+for its comparison pages and storefront guides.

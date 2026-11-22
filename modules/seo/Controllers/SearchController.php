@@ -60,7 +60,8 @@ class SearchController
         $name = SearchSettings::get('seo.business.name') ?: (string) setting('site_name', '');
         $summary = SearchSettings::get('seo.business.description') ?: (string) setting('site_tagline', '');
         $email = SearchSettings::get('seo.business.email') ?: (string) setting('contact_email', '');
-        $body = SearchFiles::llms($p->base(), $name, $summary, SearchSettings::get('seo.llms.intro'), self::publishedPages(), $email);
+        $body = SearchFiles::llms($p->base(), $name, $summary, SearchSettings::get('seo.llms.intro'), self::publishedPages(), $email,
+            self::moduleSections($p->base()), SearchSettings::on('seo.markdown'));
         return new Response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
     }
 
@@ -69,6 +70,34 @@ class SearchController
         $p = SiteProfile::current();
         if (!SearchSettings::on('seo.indexnow') || $p->isHidden() || $p->mainHost === '') { return Response::notFound(); }
         return new Response(IndexNow::key($p->mainHost), 200, ['Content-Type' => 'text/plain; charset=UTF-8', 'Cache-Control' => 'public, max-age=86400']);
+    }
+
+    /**
+     * What modules add to llms.txt: any module provider with a llmsSections(string $base) method (optional — the
+     * framework's ModuleProvider doesn't declare it, so it is looked up, not inherited). A module that fails is skipped.
+     *
+     * @return array<string, list<array{title:string, url:string, about?:string}>>
+     */
+    private static function moduleSections(string $base): array
+    {
+        $out = [];
+        try {
+            $c = \Core\Container\Container::global();
+            if (!$c->has(\Core\Module\ModuleRegistry::class)) { return []; }
+            foreach ($c->get(\Core\Module\ModuleRegistry::class)->all() as $provider) {
+                if (!method_exists($provider, 'llmsSections')) { continue; }
+                try {
+                    foreach ((array) $provider->llmsSections($base) as $heading => $items) {
+                        if (is_string($heading) && is_array($items)) { $out[$heading] = array_merge($out[$heading] ?? [], $items); }
+                    }
+                } catch (\Throwable) {
+                    // one module's list never takes the file down
+                }
+            }
+        } catch (\Throwable) {
+            return $out;
+        }
+        return $out;
     }
 
     /** @return list<array{title:string, path:string, description:string}> */

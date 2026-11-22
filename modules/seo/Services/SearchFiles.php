@@ -145,9 +145,15 @@ final class SearchFiles
      * line for each public page worth reading. Built from the pages the site actually publishes, so it can't name a
      * page that doesn't exist.
      *
+     * $sections are what modules add (ModuleProvider llmsSections(), e.g. StoriesDen's comparisons and storefront
+     * guides): heading => items, each item an address on this site (a path, or a full URL on it) with a title and an
+     * optional line about it. $markdown = the site answers Accept: text/markdown, so say so.
+     *
      * @param list<array{title:string, path:string, description?:string}> $pages
+     * @param array<string, list<array{title:string, url:string, about?:string}>> $sections
      */
-    public static function llms(string $base, string $name, string $summary, string $intro, array $pages, string $email = ''): string
+    public static function llms(string $base, string $name, string $summary, string $intro, array $pages, string $email = '',
+        array $sections = [], bool $markdown = false): string
     {
         $base = rtrim($base, '/');
         $one = static fn (string $s) => trim((string) preg_replace('/\s+/', ' ', $s));
@@ -155,6 +161,10 @@ final class SearchFiles
         if ($one($summary) !== '') { $out[] = '> ' . $one($summary); $out[] = ''; }
         if (trim($intro) !== '') {
             foreach (preg_split('/\R{2,}/', trim($intro)) ?: [] as $para) { $out[] = $one($para); $out[] = ''; }
+        }
+        if ($markdown) {
+            $out[] = 'Every page below is also available as Markdown: send the request with `Accept: text/markdown`.';
+            $out[] = '';
         }
         $out[] = '## Pages';
         $out[] = '- [Home](' . $base . '/)';
@@ -169,11 +179,50 @@ final class SearchFiles
             if ($d !== '') { $line .= ': ' . $d; }
             $out[] = $line;
         }
+        foreach ($sections as $heading => $items) {
+            $lines = [];
+            foreach (is_array($items) ? $items : [] as $it) {
+                $line = self::llmsItem(is_array($it) ? $it : [], $base);
+                if ($line !== null) { $lines[] = $line; }
+            }
+            if ($lines === [] || $one((string) $heading) === '') { continue; }
+            $out[] = '';
+            $out[] = '## ' . $one((string) $heading);
+            foreach ($lines as $l) { $out[] = $l; }
+        }
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $out[] = '';
             $out[] = '## Contact';
             $out[] = '- ' . $email;
         }
         return implode("\n", $out) . "\n";
+    }
+
+
+    /**
+     * Pure: one module-supplied llms.txt line, or null when it has no title or points off this site (a module may only
+     * describe the site it runs on) or at a page kept out of search.
+     *
+     * @param array{title?:string, url?:string, about?:string} $it
+     */
+    public static function llmsItem(array $it, string $base): ?string
+    {
+        $one = static fn (string $s) => trim((string) preg_replace('/\s+/', ' ', $s));
+        $base = rtrim($base, '/');
+        $title = $one((string) ($it['title'] ?? ''));
+        $url = trim((string) ($it['url'] ?? ''));
+        if ($title === '' || $url === '') { return null; }
+        if ($url[0] === '/' && !str_starts_with($url, '//')) {
+            $rest = $url;
+        } elseif (str_starts_with(strtolower($url), strtolower($base) . '/') || strtolower($url) === strtolower($base)) {
+            $rest = substr($url, strlen($base)) ?: '/';
+        } else {
+            return null;   // another site's address
+        }
+        $path = (string) (parse_url($rest, PHP_URL_PATH) ?: '/');
+        if (SearchHead::noindex($path) || preg_match('/[\s()<>"]/', $rest)) { return null; }
+        $line = '- [' . str_replace(['[', ']'], ['(', ')'], $title) . '](' . $base . $rest . ')';
+        $about = $one((string) ($it['about'] ?? ''));
+        return $about === '' ? $line : $line . ': ' . $about;
     }
 }

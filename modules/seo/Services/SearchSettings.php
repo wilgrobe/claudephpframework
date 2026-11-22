@@ -25,6 +25,7 @@ final class SearchSettings
         'seo.robots_extras'      => 'robots.txt: say what AI may do with the site and skip background addresses',
         'seo.jsonld'             => 'Describe the business to search engines (structured data on the home page)',
         'seo.llms'               => 'A map of the site for AI assistants (/llms.txt)',
+        'seo.markdown'           => 'Give AI assistants a plain Markdown copy of a page when they ask for one',
         'seo.indexnow'           => 'Tell Bing and other IndexNow engines when pages are new or changed',
     ];
 
