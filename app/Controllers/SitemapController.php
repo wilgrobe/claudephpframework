@@ -44,9 +44,18 @@ class SitemapController
 
         // Static always-public routes. "/" gets a lastmod when a home page
         // is configured so crawlers can see when its content last changed.
+        // /faq changes when an answer does (Get found phase 4, 22 Nov 2026: undated on every site until now).
+        $faqLastmod = null;
+        try {
+            $latest = $this->db->fetchColumn("SELECT MAX(updated_at) FROM faqs WHERE is_public = 1 AND is_active = 1");
+            if ($latest) $faqLastmod = date('Y-m-d', strtotime((string) $latest));
+        } catch (\Throwable) {
+            // no faqs table on this install: the entry stays undated
+        }
+
         $static = [
             ['/',         $homeLastmod],
-            ['/faq',      null],
+            ['/faq',      $faqLastmod],
             ['/login',    null],
             ['/register', null],
         ];
