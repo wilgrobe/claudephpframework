@@ -112,7 +112,8 @@ final class GetFoundExtrasTest extends TestCase
     private const GOOD = '<!DOCTYPE html><html lang="en"><head><title>Ruiz Plumbing — repairs in Benson</title>'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<meta name="description" content="Family plumbers in Benson since 1998: leaks, water heaters and drains, same day, with upfront prices.">'
-        . '<link rel="canonical" href="https://example.com/"><meta property="og:image" content="https://example.com/c.png"></head>'
+        . '<link rel="canonical" href="https://example.com/"><meta property="og:image" content="https://example.com/c.png">'
+        . '<script type="application/ld+json">{"@type":"Plumber"}</script></head>'
         . '<body><h1>Ruiz Plumbing</h1><h2>Services</h2></body></html>';
 
     private static function fetches(array $over = []): array
@@ -122,7 +123,11 @@ final class GetFoundExtrasTest extends TestCase
             'http' => self::page('', 301, ['location' => 'https://example.com/']),
             'twin' => self::page('', 301, ['location' => 'https://example.com/']),
             'robots' => self::page("User-agent: *\nAllow: /\n\nSitemap: https://example.com/sitemap.xml\n"),
-            'sitemap' => self::page('<urlset><url><loc>https://example.com/</loc></url><url><loc>https://example.com/about</loc></url></urlset>'),
+            'sitemap' => self::page('<urlset><url><loc>https://example.com/</loc><lastmod>2026-11-20</lastmod></url><url><loc>https://example.com/about</loc><lastmod>2026-11-01</lastmod></url></urlset>'),
+            'llms' => self::page("# Ruiz Plumbing
+
+> Family plumbers in Benson.
+"),
             'bot:OAI-SearchBot' => self::page(self::GOOD), 'bot:PerplexityBot' => self::page(self::GOOD), 'bot:Claude-SearchBot' => self::page(self::GOOD),
         ];
     }
@@ -136,7 +141,7 @@ final class GetFoundExtrasTest extends TestCase
     public function test_a_healthy_site_passes_every_check(): void
     {
         $c = SearchHealth::evaluate(self::fetches(), 'example.com', false, true);
-        $this->assertSame(['https', 'http', 'main', 'robots', 'sitemap', 'canonical', 'indexable', 'title', 'description', 'lang', 'h1', 'image', 'phone', 'ai'], array_keys(self::oks($c)));
+        $this->assertSame(['https', 'http', 'main', 'robots', 'sitemap', 'lastmod', 'canonical', 'indexable', 'title', 'description', 'lang', 'h1', 'image', 'phone', 'jsonld', 'llms', 'ai'], array_keys(self::oks($c)));
         $this->assertSame([], array_keys(array_filter(self::oks($c), fn ($ok) => $ok !== true)), 'all pass');
         foreach ($c as $x) $this->assertSame('', $x['fix'], 'a passing check carries no fix');
     }
@@ -157,6 +162,9 @@ final class GetFoundExtrasTest extends TestCase
             'image'       => ['home' => self::page(str_replace('og:image', 'og:other', self::GOOD))],
             'phone'       => ['home' => self::page(str_replace('name="viewport"', 'name="vp"', self::GOOD))],
             'ai'          => ['bot:OAI-SearchBot' => self::page('blocked', 403)],
+            'lastmod'     => ['sitemap' => self::page('<urlset><url><loc>https://example.com/</loc><lastmod>2026-11-20</lastmod></url><url><loc>https://example.com/faq</loc></url></urlset>')],
+            'jsonld'      => ['home' => self::page(str_replace('application/ld+json', 'text/plain', self::GOOD))],
+            'llms'        => ['llms' => self::page('<html>Not found</html>')],
         ];
         foreach ($bad as $key => $over) {
             $c = array_column(SearchHealth::evaluate(self::fetches($over), 'example.com', false, true), null, 'key');
@@ -179,6 +187,11 @@ final class GetFoundExtrasTest extends TestCase
         $this->assertNull($c['sitemap']);
         $this->assertArrayNotHasKey('canonical', $c, 'page checks wait until it is the live site');
         $this->assertArrayNotHasKey('ai', $c);
+        $this->assertArrayNotHasKey('lastmod', $c);
+        $this->assertArrayNotHasKey('llms', $c);
+        $old = self::fetches(); unset($old['llms']);
+        $this->assertArrayNotHasKey('llms', self::oks(SearchHealth::evaluate($old, 'example.com', false, true)), 'not fetched: not judged');
+        $this->assertSame(1, SearchHealth::datedEntries('<url><loc>a</loc><lastmod>2026-01-01</lastmod></url><url><loc>b</loc><lastmod> </lastmod></url>'));
         $down = self::oks(SearchHealth::evaluate(self::fetches(['home' => self::page('', 0)]), 'example.com', false, true));
         $this->assertFalse($down['https']);
         $this->assertArrayNotHasKey('title', $down, 'no page to read');
@@ -192,7 +205,7 @@ final class GetFoundExtrasTest extends TestCase
         $out = $h->run(self::profile(), true);
         $this->assertSame('example.com', $out['host']);
         $this->assertSame([], array_values(array_diff(array_unique($seen), ['example.com', 'www.example.com'])), 'nothing else is ever fetched');
-        $this->assertCount(8, $seen, 'home, http, the twin, robots, sitemap and three AI crawlers');
+        $this->assertCount(9, $seen, 'home, http, the twin, robots, sitemap, llms.txt and three AI crawlers');
         $seen = [];
         $h->run(self::profile(['env_hidden' => true]), true);
         $this->assertCount(5, $seen, 'a hidden copy is not probed as AI crawlers');
@@ -205,5 +218,33 @@ final class GetFoundExtrasTest extends TestCase
         $v = file_get_contents(BASE_PATH . '/modules/seo/Views/admin/settings.php');
         $this->assertStringContainsString('action="/admin/settings/search/check"', $v);
         $this->assertStringContainsString("'staging' =>", $v, 'the page says why a staging copy is hidden');
+    }
+
+    // ── Phase 4: the same report for any public site (MarketOtter's site check) ──
+
+    public function test_any_public_site_can_be_checked_by_host_name(): void
+    {
+        $seen = [];
+        $h = new SearchHealth();
+        $h->fetch = function (string $url, string $ua) use (&$seen) { $seen[] = parse_url($url, PHP_URL_HOST); return self::fetches()['home']; };
+        $out = $h->runFor('Example.com');
+        $this->assertSame('example.com', $out['host']);
+        $this->assertSame([], array_values(array_diff(array_unique($seen), ['example.com', 'www.example.com'])), 'only that site');
+        $this->assertCount(9, $seen);
+        foreach (['localhost', '127.0.0.1', '10.0.0.5', 'http://example.com', 'example.com/path', 'exa mple.com', '', 'a.b'] as $bad) {
+            $this->assertNull($h->runFor($bad), "refused: $bad");
+        }
+    }
+
+    public function test_a_customer_typed_site_is_never_fetched_from_a_private_address(): void
+    {
+        foreach (['10.1.2.3', '192.168.0.1', '172.16.5.5', '127.0.0.1', '169.254.169.254', '0.0.0.0', '::1', 'fc00::1', 'fe80::1'] as $ip) {
+            $this->assertFalse(SearchHealth::publicIp($ip), $ip);
+        }
+        $this->assertTrue(SearchHealth::publicIp('104.236.96.16'));
+        $this->assertTrue(SearchHealth::publicIp('2606:4700::1'));
+        $src = (string) file_get_contents(BASE_PATH . '/modules/seo/Services/SearchHealth.php');
+        $this->assertStringContainsString('static fn (string $u, string $ua) => self::get($u, $ua, true);', $src, 'runFor fetches public-only by default');
+        $this->assertStringContainsString('if ($pin !== null) curl_setopt($ch, CURLOPT_RESOLVE, $pin);', $src, 'connects to the address it checked');
     }
 }

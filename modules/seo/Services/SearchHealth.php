@@ -29,6 +29,30 @@ final class SearchHealth
         $main = $p->mainHost;
         if ($main === '') return ['host' => '', 'hidden' => $p->hidden, 'checks' => []];
         $get = $this->fetch ?? static fn (string $u, string $ua) => self::get($u, $ua);
+        $r = self::probe($get, $main, $p->isHidden(), $aiAnswers);
+        return ['host' => $main, 'hidden' => $p->hidden, 'checks' => self::evaluate($r, $main, $p->isHidden(), $aiAnswers)];
+    }
+
+    /**
+     * Phase 4 (22 Nov 2026): the same report for ANY public site, by host name — MarketOtter checks each product's
+     * own website with it. The host comes from a customer, so the default fetch refuses private and reserved
+     * addresses (get() with $publicOnly) and connects to the address it checked. Returns null for a host that is
+     * not a plain public domain name.
+     *
+     * @return array{host:string, hidden:string, checks:list<array>}|null
+     */
+    public function runFor(string $host, bool $aiAnswers = true): ?array
+    {
+        $host = strtolower(trim($host));
+        if (!preg_match('/^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $host)) { return null; }
+        $get = $this->fetch ?? static fn (string $u, string $ua) => self::get($u, $ua, true);
+        $r = self::probe($get, $host, false, $aiAnswers);
+        return ['host' => $host, 'hidden' => '', 'checks' => self::evaluate($r, $host, false, $aiAnswers)];
+    }
+
+    /** The addresses a report reads, all on $main (and its www / bare twin). */
+    private static function probe(callable $get, string $main, bool $hidden, bool $aiAnswers): array
+    {
         $ua = 'Mozilla/5.0 (compatible; SiteSearchHealth/1.0)';
         $twin = str_starts_with($main, 'www.') ? substr($main, 4) : "www.$main";
         $r = [
@@ -38,18 +62,44 @@ final class SearchHealth
             'robots'  => $get("https://$main/robots.txt", $ua),
             'sitemap' => $get("https://$main/sitemap.xml", $ua),
         ];
-        if ($aiAnswers && !$p->isHidden()) {
+        if (!$hidden) $r['llms'] = $get("https://$main/llms.txt", $ua);
+        if ($aiAnswers && !$hidden) {
             foreach (self::AI_PROBES as $bot) $r['bot:' . $bot] = $get("https://$main/", "Mozilla/5.0 (compatible; $bot/1.0)");
         }
-        return ['host' => $main, 'hidden' => $p->hidden, 'checks' => self::evaluate($r, $main, $p->isHidden(), $aiAnswers)];
+        return $r;
     }
 
-    /** One GET, no redirects followed, at most 1 MB read. @return array{code:int, headers:array<string,string>, body:string} */
-    public static function get(string $url, string $ua): array
+    /** Pure: is this IP address one a fetch of a customer-typed site may connect to (not private, loopback, reserved)? */
+    public static function publicIp(string $ip): bool
+    {
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+    }
+
+    /**
+     * One GET, no redirects followed, at most 1 MB read. $publicOnly: resolve the host first, refuse unless every
+     * address is public, and connect to the address that was checked (so a DNS answer cannot change in between).
+     *
+     * @return array{code:int, headers:array<string,string>, body:string}
+     */
+    public static function get(string $url, string $ua, bool $publicOnly = false): array
     {
         if (!function_exists('curl_init')) return ['code' => 0, 'headers' => [], 'body' => ''];
+        $pin = null;
+        if ($publicOnly) {
+            $host = (string) parse_url($url, PHP_URL_HOST);
+            $ips = $host === '' ? [] : array_merge(
+                array_column((array) @dns_get_record($host, DNS_A), 'ip'),
+                array_column((array) @dns_get_record($host, DNS_AAAA), 'ipv6'));
+            if ($ips === [] || array_filter($ips, static fn ($ip) => !self::publicIp((string) $ip)) !== []) {
+                return ['code' => 0, 'headers' => [], 'body' => ''];
+            }
+            $port = parse_url($url, PHP_URL_SCHEME) === 'http' ? 80 : 443;
+            $ip = (string) $ips[0];
+            $pin = ["$host:$port:" . (str_contains($ip, ':') ? "[$ip]" : $ip)];
+        }
         $headers = [];
         $ch = curl_init($url);
+        if ($pin !== null) curl_setopt($ch, CURLOPT_RESOLVE, $pin);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => false, CURLOPT_TIMEOUT => 10, CURLOPT_CONNECTTIMEOUT => 5,
             CURLOPT_USERAGENT => $ua, CURLOPT_MAXFILESIZE => 1048576, CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
@@ -71,6 +121,13 @@ final class SearchHealth
     private static function redirectsTo(array $res, string $prefix): bool
     {
         return in_array((int) ($res['code'] ?? 0), [301, 308], true) && str_starts_with(strtolower((string) ($res['headers']['location'] ?? '')), strtolower($prefix));
+    }
+
+    /** Pure: how many <url> entries in a sitemap carry a <lastmod>. */
+    public static function datedEntries(string $xml): int
+    {
+        preg_match_all('#<url>(.*?)</url>#s', $xml, $m);
+        return count(array_filter($m[1], static fn ($u) => (bool) preg_match('#<lastmod>\s*[^<\s]#', $u)));
     }
 
     /** Does the "User-agent: *" group shut every crawler out of the whole site ("Disallow: /")? Pure. */
@@ -127,6 +184,13 @@ final class SearchHealth
         $out[] = self::check('sitemap', 'The sitemap lists the pages', $hidden ? null : ($sm['code'] === 200 && $n > 0),
             $sm['code'] !== 200 ? 'sitemap.xml answered ' . ($sm['code'] ?: 'nothing') . '.' : "It lists $n " . ($n === 1 ? 'page' : 'pages') . '.',
             'Publish at least one public page.');
+        if (!$hidden && $sm['code'] === 200 && $n > 0) {
+            // Phase 4 (22 Nov 2026): a date on every entry lets search engines and IndexNow tell changed pages apart.
+            $dated = self::datedEntries((string) $sm['body']);
+            $out[] = self::check('lastmod', 'Every sitemap page says when it last changed', $dated === $n,
+                $dated === $n ? 'All of them do.' : "$dated of $n " . ($n === 1 ? 'page has' : 'pages have') . ' a last-changed date.',
+                'Give every sitemap entry a <lastmod> date: pages this site makes itself get one automatically; a module page without one needs it added in that module.');
+        }
 
         if ($up && !$hidden) {
             $b = (string) $home['body'];
@@ -158,6 +222,17 @@ final class SearchHealth
             $out[] = self::check('image', 'A picture for shared links', $og, $og ? 'Set.' : 'No social image: shared links show no picture.', 'Add a social image to the home page in the page editor.');
             $vp = (bool) preg_match('/<meta[^>]+name=["\']viewport["\']/i', $b);
             $out[] = self::check('phone', 'Fits a phone screen', $vp, $vp ? 'The page declares a mobile viewport.' : 'No viewport tag.', 'The theme needs <meta name="viewport" content="width=device-width, initial-scale=1">.');
+            $ld = (bool) preg_match('/<script[^>]+type=["\']application\/ld\+json["\']/i', $b);
+            $out[] = self::check('jsonld', 'Describes the business for search engines', $ld,
+                $ld ? 'The home page carries structured data.' : 'No structured data on the home page.',
+                'Turn on "Describe the business to search engines" here and choose the kind of business.');
+        }
+        if (!$hidden && isset($r['llms'])) {
+            $llms = $r['llms'] + $none;
+            $okL = $llms['code'] === 200 && str_starts_with(ltrim((string) $llms['body']), '#');
+            $out[] = self::check('llms', 'A map of the site for AI assistants (llms.txt)', $okL,
+                $okL ? '/llms.txt answers.' : '/llms.txt answered ' . ($llms['code'] ?: 'nothing') . ($llms['code'] === 200 ? ' but is not a Markdown map.' : '.'),
+                'Turn on "A map of the site for AI assistants" here.');
         }
         if ($aiAnswers && !$hidden) {
             $bad = [];
