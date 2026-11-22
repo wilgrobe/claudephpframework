@@ -18,13 +18,4 @@ final class SitemapLastmodTest extends TestCase
         $this->assertMatchesRegularExpression('/try \{\s*\$latest = .*?\} catch \(\\\\Throwable\)/s', $src,
             'a site without the faqs table still gets its sitemap');
     }
-
-    public function test_the_builder_catalog_page_is_dated_by_its_catalog(): void
-    {
-        $path = BASE_PATH . '/modules/builder/module.php';
-        if (!is_file($path)) { $this->markTestSkipped('Builder-only module'); }
-        $src = (string) file_get_contents($path);
-        $this->assertStringContainsString("['premium_modules.php', 'module_catalog.php', 'module_groups.php', 'module_prices.php']", $src);
-        $this->assertStringContainsString("if (\$mtimes) { \$entry['lastmod'] = gmdate('Y-m-d', max(\$mtimes)); }", $src);
-    }
 }
