@@ -119,6 +119,10 @@ class PageController
             Session::flash('errors', $v->errors());
             return Response::redirect('/admin/pages/create');
         }
+        if (($bad = $this->badCanonical($request)) !== null) {
+            Session::flash('errors', ['canonical_url' => [$bad]]);
+            return Response::redirect('/admin/pages/create');
+        }
         $slug          = $v->get('slug');
         $sanitizedBody = Validator::sanitizeHtml($request->post('body', ''), self::BODY_TAGS, self::BODY_ATTRS);
         $status        = $v->get('status');
@@ -155,6 +159,7 @@ class PageController
             $insert['main_padding_x_px']     = max(0, min(200, (int) $request->post('main_padding_x_px', 0)));
             $insert['main_padding_y_px']     = max(0, min(160, (int) $request->post('main_padding_y_px', 0)));
         }
+        $insert += $this->searchFields($request);
         $id = $this->db->insert('pages', $insert);
         // Register the canonical path so slug changes later can leave a 301
         // breadcrumb in seo_links.
@@ -228,6 +233,10 @@ class PageController
             Session::flash('errors', $v->errors());
             return Response::redirect("/admin/pages/$id/edit");
         }
+        if (($bad = $this->badCanonical($request)) !== null) {
+            Session::flash('errors', ['canonical_url' => [$bad]]);
+            return Response::redirect("/admin/pages/$id/edit");
+        }
 
         $oldSlug       = $page['slug'];
         $newSlug       = $v->get('slug');
@@ -249,6 +258,7 @@ class PageController
             $extra['main_padding_x_px']     = max(0, min(200, (int) $request->post('main_padding_x_px', 0)));
             $extra['main_padding_y_px']     = max(0, min(160, (int) $request->post('main_padding_y_px', 0)));
         }
+        $extra += $this->searchFields($request);
         if ($extra) {
             $this->db->update('pages', $extra, 'id = ?', [$id]);
         }
@@ -466,6 +476,30 @@ class PageController
      * run the migration must skip them rather than fail the whole save. Cached
      * per request — this is called on every create and update.
      */
+    /**
+     * "Hide from search engines and AI assistants" + the canonical address (Get found, 23 Nov 2026) — the same two
+     * per-page choices as the site's Search settings → Pages table, now on the page's own form. Only when the seo
+     * module is installed and its columns exist; the canonical goes through the module's own cleaner.
+     */
+    private function searchFields(Request $request): array
+    {
+        if (!class_exists(\Modules\Seo\Services\SearchPages::class)
+            || !$this->pagesHasColumn('search_hidden') || !$this->pagesHasColumn('canonical_url')) {
+            return [];
+        }
+        $canon = \Modules\Seo\Services\SearchPages::cleanCanonical((string) $request->post('canonical_url', ''));
+        return ['search_hidden' => (int) $request->post('search_hidden', 0) === 1 ? 1 : 0, 'canonical_url' => $canon !== '' ? $canon : null];
+    }
+
+    /** The message for a canonical address the seo module would drop, or null when it is fine (or empty). */
+    private function badCanonical(Request $request): ?string
+    {
+        if (!class_exists(\Modules\Seo\Services\SearchPages::class)) return null;
+        $raw = trim((string) $request->post('canonical_url', ''));
+        if ($raw === '' || \Modules\Seo\Services\SearchPages::cleanCanonical($raw) !== '') return null;
+        return 'Use a full address starting with https:// or a path on this site starting with /.';
+    }
+
     private function pagesHasColumn(string $column): bool
     {
         static $cache = [];

@@ -374,6 +374,22 @@ $__cellStyles = is_array($layout['cell_styles'] ?? null) ? $layout['cell_styles'
                 <label for="seo_description" style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.2rem">Meta description</label>
                 <textarea name="seo_description" class="form-control" rows="2" maxlength="500" id="seo_description"><?= e($page['seo_description'] ?? '') ?></textarea>
             </div>
+            <?php if (class_exists(\Modules\Seo\Services\SearchPages::class) && \Modules\Seo\Services\SearchPages::hasColumns()): ?>
+            <div style="margin-top:.65rem">
+                <label style="display:flex;gap:.45rem;align-items:center;font-weight:500">
+                    <input type="checkbox" name="search_hidden" value="1" <?= !empty($page['search_hidden']) ? 'checked' : '' ?>>
+                    Hide this page from search engines and AI assistants
+                </label>
+                <span class="form-hint" style="display:block;font-size:12px;color:var(--text-muted)">It stays on the site for visitors; it leaves the sitemap and search engines are asked not to list it.</span>
+            </div>
+            <div style="margin-top:.65rem">
+                <label for="canonical_url" style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.2rem">Canonical address</label>
+                <input type="text" name="canonical_url" id="canonical_url" maxlength="1000" class="form-control <?= !empty($errors['canonical_url']) ? 'is-invalid' : '' ?>"
+                       value="<?= e($page['canonical_url'] ?? '') ?>" placeholder="Leave empty: this page's own address">
+                <?php if (!empty($errors['canonical_url'])): ?><span class="form-error"><?= e($errors['canonical_url'][0]) ?></span><?php endif; ?>
+                <span class="form-hint" style="display:block;font-size:12px;color:var(--text-muted)">Only when this page copies another: a path here (/pricing) or the original elsewhere (https://medium.com/…).</span>
+            </div>
+            <?php endif; ?>
         </div>
     </details>
 
