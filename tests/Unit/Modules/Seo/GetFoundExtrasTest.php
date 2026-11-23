@@ -247,4 +247,14 @@ final class GetFoundExtrasTest extends TestCase
         $this->assertStringContainsString('static fn (string $u, string $ua) => self::get($u, $ua, true);', $src, 'runFor fetches public-only by default');
         $this->assertStringContainsString('if ($pin !== null) curl_setopt($ch, CURLOPT_RESOLVE, $pin);', $src, 'connects to the address it checked');
     }
+
+    public function test_the_builders_own_site_sends_its_pages_to_indexnow_too(): void
+    {
+        // Phase 5 (21 Nov 2026) made the apex a public Get-found site, but the command still stopped at "The Builder
+        // apex is not a customer site" — so its pages never reached Bing (found 23 Nov). Hidden and non-public hosts
+        // are still skipped by IndexNow itself.
+        $src = (string) file_get_contents(BASE_PATH . '/modules/seo/Console/Commands/IndexNowCommand.php');
+        $this->assertStringNotContainsString('$p->apex', $src);
+        $this->assertStringNotContainsString('not a customer site', $src);
+    }
 }

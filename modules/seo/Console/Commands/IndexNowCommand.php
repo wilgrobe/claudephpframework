@@ -29,7 +29,6 @@ final class IndexNowCommand extends Command
         SiteProfile::reset();
         SearchSettings::flush();
         $p = SiteProfile::current();
-        if ($p->apex) { $this->line('The Builder apex is not a customer site; nothing sent.'); return 0; }
         if (!SearchSettings::on('seo.indexnow')) { $this->line('IndexNow is turned off for this site; nothing sent.'); return 0; }
         if ($p->isHidden()) { $this->line('This site is hidden from search (' . $p->hidden . '); nothing sent.'); return 0; }
 
