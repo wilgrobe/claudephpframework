@@ -90,7 +90,7 @@ $filterUrl = static function (array $overrides = []) use ($filters): string {
         <?php if ($filters['status']): ?>
             <input type="hidden" name="status" value="<?= htmlspecialchars($filters['status'], ENT_QUOTES) ?>">
         <?php endif; ?>
-        <input type="search" name="q" placeholder="Search name / email / subject / body"
+        <input type="search" name="q" aria-label="Search messages" placeholder="Search name / email / subject / body"
                value="<?= htmlspecialchars($filters['q'], ENT_QUOTES) ?>">
         <button type="submit">Search</button>
         <?php if ($filters['q'] !== '' || $filters['status'] !== ''): ?>

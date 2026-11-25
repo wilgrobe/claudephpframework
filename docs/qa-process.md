@@ -6,7 +6,7 @@ sit-down, browser-first run through your install that hits every surface in the
 order that minimizes re-logins, role switches, and fixture rebuilds.
 
 > **Premium modules ship from a separate repository.** If your install includes
-> [claudephpframeworkpremium](https://github.com/) modules, this file covers
+> the separate, paid modules, this file covers
 > only the open-source core. Run the premium repo's parallel `docs/qa-process.md`
 > after you finish this one.
 

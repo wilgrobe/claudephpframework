@@ -17,8 +17,8 @@
         <tr>
             <td>
                 <form method="post" action="/admin/tooltips/categories/<?= (int) $c['id'] ?>" style="display:flex;gap:.4rem;align-items:center"><?= csrf_field() ?>
-                    <input name="name" value="<?= e((string) $c['name']) ?>" style="width:160px">
-                    <input name="description" value="<?= e((string) ($c['description'] ?? '')) ?>" placeholder="description" style="width:160px;font-size:12px">
+                    <input name="name" aria-label="Category name" value="<?= e((string) $c['name']) ?>" style="width:160px">
+                    <input name="description" aria-label="Category description" value="<?= e((string) ($c['description'] ?? '')) ?>" placeholder="description" style="width:160px;font-size:12px">
                     <input type="hidden" name="sort_order" value="<?= (int) $c['sort_order'] ?>">
                     <button class="btn btn-sm btn-secondary">Save</button>
                 </form>

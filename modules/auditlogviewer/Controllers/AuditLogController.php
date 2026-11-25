@@ -102,7 +102,7 @@ class AuditLogController
             'emulated_user_id', 'emulated_username', 'superadmin_mode',
             'action', 'model', 'model_id', 'ip_address', 'user_agent',
             'old_values', 'new_values', 'notes',
-        ]);
+        ], ',', '"', '\\');
         $rows = $this->svc->streamForExport($filters, function (array $r) use ($fh): void {
             fputcsv($fh, [
                 $r['id'] ?? '',
@@ -120,7 +120,7 @@ class AuditLogController
                 $r['old_values'] ?? '',
                 $r['new_values'] ?? '',
                 $r['notes'] ?? '',
-            ]);
+            ], ',', '"', '\\');
         });
         rewind($fh);
         $csv = stream_get_contents($fh);

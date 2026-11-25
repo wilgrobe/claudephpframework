@@ -149,7 +149,7 @@ $hiddenWhy = [
                         <td><?= e((string) $pg['title']) ?><div class="seo-muted" style="margin:0">/<?= e((string) $pg['slug']) ?></div></td>
                         <td><input type="hidden" name="page_ids[]" value="<?= $id ?>">
                             <label class="seo-row" style="margin:0"><input type="checkbox" name="hidden[<?= $id ?>]" value="1" <?= (int) $pg['search_hidden'] === 1 ? 'checked' : '' ?>> Hidden</label></td>
-                        <td><input type="text" name="canonical[<?= $id ?>]" class="form-control" maxlength="1000" value="<?= e((string) ($pg['canonical_url'] ?? '')) ?>" placeholder="(this page)"></td>
+                        <td><input type="text" name="canonical[<?= $id ?>]" aria-label="Main address of this page" class="form-control" maxlength="1000" value="<?= e((string) ($pg['canonical_url'] ?? '')) ?>" placeholder="(this page)"></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

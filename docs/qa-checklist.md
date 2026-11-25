@@ -10,7 +10,7 @@ sequenced walkthrough that hits the high-value paths in one sit-down, see
 [`docs/qa-process.md`](qa-process.md).
 
 > **Premium modules ship from a separate repository.** If your install includes
-> [claudephpframeworkpremium](https://github.com/) modules (commerce, social,
+> the separate, paid modules (commerce, social,
 > scheduling, etc.), use the parallel `docs/qa-checklist.md` in the premium repo
 > for those checks. This document covers the open-source core only.
 

@@ -269,12 +269,12 @@ class ImportExportService
 
         $out = fopen('php://output', 'w');
         try {
-            fputcsv($out, $fields, $delim);
+            fputcsv($out, $fields, $delim, '"', '\\');
             foreach (($handler['exportRows'])($filter) as $row) {
                 $line = [];
                 foreach ($fields as $f) $line[] = $row[$f] ?? '';
                 // XSS-M1 — neutralize CSV formula injection in exported cells.
-                fputcsv($out, \Core\Support\Csv::safeRow($line), $delim);
+                fputcsv($out, \Core\Support\Csv::safeRow($line), $delim, '"', '\\');
             }
         } finally {
             fclose($out);

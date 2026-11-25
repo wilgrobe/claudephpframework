@@ -11,7 +11,7 @@ cleanly without the premium repo.
 
 ## What ships in core
 
-26 modules covering the surfaces every web application eventually needs:
+30 modules covering the surfaces every web application eventually needs:
 
 - **Compliance** — GDPR DSARs, CCPA opt-outs, COPPA age-gates, cookie consent,
   versioned Terms/Privacy with required acceptance, time-based retention sweeps,
@@ -31,7 +31,7 @@ cleanly without the premium repo.
 
 Plus the framework runtime: container, router, migrations, queue, scheduler,
 cache, mail, SMS, file storage, search, payments-gateway interface, sessions
-(file or DB), themes (40 tokens × 10 groups, dark mode), CSRF, RBAC, 2FA
+(file or DB), themes (color palettes, dark mode), CSRF, RBAC, 2FA
 (email / SMS / TOTP), OAuth (Google / Microsoft / Apple / Facebook / LinkedIn).
 
 ## Requirements
@@ -46,35 +46,45 @@ cache, mail, SMS, file storage, search, payments-gateway interface, sessions
 
 ## Quick start
 
+Create an empty MySQL database first, then:
+
 ```bash
-git clone https://github.com/your-org/claudephpframework.git
+git clone https://github.com/wilgrobe/claudephpframework.git
 cd claudephpframework
 
 cp .env.example .env
-# Edit .env — at minimum set DB_*, APP_URL, APP_KEY (32+ random chars)
+# Edit .env: set DB_*, APP_URL=http://127.0.0.1:8000, and APP_KEY (32+ random characters).
+# One way to make a key: php -r "echo bin2hex(random_bytes(24));"
 
 composer install
 php artisan migrate
 
-# Point your web server's document root at /public/
-# A working nginx vhost is in nginx.conf.example
+# Try it without setting up a web server:
+php -S 127.0.0.1:8000 -t public
 ```
 
-The first migration creates a default superadmin you'll be prompted to claim
-on first login. Change the password immediately.
+Open http://127.0.0.1:8000/login. With `APP_ENV=local`, the install has three development accounts and the login page
+has a one-click button for each; that shortcut is refused when `APP_ENV=production`.
+
+With `APP_ENV=production`, `php artisan migrate` creates one super-admin with a random password and prints it once.
+Sign in and change it, or set a new one with `php artisan admin:password --email=you@example.com`. Set `APP_ENV` before
+the first migrate. A database created in development keeps its development accounts.
+
+For a real server, point the document root at `/public/` (Apache, or nginx with `nginx.conf.example`).
 
 ## Architecture
 
 ```
 claudephpframework/
 ├── app/                 controllers + views + middleware that ship with core
-├── bin/                 artisan binary, sandbox tooling
+├── artisan              command-line tool
+├── bin/                 helper scripts
 ├── config/              app, database, modules, payments, services, storage
 ├── core/                framework runtime — container, router, auth, queue,
 │                        migrator, module registry, services, cache, mail
 ├── database/migrations/ schema migrations + seed migrations
 ├── docs/                developer documentation (start with modules.md)
-├── modules/             26 core modules — each a self-contained provider
+├── modules/             30 core modules — each a self-contained provider
 ├── public/              web root (index.php, .htaccess, assets/)
 ├── routes/              web.php + api.php
 ├── storage/             logs, cache, uploads (gitignored)
@@ -96,7 +106,7 @@ composer, link sources for the menu builder, GDPR handlers for the DSAR
 pipeline, retention rules for time-based purging, and any other framework
 hook the module needs.
 
-Adding a new module is the same as creating a folder. The registry's filesystem
+`php artisan make:module Name` makes an empty one. The registry's filesystem
 scan picks it up on the next request — no config edits, no service location.
 
 ## Core and premium
@@ -110,9 +120,9 @@ public function tier(): string { return 'premium'; }  // proprietary repo
 
 Premium modules pass through an `EntitlementCheck` contract during dependency
 resolution. The default `AlwaysGrantEntitlement` grants everything that's
-physically on disk — right for self-hosted installs. The hosted [Claude PHP
-Builder](https://github.com/) (in development) swaps in a tenant-aware
-implementation that gates premium modules per subscription.
+physically on disk — right for self-hosted installs. The hosted
+[Claude PHP Builder](https://www.claudephpbuilder.com/) (in beta) binds its own
+implementation and loads only the premium modules each site was built with.
 
 The framework enforces one strict invariant: **core modules MUST NOT depend on
 premium modules**. A unit test in `tests/Unit/Module/CorePremiumIntegrityTest.php`
@@ -127,8 +137,7 @@ vendor/bin/phpunit --testsuite Unit             # fast unit tests only
 vendor/bin/phpunit --filter CorePremium         # the tier-integrity gate
 ```
 
-A working sandbox PHP wrapper lives at `bin/php` for environments without a
-system PHP install. See `bin/setup-php.sh` for one-shot bootstrap.
+CI runs the suite on PHP 8.2, 8.3 and 8.4.
 
 **Before pushing:** turn on the repo's hooks once per clone —
 
@@ -145,6 +154,7 @@ hook is on.
 ## Built-in artisan commands
 
 ```bash
+php artisan help                 # list every command
 php artisan migrate              # run pending migrations
 php artisan migrate:status       # show applied vs pending
 php artisan module:cache         # write storage/cache/modules.php manifest
@@ -152,6 +162,7 @@ php artisan module:clear         # remove the manifest (forces filesystem scan)
 php artisan schedule:run         # master cycle for scheduled tasks
 php artisan queue:work           # consume the database-backed job queue
 php artisan cleanup              # purge stale sessions / tokens / nonces
+php artisan admin:password       # set a new super-admin password
 ```
 
 ## Pre-launch checklist

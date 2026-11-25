@@ -201,7 +201,7 @@
                              hand ("see the audit log") went stale six days later when the module
                              arrived. Asked rather than assumed, it is right either way and fixes
                              itself. */ ?>
-                    <?php if (module_installed(\x27loginanomaly\x27)): ?>
+                    <?php if (module_installed('loginanomaly')): ?>
                     Findings appear at <a href="/admin/security/anomalies" style="color:var(--color-primary-dark);text-decoration:underline">/admin/security/anomalies</a>.
                     <?php else: ?>
                     Findings are written to the <a href="/admin/audit-log?action=security.login_anomaly" style="color:var(--color-primary-dark);text-decoration:underline">audit log</a>.
