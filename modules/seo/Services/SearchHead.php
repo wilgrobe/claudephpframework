@@ -139,6 +139,7 @@ final class SearchHead
             $html = $acc; $acc = '';
             try {
                 if ((int) http_response_code() !== 200 || !self::sentAsHtml(headers_list())) { return $html; }
+                $html = PageText::apply($html, PageText::forPath($path));   // the owner's title and description here
                 $html = self::apply($html, $p, $path, self::extras($p, $path), $page);
                 if ($markdown === '' || headers_sent()) { return $html; }
                 // Converted after apply(), so the front matter carries the page's canonical address.
@@ -245,6 +246,10 @@ final class SearchHead
     {
         if (!preg_match('/\bhref\s*=\s*(["\'])(.*?)\1/i', $tag, $m)) { return $tag; }
         $href = html_entity_decode($m[2], ENT_QUOTES, 'UTF-8');
+        // A bare path ("/sample-chapter") is this site's own page: engines want the whole address.
+        if ($href !== '' && $href[0] === '/' && !str_starts_with($href, '//')) {
+            return str_replace($m[0], 'href=' . $m[1] . htmlspecialchars(rtrim($p->base(), '/') . $href, ENT_QUOTES, 'UTF-8') . $m[1], $tag);
+        }
         $u = parse_url($href);
         if (!is_array($u) || empty($u['host'])) { return $tag; }
         $host = strtolower((string) $u['host']);

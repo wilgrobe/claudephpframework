@@ -10,6 +10,7 @@ use Core\Response;
 use Core\Services\SettingsService;
 use Core\Session;
 use Modules\Seo\Services\IndexNow;
+use Modules\Seo\Services\PageText;
 use Modules\Seo\Services\SearchHead;
 use Modules\Seo\Services\SearchHealth;
 use Modules\Seo\Services\SearchPages;
@@ -50,6 +51,7 @@ final class SearchSettingsController
             'types'    => StructuredData::TYPES,
             'report'   => is_array($report) && time() - (int) ($report['at'] ?? 0) < 900 ? $report : null,
             'pages'    => self::pageRows(),
+            'texts'    => self::textRows(),
         ]);
     }
 
@@ -107,6 +109,29 @@ final class SearchSettingsController
             $out[$id] = [($hidden[$id] ?? '') === '1' ? 1 : 0, SearchPages::cleanCanonical((string) ($canon[$id] ?? ''))];
         }
         return $out;
+    }
+
+    /** The stored titles and descriptions, read fresh. */
+    private static function textRows(): array
+    {
+        PageText::reset();
+        return PageText::all();
+    }
+
+    /** POST /admin/settings/search/text — the title and description of any public address (PageText). */
+    public function saveText(Request $request): Response
+    {
+        if (!$this->guard()) {
+            Session::flash('error', 'Search settings require admin access.');
+            return Response::redirect('/admin');
+        }
+        $json = PageText::fromPost((array) $request->post());
+        Container::global()->get(SettingsService::class)->set(PageText::KEY, $json, 'site', null);
+        SearchSettings::flush();
+        PageText::reset();
+        $n = count(PageText::parse($json));
+        Session::flash('success', $n === 1 ? 'Saved. 1 address has its own title or description.' : "Saved. $n addresses have their own title or description.");
+        return Response::redirect('/admin/settings/search#text');
     }
 
     /** POST /admin/settings/search/check — run the Search health report against the live site; shown once on the page. */

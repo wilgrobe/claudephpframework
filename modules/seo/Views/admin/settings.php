@@ -159,6 +159,32 @@ $hiddenWhy = [
     <?php endif; ?>
 </div></div>
 
+<?php $texts ??= []; ?>
+<div class="card seo-card" id="text" style="margin-top:1rem"><div class="card-body">
+    <h2>Titles and descriptions</h2>
+    <p class="seo-muted">What search results show for a page. Pages you made in the page editor have these on the page itself; use this for the others, such as /faq, /blog or /contact. Leave a part empty to keep what the page has now; empty both to remove the row. About 60 characters fit for a title and 160 for a description. The title is shown exactly as you type it.</p>
+    <form method="POST" action="/admin/settings/search/text" style="margin:0">
+        <?= csrf_field() ?>
+        <table class="table" style="width:100%;font-size:14px">
+            <thead><tr><th style="text-align:left;width:24%">Address</th><th style="text-align:left;width:32%">Title</th><th style="text-align:left">Description</th></tr></thead>
+            <tbody>
+            <?php
+            $textRows = [];
+            foreach ($texts as $tPath => $t) { $textRows[] = [$tPath, $t['title'], $t['description']]; }
+            for ($i = 0; $i < 3; $i++) { $textRows[] = ['', '', '']; }
+            foreach ($textRows as [$tPath, $tTitle, $tDesc]): ?>
+                <tr>
+                    <td><input type="text" name="text_path[]" class="form-control" maxlength="300" value="<?= e((string) $tPath) ?>" placeholder="/faq" aria-label="Address"></td>
+                    <td><input type="text" name="text_title[]" class="form-control" maxlength="120" value="<?= e((string) $tTitle) ?>" placeholder="(as the page has it)" aria-label="Title"></td>
+                    <td><textarea name="text_description[]" class="form-control" rows="2" maxlength="320" placeholder="(as the page has it)" aria-label="Description"><?= e((string) $tDesc) ?></textarea></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Save titles and descriptions</button>
+    </form>
+</div></div>
+
 <?php $report ??= null; ?>
 <div class="card seo-card" id="health" style="margin-top:1rem"><div class="card-body">
     <h2>Search health</h2>

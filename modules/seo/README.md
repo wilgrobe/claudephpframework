@@ -20,6 +20,7 @@ Search-engine and AI-answer basics for every site. Free, on by default; each pie
 | AI crawlers by name | (follows `seo.ai.input` / `seo.ai.train`) | robots.txt adds named `User-agent` groups with `Disallow: /` for the AI training crawlers (and the AI-answer crawlers when answers are off) — they obey named groups, not the Content-Signal line |
 | Search health | — | `POST /admin/settings/search/check`: the live site checked as a search engine and an AI crawler see it (https, main address, robots, sitemap, the home page's tags, AI crawler access), each failure with its fix |
 | Per page | `pages.search_hidden`, `pages.canonical_url` (this module's migration) | A page hidden from search gets `noindex, follow` (header + tag) and leaves the sitemap, llms.txt and IndexNow; a canonical override (a path here or a full address elsewhere) replaces the page's own. Set under **Pages** on the same settings page |
+| Titles and descriptions | `seo.page_text` (JSON: path => title, description) | What search results show for any public address, put on the finished page (`PageText`): `<title>`, description, and their Open Graph / Twitter copies. For module pages (/faq, /blog, /contact…), which have no SEO fields of their own. Set under **Titles and descriptions** on the same settings page; a blank part is left as the page printed it |
 
 On the hosted ClaudePHPBuilder, demos and free preview (proofing) sites are hidden from search automatically; an
 operator can turn search on for a demo from the tenant's admin page.

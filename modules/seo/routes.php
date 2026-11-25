@@ -18,3 +18,5 @@ $router->post('/admin/settings/search', "$A@save", [CsrfMiddleware::class, AuthM
 // The Search health report (21 Nov 2026): the live site checked the way a search engine and an AI crawler see it.
 $router->post('/admin/settings/search/check', "$A@check", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
 $router->post('/admin/settings/search/pages', "$A@savePages", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
+// The title and description of any public address (24 Nov 2026): module pages have no SEO fields of their own.
+$router->post('/admin/settings/search/text', "$A@saveText", [CsrfMiddleware::class, AuthMiddleware::class, RequireAdmin::class]);
