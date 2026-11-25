@@ -25,11 +25,11 @@
         </h2>
         <?php foreach ($catFaqs as $faq): ?>
         <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
-            <button type="button" onclick="toggleFaq(this)"
+            <h3 style="margin:0;font:inherit"><button type="button" onclick="toggleFaq(this)" aria-expanded="false"
                     style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, var(--bg-panel));color:var(--text-default, var(--text-default));border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
                 <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
-            </button>
+            </button></h3>
             <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid var(--color-gray-100);color:var(--color-gray-700);font-size:14px;line-height:1.7">
                 <?= $faq['answer'] /* already sanitized on store */ ?>
             </div>
@@ -43,10 +43,10 @@
         <h2 style="font-size:1.1rem;font-weight:700;border-bottom:2px solid var(--color-gray-200);padding-bottom:.5rem;margin-bottom:1rem">General</h2>
         <?php foreach ($uncategorized as $faq): ?>
         <div class="faq-item" style="border:1px solid var(--color-gray-200);border-radius:8px;margin-bottom:.5rem;overflow:hidden">
-            <button type="button" onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, var(--bg-panel));color:var(--text-default, var(--text-default));border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0;font:inherit"><button type="button" onclick="toggleFaq(this)" aria-expanded="false" style="width:100%;text-align:left;padding:.85rem 1.1rem;background: var(--bg-panel, var(--bg-panel));color:var(--text-default, var(--text-default));border:none;cursor:pointer;font-size:14.5px;font-weight:500;font-family:inherit;display:flex;justify-content:space-between;align-items:center">
                 <span class="faq-q"><?= e($faq['question']) ?></span>
                 <span style="font-size:1.1rem;color:var(--color-gray-400);flex-shrink:0;margin-left:.5rem">+</span>
-            </button>
+            </button></h3>
             <div class="faq-answer" style="display:none;padding:.75rem 1.1rem 1rem;border-top:1px solid var(--color-gray-100);color:var(--color-gray-700);font-size:14px;line-height:1.7">
                 <?= $faq['answer'] ?>
             </div>
@@ -63,6 +63,7 @@
     <?php endif; ?>
 </div>
 
+<?= \Modules\Faq\Services\FaqMarkup::script(\Modules\Faq\Services\FaqMarkup::graph($categories ?? [], $uncategorized ?? [])) ?>
 <style>
 /* Stable anchor for scrollIntoView so the clicked question doesn't
  * dock right under the page's chrome (header / sticky nav). 80px
@@ -72,7 +73,7 @@
 <script>
 function toggleFaq(btn) {
     const item   = btn.closest('.faq-item');
-    const answer = btn.nextElementSibling;
+    const answer = item.querySelector('.faq-answer');
     const icon   = btn.querySelector('span:last-child');
     const wasOpen = answer.style.display !== 'none';
 
@@ -81,6 +82,7 @@ function toggleFaq(btn) {
         // current viewing position stays put.
         answer.style.display = 'none';
         icon.textContent = '+';
+        btn.setAttribute('aria-expanded', 'false');
         return;
     }
 
@@ -93,14 +95,17 @@ function toggleFaq(btn) {
     document.querySelectorAll('.faq-answer').forEach(a => {
         if (a !== answer && a.style.display !== 'none') {
             a.style.display = 'none';
-            const sib = a.previousElementSibling?.querySelector('span:last-child');
+            const other = a.closest('.faq-item')?.querySelector('button');
+            const sib = other?.querySelector('span:last-child');
             if (sib) sib.textContent = '+';
+            other?.setAttribute('aria-expanded', 'false');
         }
     });
 
     // Now open the clicked one.
     answer.style.display = 'block';
     icon.textContent = '−';
+    btn.setAttribute('aria-expanded', 'true');
 
     // Anchor the clicked question to the top of the viewport so the
     // answer fills the space below it instead of pushing whatever was
