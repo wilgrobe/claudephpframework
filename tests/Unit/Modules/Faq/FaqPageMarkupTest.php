@@ -66,6 +66,7 @@ final class FaqPageMarkupTest extends TestCase
 
         $this->assertSame(1, preg_match_all('#<h1\b#', $html));
         $this->assertSame(4, preg_match_all('#<h3\b[^>]*>\s*<button\b#', $html), 'every question, in both lists, is a heading around its button');
+        $this->assertSame(4, preg_match_all('#</button>\s*</h3>#', $html), 'and every heading is closed');
         $this->assertSame(4, preg_match_all('#aria-expanded="false"#', $html));
         $this->assertSame(1, substr_count($html, 'application/ld+json'));
         // The button is inside the heading now: the answer is no longer its next sibling.
